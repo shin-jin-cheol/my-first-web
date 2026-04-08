@@ -1,14 +1,33 @@
+import Link from "next/link";
+import { posts } from "@/lib/posts";
+
 export default function Home() {
   return (
-    <section className="space-y-6">
-      <div className="rounded-3xl border border-amber-200 bg-white/80 p-8 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-widest text-rose-500">Welcome</p>
-        <h1 className="mt-3 text-4xl font-extrabold text-slate-800">공인재 신진철의 생존일기</h1>
-        <p className="mt-4 max-w-2xl leading-7 text-slate-600">
-          개발 기록과 배운 내용을 가볍게 정리하고 공유하는 공간입니다. 오늘의 학습 포인트를
-          짧고 선명하게 남겨 보세요.
+    <div className="space-y-8">
+      <div className="space-y-2">
+        <p className="text-sm font-semibold uppercase tracking-wider text-rose-500">
+          Blog Posts
         </p>
+        <h1 className="text-4xl font-extrabold text-slate-800">게시글 목록</h1>
       </div>
-    </section>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {posts.map((post) => (
+          <Link key={post.id} href={`/posts/${post.id}`}>
+            <article className="block h-full cursor-pointer rounded-2xl border border-orange-200 bg-white/85 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
+              <h2 className="mb-2 text-lg font-bold text-slate-800">{post.title}</h2>
+              <p className="mb-4 line-clamp-3 text-sm text-slate-600">{post.content}</p>
+              <div className="space-y-1 text-xs text-slate-500">
+                <p>
+                  <strong>작성자:</strong> {post.author}
+                </p>
+                <p>
+                  <strong>날짜:</strong> {post.date}
+                </p>
+              </div>
+            </article>
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }
