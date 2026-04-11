@@ -8,51 +8,63 @@ import { getMemberProfile, requireSession } from "@/lib/auth";
 async function createPost(formData: FormData) {
   "use server";
 
-  const session = await requireSession();
+  try {
+    const session = await requireSession();
 
-  const title = String(formData.get("title") ?? "").trim();
-  const rawAuthor = String(formData.get("author") ?? "").trim();
-  const content = String(formData.get("content") ?? "").trim();
-  const linkUrl = String(formData.get("linkUrl") ?? "").trim();
-  const attachmentFile = formData.get("attachment");
+    const title = String(formData.get("title") ?? "").trim();
+    const rawAuthor = String(formData.get("author") ?? "").trim();
+    const content = String(formData.get("content") ?? "").trim();
+    const linkUrl = String(formData.get("linkUrl") ?? "").trim();
+    const attachmentFile = formData.get("attachment");
 
-  let author = rawAuthor;
-  if (session.role === "member") {
-    const profile = await getMemberProfile(session.userId);
-    author = profile?.name?.trim() || session.userId;
+    let author = rawAuthor;
+    if (session.role === "member") {
+      const profile = await getMemberProfile(session.userId);
+      author = profile?.name?.trim() || session.userId;
+    }
+
+    if (!title || !author || !content) {
+      const message = encodeURIComponent("제목, 작성자, 내용을 입력해 주세요.");
+      redirect(`/posts/new?error=${message}`);
+    }
+
+    if (session.role === "member") {
+      await addGuestPost({
+        title,
+        content,
+        authorId: session.userId,
+      });
+    } else {
+      await addPost({
+        title,
+        author,
+        authorId: undefined,
+        content,
+        linkUrl,
+        attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
+      });
+    }
+
+    revalidatePath("/");
+    revalidatePath("/posts");
+    revalidatePath("/guest");
+    redirect("/posts");
+  } catch {
+    const message = encodeURIComponent("서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    redirect(`/posts/new?error=${message}`);
   }
-
-  if (!title || !author || !content) {
-    return;
-  }
-
-  if (session.role === "member") {
-    await addGuestPost({
-      title,
-      content,
-      authorId: session.userId,
-    });
-  } else {
-    await addPost({
-      title,
-      author,
-      authorId: undefined,
-      content,
-      linkUrl,
-      attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
-    });
-  }
-
-  revalidatePath("/");
-  revalidatePath("/posts");
-  revalidatePath("/guest");
-  redirect("/posts");
 }
 
-export default async function NewPostPage() {
+type NewPostPageProps = {
+  searchParams: Promise<{ error?: string }>;
+};
+
+export default async function NewPostPage({ searchParams }: NewPostPageProps) {
   const session = await requireSession();
   const profile = session.role === "member" ? await getMemberProfile(session.userId) : null;
   const defaultAuthor = session.role === "member" ? (profile?.name?.trim() || session.userId) : "";
+  const params = await searchParams;
+  const errorMessage = params.error ? decodeURIComponent(params.error) : "";
 
   return (
     <section className="space-y-8">
@@ -64,6 +76,10 @@ export default async function NewPostPage() {
           새 글 쓰기
         </h1>
       </header>
+
+      {errorMessage ? (
+        <p className="rounded-xl border border-red-400/50 bg-red-500/10 px-4 py-3 text-sm text-red-300">{errorMessage}</p>
+      ) : null}
 
       <form
         action={createPost}

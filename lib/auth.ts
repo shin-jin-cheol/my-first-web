@@ -27,6 +27,20 @@ const USERS_BLOB_KEY = "auth/users.json";
 
 let usersBlobUrlCache: string | undefined;
 
+function pickLatestBlobUrl(blobs: Array<{ url: string; uploadedAt?: string | Date }>): string | undefined {
+  if (blobs.length === 0) {
+    return undefined;
+  }
+
+  const sorted = [...blobs].sort((a, b) => {
+    const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : 0;
+    const bTime = b.uploadedAt ? new Date(b.uploadedAt).getTime() : 0;
+    return bTime - aTime;
+  });
+
+  return sorted[0]?.url;
+}
+
 function resolveUsersFilePath() {
   // Vercel deployment filesystem is read-only except /tmp.
   if (process.env.VERCEL) {
@@ -45,10 +59,8 @@ async function readUsersFromBlob(): Promise<Member[]> {
   }
 
   if (!usersBlobUrlCache) {
-    const existing = await list({ prefix: USERS_BLOB_KEY, limit: 1 });
-    if (existing.blobs.length > 0) {
-      usersBlobUrlCache = existing.blobs[0].url;
-    }
+    const existing = await list({ prefix: USERS_BLOB_KEY, limit: 100 });
+    usersBlobUrlCache = pickLatestBlobUrl(existing.blobs);
 
     const seed = usersBlobUrlCache
       ? null
@@ -94,7 +106,7 @@ async function writeUsersToBlob(members: Member[]) {
 
 async function ensureUsersFile() {
   if (hasBlobStorage()) {
-    await writeUsersToBlob(await readUsersFromBlob());
+    await readUsersFromBlob();
     return;
   }
 

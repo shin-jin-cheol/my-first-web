@@ -6,17 +6,22 @@ import { getLocale, t } from "@/lib/i18n";
 async function signupAction(formData: FormData) {
   "use server";
 
-  const id = String(formData.get("id") ?? "").trim();
-  const name = String(formData.get("name") ?? "").trim();
-  const password = String(formData.get("password") ?? "").trim();
+  try {
+    const id = String(formData.get("id") ?? "").trim();
+    const name = String(formData.get("name") ?? "").trim();
+    const password = String(formData.get("password") ?? "").trim();
 
-  const result = await registerMember(id, name, password);
-  if (!result.ok) {
-    const message = encodeURIComponent(result.message ?? "회원가입에 실패했습니다.");
+    const result = await registerMember(id, name, password);
+    if (!result.ok) {
+      const message = encodeURIComponent(result.message ?? "회원가입에 실패했습니다.");
+      redirect(`/auth/signup?error=${message}`);
+    }
+
+    redirect("/auth/login");
+  } catch {
+    const message = encodeURIComponent("서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
     redirect(`/auth/signup?error=${message}`);
   }
-
-  redirect("/auth/login");
 }
 
 type SignupPageProps = {

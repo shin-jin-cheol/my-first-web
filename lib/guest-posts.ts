@@ -23,6 +23,20 @@ const GUEST_POSTS_BLOB_KEY = "guest/guest-posts.json";
 
 let guestPostsBlobUrlCache: string | undefined;
 
+function pickLatestBlobUrl(blobs: Array<{ url: string; uploadedAt?: string | Date }>): string | undefined {
+  if (blobs.length === 0) {
+    return undefined;
+  }
+
+  const sorted = [...blobs].sort((a, b) => {
+    const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : 0;
+    const bTime = b.uploadedAt ? new Date(b.uploadedAt).getTime() : 0;
+    return bTime - aTime;
+  });
+
+  return sorted[0]?.url;
+}
+
 function hasBlobStorage() {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 }
@@ -41,10 +55,8 @@ async function readGuestPostsFromBlob(): Promise<GuestPost[]> {
   }
 
   if (!guestPostsBlobUrlCache) {
-    const existing = await list({ prefix: GUEST_POSTS_BLOB_KEY, limit: 1 });
-    if (existing.blobs.length > 0) {
-      guestPostsBlobUrlCache = existing.blobs[0].url;
-    }
+    const existing = await list({ prefix: GUEST_POSTS_BLOB_KEY, limit: 100 });
+    guestPostsBlobUrlCache = pickLatestBlobUrl(existing.blobs);
 
     const seed = guestPostsBlobUrlCache
       ? null
@@ -90,7 +102,7 @@ async function writeGuestPostsToBlob(posts: GuestPost[]) {
 
 async function ensureGuestPostsFile() {
   if (hasBlobStorage()) {
-    await writeGuestPostsToBlob(await readGuestPostsFromBlob());
+    await readGuestPostsFromBlob();
     return;
   }
 
