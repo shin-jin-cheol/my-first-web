@@ -58,9 +58,14 @@ export default function RootLayout({
                 </svg>
                 <span className="sr-only">인스타그램 바로가기 (@whflwls)</span>
               </a>
-              <p className="bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#515bd4] bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_10px_rgba(221,42,123,0.35)]">
+              <a
+                href="https://www.instagram.com/whflwls"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#515bd4] bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_10px_rgba(221,42,123,0.35)] transition hover:brightness-110"
+              >
                 @whflwls
-              </p>
+              </a>
               <a
                 href="mailto:sjc5001@hs.ac.kr"
                 aria-label="이메일 보내기"
@@ -78,9 +83,12 @@ export default function RootLayout({
                 </svg>
                 <span className="sr-only">이메일 보내기 (sjc5001@hs.ac.kr)</span>
               </a>
-              <p className="bg-gradient-to-br from-[#ea4335] via-[#fbbc05] to-[#34a853] bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_10px_rgba(234,67,53,0.3)]">
+              <a
+                href="mailto:sjc5001@hs.ac.kr"
+                className="bg-gradient-to-br from-[#ea4335] via-[#fbbc05] to-[#34a853] bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_10px_rgba(234,67,53,0.3)] transition hover:brightness-110"
+              >
                 sjc5001@hs.ac.kr
-              </p>
+              </a>
             </div>
           </div>
         </footer>
