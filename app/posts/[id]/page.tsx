@@ -2,7 +2,7 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { deletePostById, getPostById } from "@/lib/posts";
-import { getSession, requireOwner } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 type PostDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -13,11 +13,22 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const postId = Number(id);
   const post = await getPostById(postId);
   const session = await getSession();
+  const canManagePost =
+    session?.role === "owner" || (session?.role === "member" && post?.authorId === session.userId);
 
   async function deletePostAction() {
     "use server";
 
-    await requireOwner();
+    const currentSession = await getSession();
+    const currentPost = await getPostById(postId);
+
+    const canDelete =
+      currentSession?.role === "owner" ||
+      (currentSession?.role === "member" && currentPost?.authorId === currentSession.userId);
+
+    if (!canDelete) {
+      redirect(`/posts/${postId}`);
+    }
 
     await deletePostById(postId);
     revalidatePath("/");
@@ -96,7 +107,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
             수정하기
           </Link>
         ) : null}
-        {session?.role === "owner" ? (
+        {canManagePost ? (
           <form action={deletePostAction}>
             <button
               type="submit"

@@ -7,6 +7,7 @@ export type Post = {
   title: string;
   content: string;
   author: string;
+  authorId?: string;
   date: string;
   linkUrl?: string;
   fileUrl?: string;
@@ -17,6 +18,7 @@ type NewPostInput = {
   title: string;
   content: string;
   author: string;
+  authorId?: string;
   linkUrl?: string;
   attachmentFile?: File | null;
 };
@@ -190,6 +192,7 @@ export async function addPost(input: NewPostInput): Promise<Post> {
     title: input.title,
     content: input.content,
     author: input.author,
+    authorId: input.authorId,
     date: new Date().toISOString().slice(0, 10),
     linkUrl: normalizeLinkUrl(input.linkUrl),
     fileUrl: attachment?.fileUrl,

@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addPost } from "@/lib/posts";
 import { addGuestPost } from "@/lib/guest-posts";
-import { requireSession } from "@/lib/auth";
+import { getMemberProfile, requireSession } from "@/lib/auth";
 
 async function createPost(formData: FormData) {
   "use server";
@@ -11,10 +11,16 @@ async function createPost(formData: FormData) {
   const session = await requireSession();
 
   const title = String(formData.get("title") ?? "").trim();
-  const author = String(formData.get("author") ?? "").trim();
+  const rawAuthor = String(formData.get("author") ?? "").trim();
   const content = String(formData.get("content") ?? "").trim();
   const linkUrl = String(formData.get("linkUrl") ?? "").trim();
   const attachmentFile = formData.get("attachment");
+
+  let author = rawAuthor;
+  if (session.role === "member") {
+    const profile = await getMemberProfile(session.userId);
+    author = profile?.name?.trim() || session.userId;
+  }
 
   if (!title || !author || !content) {
     return;
@@ -23,6 +29,7 @@ async function createPost(formData: FormData) {
   await addPost({
     title,
     author,
+    authorId: session.role === "member" ? session.userId : undefined,
     content,
     linkUrl,
     attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
@@ -43,7 +50,9 @@ async function createPost(formData: FormData) {
 }
 
 export default async function NewPostPage() {
-  await requireSession();
+  const session = await requireSession();
+  const profile = session.role === "member" ? await getMemberProfile(session.userId) : null;
+  const defaultAuthor = session.role === "member" ? (profile?.name?.trim() || session.userId) : "";
 
   return (
     <section className="space-y-8">
@@ -84,8 +93,13 @@ export default async function NewPostPage() {
             type="text"
             required
             placeholder="작성자 이름"
-            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none transition focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"
+            defaultValue={defaultAuthor}
+            readOnly={session.role === "member"}
+            className={`w-full rounded-xl border px-4 py-2.5 text-zinc-100 outline-none transition ${session.role === "member" ? "cursor-not-allowed border-zinc-700 bg-zinc-900/60 text-zinc-300" : "border-zinc-600 bg-zinc-900 focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"}`}
           />
+          {session.role === "member" ? (
+            <p className="text-xs text-zinc-400">회원가입 시 입력한 이름이 자동으로 사용됩니다.</p>
+          ) : null}
         </div>
 
         <div className="space-y-2">
