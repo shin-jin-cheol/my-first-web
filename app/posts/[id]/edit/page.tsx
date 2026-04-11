@@ -22,12 +22,13 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     const title = String(formData.get("title") ?? "").trim();
     const author = String(formData.get("author") ?? "").trim();
     const content = String(formData.get("content") ?? "").trim();
+    const linkUrl = String(formData.get("linkUrl") ?? "").trim();
 
     if (!title || !author || !content) {
       return;
     }
 
-    await updatePostById(postId, { title, author, content });
+    await updatePostById(postId, { title, author, content, linkUrl });
 
     revalidatePath("/");
     revalidatePath("/posts");
@@ -90,6 +91,20 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             rows={10}
             defaultValue={post.content}
             className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-3 text-zinc-100 outline-none transition focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="linkUrl" className="text-sm font-medium text-zinc-200">
+            링크 URL (선택)
+          </label>
+          <input
+            id="linkUrl"
+            name="linkUrl"
+            type="url"
+            defaultValue={post.linkUrl ?? ""}
+            placeholder="https://example.com"
+            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none transition focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"
           />
         </div>
 

@@ -7,18 +7,21 @@ export type Post = {
   content: string;
   author: string;
   date: string;
+  linkUrl?: string;
 };
 
 type NewPostInput = {
   title: string;
   content: string;
   author: string;
+  linkUrl?: string;
 };
 
 type UpdatePostInput = {
   title: string;
   content: string;
   author: string;
+  linkUrl?: string;
 };
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -70,6 +73,23 @@ async function writePosts(posts: Post[]) {
   await fs.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2), "utf-8");
 }
 
+function normalizeLinkUrl(input?: string): string | undefined {
+  if (!input) {
+    return undefined;
+  }
+
+  const trimmed = input.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+
+  return `https://${trimmed}`;
+}
+
 export async function getPosts(): Promise<Post[]> {
   return readPosts();
 }
@@ -89,6 +109,7 @@ export async function addPost(input: NewPostInput): Promise<Post> {
     content: input.content,
     author: input.author,
     date: new Date().toISOString().slice(0, 10),
+    linkUrl: normalizeLinkUrl(input.linkUrl),
   };
 
   posts.unshift(post);
@@ -121,6 +142,7 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
     title: input.title,
     content: input.content,
     author: input.author,
+    linkUrl: normalizeLinkUrl(input.linkUrl),
   };
 
   posts[index] = updatedPost;

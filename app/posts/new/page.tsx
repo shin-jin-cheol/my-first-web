@@ -9,12 +9,13 @@ async function createPost(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const author = String(formData.get("author") ?? "").trim();
   const content = String(formData.get("content") ?? "").trim();
+  const linkUrl = String(formData.get("linkUrl") ?? "").trim();
 
   if (!title || !author || !content) {
     return;
   }
 
-  await addPost({ title, author, content });
+  await addPost({ title, author, content, linkUrl });
 
   revalidatePath("/");
   revalidatePath("/posts");
@@ -79,6 +80,19 @@ export default function NewPostPage() {
             rows={10}
             placeholder="글 내용을 입력하세요"
             className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-3 text-zinc-100 outline-none transition focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="linkUrl" className="text-sm font-medium text-zinc-200">
+            링크 URL (선택)
+          </label>
+          <input
+            id="linkUrl"
+            name="linkUrl"
+            type="url"
+            placeholder="https://example.com"
+            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none transition focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"
           />
         </div>
 

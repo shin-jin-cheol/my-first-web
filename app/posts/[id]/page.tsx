@@ -53,6 +53,18 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
       <p className="leading-7 text-zinc-300">{post.content}</p>
 
+      {post.linkUrl ? (
+        <a
+          href={post.linkUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-full border border-cyan-500/50 bg-gradient-to-r from-zinc-900 via-zinc-800 to-[#2b6661] px-4 py-2 text-sm font-semibold text-zinc-100 shadow-[0_0_20px_rgba(129,216,208,0.35)] transition hover:-translate-y-0.5 hover:brightness-110"
+        >
+          <span className="inline-block h-2 w-2 rounded-full bg-[#81d8d0] shadow-[0_0_10px_rgba(129,216,208,0.8)]" />
+          링크 열기
+        </a>
+      ) : null}
+
       <div className="flex items-center gap-3">
         <Link
           href="/posts"
