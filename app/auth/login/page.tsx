@@ -23,12 +23,13 @@ async function loginAction(formData: FormData) {
 }
 
 type LoginPageProps = {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; withdraw?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const showError = params.error === "1";
+  const showWithdrawMessage = params.withdraw === "1";
 
   return (
     <section className="mx-auto max-w-xl space-y-6 rounded-2xl border border-zinc-700 bg-zinc-800 p-7 shadow-[0_0_24px_rgba(129,216,208,0.14)]">
@@ -41,6 +42,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       {showError ? (
         <p className="rounded-xl border border-red-400/50 bg-red-500/10 px-4 py-2 text-sm text-red-300">
           아이디 또는 비밀번호가 올바르지 않습니다.
+        </p>
+      ) : null}
+
+      {showWithdrawMessage ? (
+        <p className="rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-2 text-sm text-cyan-200">
+          회원 탈퇴가 완료되었습니다.
         </p>
       ) : null}
 

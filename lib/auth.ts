@@ -139,6 +139,58 @@ export async function getMembersForOwner(): Promise<Member[]> {
   return readMembers();
 }
 
+export async function changeMemberPassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+): Promise<{ ok: boolean; message?: string }> {
+  if (!userId || userId === OWNER_ID) {
+    return { ok: false, message: "회원 계정만 비밀번호 변경이 가능합니다." };
+  }
+
+  if (!currentPassword || !newPassword) {
+    return { ok: false, message: "현재 비밀번호와 새 비밀번호를 입력해 주세요." };
+  }
+
+  const members = await readMembers();
+  const index = members.findIndex((member) => member.id === userId && member.password === currentPassword);
+
+  if (index === -1) {
+    return { ok: false, message: "현재 비밀번호가 올바르지 않습니다." };
+  }
+
+  members[index] = {
+    ...members[index],
+    password: newPassword,
+  };
+  await writeMembers(members);
+
+  return { ok: true };
+}
+
+export async function deleteMemberAccount(
+  userId: string,
+  password: string,
+): Promise<{ ok: boolean; message?: string }> {
+  if (!userId || userId === OWNER_ID) {
+    return { ok: false, message: "회원 계정만 탈퇴할 수 있습니다." };
+  }
+
+  if (!password) {
+    return { ok: false, message: "비밀번호를 입력해 주세요." };
+  }
+
+  const members = await readMembers();
+  const filtered = members.filter((member) => !(member.id === userId && member.password === password));
+
+  if (filtered.length === members.length) {
+    return { ok: false, message: "비밀번호가 올바르지 않습니다." };
+  }
+
+  await writeMembers(filtered);
+  return { ok: true };
+}
+
 export const ownerAccount = {
   id: OWNER_ID,
   password: OWNER_PASSWORD,

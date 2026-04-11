@@ -54,6 +54,11 @@ export default async function RootLayout({
                 회원관리
               </Link>
             ) : null}
+            {session ? (
+              <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-cyan-200">
+                {session.role}
+              </span>
+            ) : null}
             {!session ? (
               <>
                 <Link href="/auth/login" className="text-sm font-medium text-zinc-300 transition hover:text-white">
