@@ -38,9 +38,9 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
     }
 
     await deleteGuestPostById(postId);
-    revalidatePath("/guest");
-    revalidatePath("/posts");
-    redirect("/guest");
+    revalidatePath("/guest", "page");
+    revalidatePath("/posts", "page");
+    redirect(`/guest?deleted=${Date.now()}`);
   }
 
   return (
@@ -68,7 +68,11 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
         ) : (
           posts.map((post) => (
             <article key={post.id} className="space-y-3 rounded-2xl border border-zinc-700 bg-zinc-800 p-5">
-              <h2 className="text-xl font-bold text-zinc-100">{post.title}</h2>
+              <h2 className="text-xl font-bold text-zinc-100">
+                <Link href={`/guest/${post.id}`} className="transition hover:text-cyan-200">
+                  {post.title}
+                </Link>
+              </h2>
               <p className="text-zinc-300">{post.content}</p>
               <div className="flex items-center justify-between text-sm text-zinc-400">
                 <p>{t(locale, "작성자", "Author")}: {post.authorName || memberNameById.get(post.authorId) || post.authorId}</p>

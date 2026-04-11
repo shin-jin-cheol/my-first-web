@@ -44,6 +44,8 @@ async function createPost(formData: FormData) {
         content,
         authorId: session.userId,
         authorName: author,
+        linkUrl,
+        attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
       });
     } else {
       await addPost({

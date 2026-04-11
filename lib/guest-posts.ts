@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { list, put } from "@vercel/blob";
+import { del, list, put } from "@vercel/blob";
 
 export type GuestPost = {
   id: number;
@@ -9,6 +9,9 @@ export type GuestPost = {
   authorId: string;
   authorName?: string;
   date: string;
+  linkUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
 };
 
 type NewGuestPostInput = {
@@ -16,12 +19,15 @@ type NewGuestPostInput = {
   content: string;
   authorId: string;
   authorName?: string;
+  linkUrl?: string;
+  attachmentFile?: File | null;
 };
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const GUEST_POSTS_FILE_LOCAL = path.join(DATA_DIR, "guest-posts.json");
 const GUEST_POSTS_FILE_TMP = path.join("/tmp", "my-first-web-guest-posts.json");
 const GUEST_POSTS_BLOB_KEY = "guest/guest-posts.json";
+const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
 
 let guestPostsBlobUrlCache: string | undefined;
 
@@ -61,6 +67,94 @@ function getKstDateString() {
   return new Intl.DateTimeFormat("sv-SE", {
     timeZone: "Asia/Seoul",
   }).format(new Date());
+}
+
+function sanitizeFileName(fileName: string) {
+  return fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
+}
+
+function normalizeLinkUrl(input?: string): string | undefined {
+  if (!input) {
+    return undefined;
+  }
+
+  const trimmed = input.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+
+  return `https://${trimmed}`;
+}
+
+async function ensureUploadsDir() {
+  await fs.mkdir(UPLOADS_DIR, { recursive: true });
+}
+
+async function saveAttachmentFile(file?: File | null): Promise<{ fileUrl: string; fileName: string } | undefined> {
+  if (!file || file.size === 0) {
+    return undefined;
+  }
+
+  const safeName = sanitizeFileName(file.name || "upload.bin");
+  const uniqueName = `${Date.now()}-${safeName}`;
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`uploads/${uniqueName}`, file, {
+      access: "public",
+      addRandomSuffix: false,
+    });
+
+    return {
+      fileUrl: blob.url,
+      fileName: file.name || safeName,
+    };
+  }
+
+  await ensureUploadsDir();
+  const filePath = path.join(UPLOADS_DIR, uniqueName);
+  const fileBuffer = Buffer.from(await file.arrayBuffer());
+  await fs.writeFile(filePath, fileBuffer);
+
+  return {
+    fileUrl: `/uploads/${uniqueName}`,
+    fileName: file.name || safeName,
+  };
+}
+
+async function removeLocalAttachment(fileUrl?: string) {
+  if (!fileUrl || !fileUrl.startsWith("/uploads/")) {
+    return;
+  }
+
+  const filePath = path.join(process.cwd(), "public", fileUrl.replace(/^\//, ""));
+  try {
+    await fs.unlink(filePath);
+  } catch {
+    // no-op
+  }
+}
+
+async function removeAttachment(fileUrl?: string) {
+  if (!fileUrl) {
+    return;
+  }
+
+  if (fileUrl.startsWith("/uploads/")) {
+    await removeLocalAttachment(fileUrl);
+    return;
+  }
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
+      await del(fileUrl);
+    } catch {
+      // no-op
+    }
+  }
 }
 
 async function readGuestPostsFromBlob(): Promise<GuestPost[]> {
@@ -169,6 +263,7 @@ export async function getGuestPostById(id: number): Promise<GuestPost | undefine
 export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost> {
   const posts = await readGuestPosts();
   const nextPostId = posts.reduce((maxId, post) => Math.max(maxId, post.id), 0) + 1;
+  const attachment = await saveAttachmentFile(input.attachmentFile);
 
   const post: GuestPost = {
     id: nextPostId,
@@ -177,6 +272,9 @@ export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost>
     authorId: input.authorId,
     authorName: input.authorName,
     date: getKstDateString(),
+    linkUrl: normalizeLinkUrl(input.linkUrl),
+    fileUrl: attachment?.fileUrl,
+    fileName: attachment?.fileName,
   };
 
   posts.unshift(post);
@@ -186,12 +284,14 @@ export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost>
 
 export async function deleteGuestPostById(id: number): Promise<boolean> {
   const posts = await readGuestPosts();
+  const targetPost = posts.find((post) => post.id === id);
   const filtered = posts.filter((post) => post.id !== id);
 
   if (filtered.length === posts.length) {
     return false;
   }
 
+  await removeAttachment(targetPost?.fileUrl);
   await writeGuestPosts(filtered);
   return true;
 }

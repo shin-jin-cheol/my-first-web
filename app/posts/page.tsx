@@ -35,16 +35,27 @@ export default async function PostsPage() {
 
   const migratedMemberPosts = memberPosts
     .map((post) => ({
-      id: -post.id,
+      id: `migrated-${post.id}`,
       title: post.title,
       content: post.content,
       authorId: post.authorId ?? post.author,
       authorName: post.author,
       date: post.date,
+      linkUrl: post.linkUrl,
+      fileUrl: post.fileUrl,
+      fileName: post.fileName,
+      detailHref: `/posts/${post.id}`,
     }))
     .filter((post) => !guestPostSignatures.has(`${post.title}|${post.content}|${post.authorId}|${post.date}`));
 
-  const allGuestPosts = [...migratedMemberPosts, ...guestPosts];
+  const allGuestPosts = [
+    ...migratedMemberPosts,
+    ...guestPosts.map((post) => ({
+      ...post,
+      id: `guest-${post.id}`,
+      detailHref: `/guest/${post.id}`,
+    })),
+  ];
 
   return (
     <div className="space-y-8">
@@ -86,8 +97,12 @@ export default async function PostsPage() {
         ) : (
           <div className="grid gap-7 md:grid-cols-2">
             {allGuestPosts.map((post) => (
-              <article key={post.id} className="h-full min-h-56 rounded-2xl border border-zinc-700 bg-zinc-800 p-7 shadow-[0_0_22px_rgba(129,216,208,0.12)]">
-                <h3 className="mb-3 text-xl font-bold text-zinc-100">{post.title}</h3>
+              <article key={post.id} className="h-full min-h-56 rounded-2xl border border-zinc-700 bg-zinc-800 p-7 shadow-[0_0_22px_rgba(129,216,208,0.12)] transition hover:border-cyan-500/50">
+                <h3 className="mb-3 text-xl font-bold text-zinc-100">
+                  <Link href={post.detailHref} className="transition hover:text-cyan-200">
+                    {post.title}
+                  </Link>
+                </h3>
                 <p className="mb-5 line-clamp-4 text-base leading-7 text-zinc-300">{post.content}</p>
                 <div className="space-y-2 text-sm text-zinc-400">
                   <p>
