@@ -51,9 +51,9 @@ export default async function EditGuestPostPage({ params }: EditGuestPostPagePro
     }
 
     await updateGuestPostById(postId, { title, content });
-    revalidatePath("/guest");
-    revalidatePath("/posts");
-    redirect("/guest");
+    revalidatePath("/guest", "page");
+    revalidatePath("/posts", "page");
+    redirect(`/guest?updated=${Date.now()}`);
   }
 
   return (

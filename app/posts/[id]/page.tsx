@@ -31,9 +31,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     }
 
     await deletePostById(postId);
-    revalidatePath("/");
-    revalidatePath("/posts");
-    redirect("/posts");
+    revalidatePath("/", "page");
+    revalidatePath("/posts", "page");
+    redirect(`/posts?deleted=${Date.now()}`);
   }
 
   if (!post) {

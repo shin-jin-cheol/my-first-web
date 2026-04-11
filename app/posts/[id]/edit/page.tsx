@@ -62,10 +62,10 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       removeAttachment,
     });
 
-    revalidatePath("/");
-    revalidatePath("/posts");
-    revalidatePath(`/posts/${postId}`);
-    redirect(`/posts/${postId}`);
+    revalidatePath("/", "page");
+    revalidatePath("/posts", "page");
+    revalidatePath(`/posts/${postId}`, "page");
+    redirect(`/posts/${postId}?updated=${Date.now()}`);
   }
 
   return (
