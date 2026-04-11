@@ -1,0 +1,107 @@
+import Link from "next/link";
+import { revalidatePath } from "next/cache";
+import { notFound, redirect } from "next/navigation";
+import { getGuestPostById, updateGuestPostById } from "@/lib/guest-posts";
+import { getLocale, t } from "@/lib/i18n";
+import { requireSession } from "@/lib/auth";
+
+type EditGuestPostPageProps = {
+  params: Promise<{ id: string }>;
+};
+
+export default async function EditGuestPostPage({ params }: EditGuestPostPageProps) {
+  const locale = await getLocale();
+  const session = await requireSession();
+  const { id } = await params;
+  const postId = Number(id);
+  const post = await getGuestPostById(postId);
+
+  if (!post) {
+    notFound();
+  }
+
+  const canEdit = session.role === "owner" || (session.role === "member" && post.authorId === session.userId);
+  if (!canEdit) {
+    redirect("/guest");
+  }
+
+  async function updateGuestPostAction(formData: FormData) {
+    "use server";
+
+    const currentSession = await requireSession();
+    const currentPost = await getGuestPostById(postId);
+    const canUpdate =
+      currentSession.role === "owner" ||
+      (currentSession.role === "member" && currentPost?.authorId === currentSession.userId);
+
+    if (!canUpdate) {
+      redirect("/guest");
+    }
+
+    const title = String(formData.get("title") ?? "").trim();
+    const content = String(formData.get("content") ?? "").trim();
+
+    if (!title || !content) {
+      return;
+    }
+
+    await updateGuestPostById(postId, { title, content });
+    revalidatePath("/guest");
+    revalidatePath("/posts");
+    redirect("/guest");
+  }
+
+  return (
+    <section className="space-y-8">
+      <header className="space-y-2">
+        <p className="text-sm font-semibold uppercase tracking-wider text-zinc-400">Edit</p>
+        <h1 className="text-4xl font-extrabold text-zinc-100">{t(locale, "게스트 글 수정", "Edit Guest Post")}</h1>
+      </header>
+
+      <form action={updateGuestPostAction} className="space-y-5 rounded-2xl border border-zinc-700 bg-zinc-800 p-6">
+        <div className="space-y-2">
+          <label htmlFor="title" className="text-sm font-medium text-zinc-200">
+            {t(locale, "제목", "Title")}
+          </label>
+          <input
+            id="title"
+            name="title"
+            type="text"
+            required
+            defaultValue={post.title}
+            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none focus:border-[#81d8d0]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="content" className="text-sm font-medium text-zinc-200">
+            {t(locale, "내용", "Content")}
+          </label>
+          <textarea
+            id="content"
+            name="content"
+            required
+            rows={10}
+            defaultValue={post.content}
+            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-3 text-zinc-100 outline-none focus:border-[#81d8d0]"
+          />
+        </div>
+
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            type="submit"
+            className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-zinc-900"
+          >
+            {t(locale, "저장하기", "Save")}
+          </button>
+          <Link
+            href="/guest"
+            className="rounded-full border border-zinc-500 bg-zinc-700 px-4 py-2 text-sm font-medium text-zinc-100 transition hover:bg-zinc-600"
+          >
+            {t(locale, "취소", "Cancel")}
+          </Link>
+        </div>
+      </form>
+    </section>
+  );
+}

@@ -57,6 +57,12 @@ function resolveGuestPostsFilePath() {
   return GUEST_POSTS_FILE_LOCAL;
 }
 
+function getKstDateString() {
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Seoul",
+  }).format(new Date());
+}
+
 async function readGuestPostsFromBlob(): Promise<GuestPost[]> {
   if (!hasBlobStorage()) {
     return [];
@@ -155,6 +161,11 @@ export async function getGuestPosts(): Promise<GuestPost[]> {
   return readGuestPosts();
 }
 
+export async function getGuestPostById(id: number): Promise<GuestPost | undefined> {
+  const posts = await readGuestPosts();
+  return posts.find((post) => post.id === id);
+}
+
 export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost> {
   const posts = await readGuestPosts();
   const nextPostId = posts.reduce((maxId, post) => Math.max(maxId, post.id), 0) + 1;
@@ -165,7 +176,7 @@ export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost>
     content: input.content,
     authorId: input.authorId,
     authorName: input.authorName,
-    date: new Date().toISOString().slice(0, 10),
+    date: getKstDateString(),
   };
 
   posts.unshift(post);
@@ -183,4 +194,26 @@ export async function deleteGuestPostById(id: number): Promise<boolean> {
 
   await writeGuestPosts(filtered);
   return true;
+}
+
+export async function updateGuestPostById(
+  id: number,
+  input: { title: string; content: string },
+): Promise<GuestPost | undefined> {
+  const posts = await readGuestPosts();
+  const index = posts.findIndex((post) => post.id === id);
+
+  if (index === -1) {
+    return undefined;
+  }
+
+  const updatedPost: GuestPost = {
+    ...posts[index],
+    title: input.title,
+    content: input.content,
+  };
+
+  posts[index] = updatedPost;
+  await writeGuestPosts(posts);
+  return updatedPost;
 }

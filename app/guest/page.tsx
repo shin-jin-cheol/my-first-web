@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { deleteGuestPostById, getGuestPosts } from "@/lib/guest-posts";
 import { getMemberSummaries, requireSession } from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
@@ -21,17 +22,24 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
     "use server";
 
     const currentSession = await requireSession();
-    if (currentSession.role !== "owner") {
-      return;
-    }
-
     const postId = Number(formData.get("postId") ?? 0);
     if (!postId) {
       return;
     }
 
+    const currentPosts = await getGuestPosts();
+    const targetPost = currentPosts.find((post) => post.id === postId);
+    const canDelete =
+      currentSession.role === "owner" ||
+      (currentSession.role === "member" && targetPost?.authorId === currentSession.userId);
+
+    if (!canDelete) {
+      return;
+    }
+
     await deleteGuestPostById(postId);
     revalidatePath("/guest");
+    revalidatePath("/posts");
     redirect("/guest");
   }
 
@@ -67,16 +75,24 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
                 <p>{post.date}</p>
               </div>
 
-              {session.role === "owner" ? (
-                <form action={deleteGuestPostAction}>
-                  <input type="hidden" name="postId" value={post.id} />
-                  <button
-                    type="submit"
-                    className="rounded-full border border-red-400/60 bg-red-500/20 px-4 py-1.5 text-sm font-semibold text-red-300 hover:bg-red-500/30"
+              {session.role === "owner" || (session.role === "member" && post.authorId === session.userId) ? (
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/guest/${post.id}/edit`}
+                    className="rounded-full border border-cyan-500/50 bg-cyan-500/10 px-4 py-1.5 text-sm font-semibold text-cyan-200 hover:bg-cyan-500/20"
                   >
-                    {t(locale, "삭제하기", "Delete")}
-                  </button>
-                </form>
+                    {t(locale, "수정하기", "Edit")}
+                  </Link>
+                  <form action={deleteGuestPostAction}>
+                    <input type="hidden" name="postId" value={post.id} />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-red-400/60 bg-red-500/20 px-4 py-1.5 text-sm font-semibold text-red-300 hover:bg-red-500/30"
+                    >
+                      {t(locale, "삭제하기", "Delete")}
+                    </button>
+                  </form>
+                </div>
               ) : null}
             </article>
           ))

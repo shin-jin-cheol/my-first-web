@@ -99,7 +99,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         >
           목록으로 돌아가기
         </Link>
-        {session?.role === "owner" ? (
+        {canManagePost ? (
           <Link
             href={`/posts/${post.id}/edit`}
             className="inline-flex rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.5)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"

@@ -2,14 +2,14 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import { getPostById, updatePostById } from "@/lib/posts";
-import { requireOwner } from "@/lib/auth";
+import { requireSession } from "@/lib/auth";
 
 type EditPostPageProps = {
   params: Promise<{ id: string }>;
 };
 
 export default async function EditPostPage({ params }: EditPostPageProps) {
-  await requireOwner();
+  const session = await requireSession();
 
   const { id } = await params;
   const postId = Number(id);
@@ -19,10 +19,23 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     notFound();
   }
 
+  const canEdit = session.role === "owner" || (session.role === "member" && post.authorId === session.userId);
+  if (!canEdit) {
+    redirect(`/posts/${postId}`);
+  }
+
   async function updatePostAction(formData: FormData) {
     "use server";
 
-    await requireOwner();
+    const currentSession = await requireSession();
+    const currentPost = await getPostById(postId);
+    const canUpdate =
+      currentSession.role === "owner" ||
+      (currentSession.role === "member" && currentPost?.authorId === currentSession.userId);
+
+    if (!canUpdate) {
+      redirect(`/posts/${postId}`);
+    }
 
     const title = String(formData.get("title") ?? "").trim();
     const author = String(formData.get("author") ?? "").trim();
