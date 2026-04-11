@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { list, put } from "@vercel/blob";
 
 export type GuestPost = {
   id: number;
@@ -16,25 +17,110 @@ type NewGuestPostInput = {
 };
 
 const DATA_DIR = path.join(process.cwd(), "data");
-const GUEST_POSTS_FILE = path.join(DATA_DIR, "guest-posts.json");
+const GUEST_POSTS_FILE_LOCAL = path.join(DATA_DIR, "guest-posts.json");
+const GUEST_POSTS_FILE_TMP = path.join("/tmp", "my-first-web-guest-posts.json");
+const GUEST_POSTS_BLOB_KEY = "guest/guest-posts.json";
+
+let guestPostsBlobUrlCache: string | undefined;
+
+function hasBlobStorage() {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
+
+function resolveGuestPostsFilePath() {
+  // Vercel deployment filesystem is read-only except /tmp.
+  if (process.env.VERCEL) {
+    return GUEST_POSTS_FILE_TMP;
+  }
+  return GUEST_POSTS_FILE_LOCAL;
+}
+
+async function readGuestPostsFromBlob(): Promise<GuestPost[]> {
+  if (!hasBlobStorage()) {
+    return [];
+  }
+
+  if (!guestPostsBlobUrlCache) {
+    const existing = await list({ prefix: GUEST_POSTS_BLOB_KEY, limit: 1 });
+    if (existing.blobs.length > 0) {
+      guestPostsBlobUrlCache = existing.blobs[0].url;
+    }
+
+    const seed = guestPostsBlobUrlCache
+      ? null
+      : await put(GUEST_POSTS_BLOB_KEY, JSON.stringify([], null, 2), {
+          access: "public",
+          addRandomSuffix: false,
+          allowOverwrite: false,
+          contentType: "application/json",
+        }).catch(() => null);
+
+    if (seed?.url) {
+      guestPostsBlobUrlCache = seed.url;
+    }
+  }
+
+  if (!guestPostsBlobUrlCache) {
+    return [];
+  }
+
+  const response = await fetch(guestPostsBlobUrlCache, { cache: "no-store" });
+  if (!response.ok) {
+    return [];
+  }
+
+  const data = (await response.json()) as GuestPost[];
+  return Array.isArray(data) ? data : [];
+}
+
+async function writeGuestPostsToBlob(posts: GuestPost[]) {
+  if (!hasBlobStorage()) {
+    return;
+  }
+
+  const blob = await put(GUEST_POSTS_BLOB_KEY, JSON.stringify(posts, null, 2), {
+    access: "public",
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: "application/json",
+  });
+
+  guestPostsBlobUrlCache = blob.url;
+}
 
 async function ensureGuestPostsFile() {
+  if (hasBlobStorage()) {
+    await writeGuestPostsToBlob(await readGuestPostsFromBlob());
+    return;
+  }
+
+  const guestPostsFilePath = resolveGuestPostsFilePath();
+
   try {
-    await fs.access(GUEST_POSTS_FILE);
+    await fs.access(guestPostsFilePath);
   } catch {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    await fs.writeFile(GUEST_POSTS_FILE, JSON.stringify([], null, 2), "utf-8");
+    await fs.mkdir(path.dirname(guestPostsFilePath), { recursive: true });
+    await fs.writeFile(guestPostsFilePath, JSON.stringify([], null, 2), "utf-8");
   }
 }
 
 async function readGuestPosts(): Promise<GuestPost[]> {
+  if (hasBlobStorage()) {
+    return readGuestPostsFromBlob();
+  }
+
   await ensureGuestPostsFile();
-  const raw = await fs.readFile(GUEST_POSTS_FILE, "utf-8");
+  const raw = await fs.readFile(resolveGuestPostsFilePath(), "utf-8");
   return JSON.parse(raw) as GuestPost[];
 }
 
 async function writeGuestPosts(posts: GuestPost[]) {
-  await fs.writeFile(GUEST_POSTS_FILE, JSON.stringify(posts, null, 2), "utf-8");
+  if (hasBlobStorage()) {
+    await writeGuestPostsToBlob(posts);
+    return;
+  }
+
+  await fs.writeFile(resolveGuestPostsFilePath(), JSON.stringify(posts, null, 2), "utf-8");
 }
 
 export async function getGuestPosts(): Promise<GuestPost[]> {
