@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BgmPlayer from "./components/BgmPlayer";
+import LiveClock from "./components/LiveClock";
 import { clearSession, getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
@@ -59,7 +60,7 @@ export default async function RootLayout({
             <Link href="/guest" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
               {t(locale, "게스트 게시판", "Guest Board")}
             </Link>
-            {session?.role === "owner" ? (
+            {session ? (
               <Link
                 href="/posts/new"
                 className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-3 py-1.5 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.6)] transition hover:-translate-y-0.5 hover:bg-[#96e1da] hover:shadow-[0_0_28px_rgba(129,216,208,0.75)]"
@@ -174,6 +175,7 @@ export default async function RootLayout({
           </div>
         </footer>
         <div className="h-24" />
+        <LiveClock />
         <BgmPlayer />
       </body>
     </html>
