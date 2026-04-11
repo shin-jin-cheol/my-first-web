@@ -23,6 +23,7 @@ export default async function AdminMembersPage() {
         <table className="w-full text-left text-sm">
           <thead className="bg-zinc-900 text-zinc-200">
             <tr>
+              <th className="px-4 py-3">{t(locale, "이름", "Name")}</th>
               <th className="px-4 py-3">회원 ID</th>
               <th className="px-4 py-3">{t(locale, "비밀번호", "Password")}</th>
               <th className="px-4 py-3">{t(locale, "가입일", "Created")}</th>
@@ -31,13 +32,14 @@ export default async function AdminMembersPage() {
           <tbody>
             {members.length === 0 ? (
               <tr>
-                <td className="px-4 py-4 text-zinc-400" colSpan={3}>
+                <td className="px-4 py-4 text-zinc-400" colSpan={4}>
                   {t(locale, "가입된 회원이 없습니다.", "No members found.")}
                 </td>
               </tr>
             ) : (
               members.map((member) => (
                 <tr key={member.id} className="border-t border-zinc-700 text-zinc-200">
+                  <td className="px-4 py-3">{member.name ?? "-"}</td>
                   <td className="px-4 py-3">{member.id}</td>
                   <td className="px-4 py-3">{member.password}</td>
                   <td className="px-4 py-3">{member.createdAt.slice(0, 10)}</td>

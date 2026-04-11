@@ -9,6 +9,11 @@ export default async function PostsPage() {
   const posts = await getPosts();
   const guestPosts = await getGuestPosts();
   const members = await getMemberSummaries();
+  const memberNameById = new Map(
+    members
+      .map((member) => [member.id, member.name.trim()] as const)
+      .filter((entry) => Boolean(entry[1])),
+  );
 
   const memberIdSet = new Set(members.map((member) => member.id));
   const memberNameSet = new Set(
@@ -85,7 +90,7 @@ export default async function PostsPage() {
                 <p className="mb-5 line-clamp-4 text-base leading-7 text-zinc-300">{post.content}</p>
                 <div className="space-y-2 text-sm text-zinc-400">
                   <p>
-                    <strong>{t(locale, "작성자", "Author")}:</strong> {post.authorId}
+                    <strong>{t(locale, "작성자", "Author")}:</strong> {memberNameById.get(post.authorId) || post.authorId}
                   </p>
                   <p>
                     <strong>{t(locale, "날짜", "Date")}:</strong> {post.date}

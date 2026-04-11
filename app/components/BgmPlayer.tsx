@@ -165,7 +165,7 @@ export default function BgmPlayer() {
     <div className="fixed bottom-5 right-5 z-50 flex w-[min(88vw,340px)] flex-col gap-3">
       <LiveClock className="w-full rounded-3xl border-white/20 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-800/60 px-4 py-2.5 text-center" />
 
-      <div className="space-y-3 rounded-3xl border border-white/20 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-800/60 p-4 shadow-[0_0_18px_rgba(129,216,208,0.12),0_0_36px_rgba(129,216,208,0.06)] backdrop-blur-xl">
+      <div className="space-y-3 rounded-3xl border border-white/20 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-800/60 p-4 backdrop-blur-xl">
         <audio ref={audioRef} src={selectedSrc} preload="auto" />
         <label htmlFor="bgm-track" className="sr-only">
           BGM 선택
@@ -191,7 +191,7 @@ export default function BgmPlayer() {
             step={1}
             value={Math.min(currentTime, duration || 0)}
             onChange={onSeek}
-            className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/20 outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-[0_0_5px_rgba(129,216,208,0.35)] [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:shadow-[0_0_5px_rgba(129,216,208,0.35)]"
+            className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/20 outline-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:bg-white"
           />
           <div className="flex items-center justify-between text-[10px] text-zinc-400">
             <span>{formatTime(currentTime)}</span>
@@ -203,7 +203,7 @@ export default function BgmPlayer() {
           <button
             type="button"
             onClick={playPreviousTrack}
-            className="rounded-full border border-cyan-600/50 bg-gradient-to-br from-[#081d1a] via-[#1a4a46] to-[#2d6b67] px-4 py-3 text-base text-cyan-300/90 transition backdrop-blur hover:border-cyan-500/70 hover:bg-gradient-to-br hover:from-[#0f2623] hover:via-[#255450] hover:to-[#3a7a73] hover:shadow-[0_0_8px_rgba(129,216,208,0.25)]"
+            className="rounded-full border border-cyan-600/50 bg-gradient-to-br from-[#081d1a] via-[#1a4a46] to-[#2d6b67] px-4 py-3 text-base text-cyan-300/90 transition backdrop-blur hover:border-cyan-500/70 hover:bg-gradient-to-br hover:from-[#0f2623] hover:via-[#255450] hover:to-[#3a7a73]"
             title="이전곡"
           >
             ◀
@@ -211,7 +211,7 @@ export default function BgmPlayer() {
           <button
             type="button"
             onClick={togglePlayback}
-            className="rounded-full border border-cyan-600/50 bg-gradient-to-br from-[#081d1a] via-[#1a4a46] to-[#2d6b67] px-6 py-3 text-lg text-cyan-100 transition backdrop-blur hover:border-cyan-500/70 hover:bg-gradient-to-br hover:from-[#0f2623] hover:via-[#255450] hover:to-[#3a7a73] hover:shadow-[0_0_8px_rgba(129,216,208,0.25)]"
+            className="rounded-full border border-cyan-600/50 bg-gradient-to-br from-[#081d1a] via-[#1a4a46] to-[#2d6b67] px-6 py-3 text-lg text-cyan-100 transition backdrop-blur hover:border-cyan-500/70 hover:bg-gradient-to-br hover:from-[#0f2623] hover:via-[#255450] hover:to-[#3a7a73]"
             title={isPlaying ? "일시정지" : "재생"}
           >
             {isPlaying ? "||" : "▶"}
@@ -219,7 +219,7 @@ export default function BgmPlayer() {
           <button
             type="button"
             onClick={playNextTrack}
-            className="rounded-full border border-cyan-600/50 bg-gradient-to-br from-[#081d1a] via-[#1a4a46] to-[#2d6b67] px-4 py-3 text-base text-cyan-300/90 transition backdrop-blur hover:border-cyan-500/70 hover:bg-gradient-to-br hover:from-[#0f2623] hover:via-[#255450] hover:to-[#3a7a73] hover:shadow-[0_0_8px_rgba(129,216,208,0.25)]"
+            className="rounded-full border border-cyan-600/50 bg-gradient-to-br from-[#081d1a] via-[#1a4a46] to-[#2d6b67] px-4 py-3 text-base text-cyan-300/90 transition backdrop-blur hover:border-cyan-500/70 hover:bg-gradient-to-br hover:from-[#0f2623] hover:via-[#255450] hover:to-[#3a7a73]"
             title="다음곡"
           >
             ▶

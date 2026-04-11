@@ -7,9 +7,10 @@ async function signupAction(formData: FormData) {
   "use server";
 
   const id = String(formData.get("id") ?? "").trim();
+  const name = String(formData.get("name") ?? "").trim();
   const password = String(formData.get("password") ?? "").trim();
 
-  const result = await registerMember(id, password);
+  const result = await registerMember(id, name, password);
   if (!result.ok) {
     const message = encodeURIComponent(result.message ?? "회원가입에 실패했습니다.");
     redirect(`/auth/signup?error=${message}`);
@@ -42,6 +43,15 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
       ) : null}
 
       <form action={signupAction} className="space-y-4">
+        <div className="space-y-2">
+          <label htmlFor="name" className="text-sm text-zinc-200">{t(locale, "이름", "Name")}</label>
+          <input
+            id="name"
+            name="name"
+            required
+            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none focus:border-[#81d8d0]"
+          />
+        </div>
         <div className="space-y-2">
           <label htmlFor="id" className="text-sm text-zinc-200">{t(locale, "아이디", "ID")}</label>
           <input

@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "id": 3,
+    "title": "테스트",
+    "content": "테스트",
+    "authorId": "sss111",
+    "date": "2026-04-11"
+  },
+  {
+    "id": 2,
+    "title": "t",
+    "content": "t",
+    "authorId": "sss111",
+    "date": "2026-04-11"
+  },
+  {
+    "id": 1,
+    "title": "test",
+    "content": "test1",
+    "authorId": "sss111",
+    "date": "2026-04-11"
+  }
+]

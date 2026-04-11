@@ -97,9 +97,6 @@ export default async function NewPostPage() {
             readOnly={session.role === "member"}
             className={`w-full rounded-xl border px-4 py-2.5 text-zinc-100 outline-none transition ${session.role === "member" ? "cursor-not-allowed border-zinc-700 bg-zinc-900/60 text-zinc-300" : "border-zinc-600 bg-zinc-900 focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"}`}
           />
-          {session.role === "member" ? (
-            <p className="text-xs text-zinc-400">회원가입 시 입력한 이름이 자동으로 사용됩니다.</p>
-          ) : null}
         </div>
 
         <div className="space-y-2">
