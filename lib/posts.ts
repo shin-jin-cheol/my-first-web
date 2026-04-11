@@ -173,6 +173,12 @@ function normalizeLinkUrl(input?: string): string | undefined {
   return `https://${trimmed}`;
 }
 
+function getKstDateString() {
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Seoul",
+  }).format(new Date());
+}
+
 export async function getPosts(): Promise<Post[]> {
   return readPosts();
 }
@@ -193,7 +199,7 @@ export async function addPost(input: NewPostInput): Promise<Post> {
     content: input.content,
     author: input.author,
     authorId: input.authorId,
-    date: new Date().toISOString().slice(0, 10),
+    date: getKstDateString(),
     linkUrl: normalizeLinkUrl(input.linkUrl),
     fileUrl: attachment?.fileUrl,
     fileName: attachment?.fileName,
