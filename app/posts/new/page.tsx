@@ -1,0 +1,102 @@
+import Link from "next/link";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { addPost } from "@/lib/posts";
+
+async function createPost(formData: FormData) {
+  "use server";
+
+  const title = String(formData.get("title") ?? "").trim();
+  const author = String(formData.get("author") ?? "").trim();
+  const content = String(formData.get("content") ?? "").trim();
+
+  if (!title || !author || !content) {
+    return;
+  }
+
+  await addPost({ title, author, content });
+
+  revalidatePath("/");
+  revalidatePath("/posts");
+  redirect("/posts");
+}
+
+export default function NewPostPage() {
+  return (
+    <section className="space-y-8">
+      <header className="space-y-2">
+        <p className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+          Write
+        </p>
+        <h1 className="text-4xl font-extrabold text-zinc-100 drop-shadow-[0_0_12px_rgba(129,216,208,0.35)]">
+          새 글 쓰기
+        </h1>
+        <p className="text-zinc-300">
+          차콜 테마와 글로우 감성을 유지한 상태에서 바로 게시글을 작성할 수 있어요.
+        </p>
+      </header>
+
+      <form
+        action={createPost}
+        className="space-y-5 rounded-2xl border border-zinc-700 bg-zinc-800 p-6 shadow-[0_0_28px_rgba(129,216,208,0.16)]"
+      >
+        <div className="space-y-2">
+          <label htmlFor="title" className="text-sm font-medium text-zinc-200">
+            제목
+          </label>
+          <input
+            id="title"
+            name="title"
+            type="text"
+            required
+            placeholder="제목을 입력하세요"
+            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none transition focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="author" className="text-sm font-medium text-zinc-200">
+            작성자
+          </label>
+          <input
+            id="author"
+            name="author"
+            type="text"
+            required
+            placeholder="작성자 이름"
+            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none transition focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="content" className="text-sm font-medium text-zinc-200">
+            내용
+          </label>
+          <textarea
+            id="content"
+            name="content"
+            required
+            rows={10}
+            placeholder="글 내용을 입력하세요"
+            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-3 text-zinc-100 outline-none transition focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"
+          />
+        </div>
+
+        <div className="flex items-center gap-3 pt-2">
+          <button
+            type="submit"
+            className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.6)] transition hover:-translate-y-0.5 hover:bg-[#96e1da] hover:shadow-[0_0_28px_rgba(129,216,208,0.75)]"
+          >
+            게시하기
+          </button>
+          <Link
+            href="/posts"
+            className="rounded-full border border-zinc-500 bg-zinc-700 px-4 py-2 text-sm font-medium text-zinc-100 transition hover:bg-zinc-600"
+          >
+            취소
+          </Link>
+        </div>
+      </form>
+    </section>
+  );
+}

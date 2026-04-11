@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import BgmPlayer from "./components/BgmPlayer";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,35 +15,35 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className="flex min-h-screen flex-col bg-gradient-to-b from-amber-50 via-rose-50 to-sky-50 text-slate-800">
-        <nav className="border-b border-orange-200/70 bg-white/80 text-slate-700 backdrop-blur">
+      <body className="flex min-h-screen flex-col bg-zinc-900 text-zinc-100 shadow-[inset_0_120px_120px_-120px_rgba(129,216,208,0.2)]">
+        <nav className="border-b border-zinc-700 bg-zinc-950 text-zinc-100 shadow-[0_0_24px_rgba(129,216,208,0.18)]">
           <div className="mx-auto flex w-full max-w-4xl items-center gap-6 px-6 py-4">
-            <span className="rounded-full bg-gradient-to-r from-amber-400 to-rose-400 px-3 py-1 text-base font-bold text-white md:text-lg">
+            <span className="rounded-full bg-zinc-700 px-3 py-1 text-base font-bold text-zinc-100 shadow-[0_0_12px_rgba(129,216,208,0.25)] md:text-lg">
               공인재 신진철의 생존일기
             </span>
-            <Link href="/" className="text-sm font-medium text-slate-600 transition hover:text-rose-500">
+            <Link href="/" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
               홈
             </Link>
-            <Link href="/posts" className="text-sm font-medium text-slate-600 transition hover:text-rose-500">
+            <Link href="/posts" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
               블로그
             </Link>
             <Link
               href="/posts/new"
-              className="rounded-full bg-gradient-to-r from-amber-400 to-rose-400 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-105"
+              className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-3 py-1.5 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.6)] transition hover:-translate-y-0.5 hover:bg-[#96e1da] hover:shadow-[0_0_28px_rgba(129,216,208,0.75)]"
             >
               새 글 쓰기
             </Link>
           </div>
         </nav>
         <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">{children}</main>
-        <footer className="border-t border-orange-200/70 py-4 text-center text-sm text-slate-500">
+        <footer className="border-t border-zinc-700 py-4 text-center text-sm text-zinc-300 shadow-[0_-12px_24px_-20px_rgba(129,216,208,0.3)]">
           <p>© 2026 공인재 신진철의 생존일기</p>
           <a
             href="https://www.instagram.com/whflwls"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="인스타그램 바로가기"
-            className="mt-2 inline-flex h-10 w-10 items-center justify-center rounded-full border border-rose-200 bg-white text-rose-500 shadow-sm transition hover:-translate-y-0.5 hover:text-rose-600"
+            className="mt-2 inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300/40 bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#515bd4] text-white shadow-[0_0_14px_rgba(221,42,123,0.45)] transition hover:-translate-y-0.5 hover:brightness-110"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -56,6 +57,7 @@ export default function RootLayout({
             <span className="sr-only">인스타그램 바로가기 (@whflwls)</span>
           </a>
         </footer>
+        <BgmPlayer />
       </body>
     </html>
   );
