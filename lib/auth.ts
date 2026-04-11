@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { list, put } from "@vercel/blob";
 
 export type UserRole = "owner" | "member";
 
@@ -19,25 +20,109 @@ type Member = {
 const OWNER_ID = "sjc5001";
 const OWNER_PASSWORD = "sjc5001*";
 const SESSION_COOKIE = "sjc-session";
-const USERS_FILE = path.join(process.cwd(), "data", "users.json");
+const USERS_FILE_LOCAL = path.join(process.cwd(), "data", "users.json");
+const USERS_FILE_TMP = path.join("/tmp", "my-first-web-users.json");
+const USERS_BLOB_KEY = "auth/users.json";
+
+let usersBlobUrlCache: string | undefined;
+
+function resolveUsersFilePath() {
+  // Vercel deployment filesystem is read-only except /tmp.
+  if (process.env.VERCEL) {
+    return USERS_FILE_TMP;
+  }
+  return USERS_FILE_LOCAL;
+}
+
+function hasBlobStorage() {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+}
+
+async function readUsersFromBlob(): Promise<Member[]> {
+  if (!hasBlobStorage()) {
+    return [];
+  }
+
+  if (!usersBlobUrlCache) {
+    const existing = await list({ prefix: USERS_BLOB_KEY, limit: 1 });
+    if (existing.blobs.length > 0) {
+      usersBlobUrlCache = existing.blobs[0].url;
+    }
+
+    const seed = usersBlobUrlCache
+      ? null
+      : await put(USERS_BLOB_KEY, JSON.stringify([], null, 2), {
+          access: "public",
+          addRandomSuffix: false,
+          allowOverwrite: false,
+          contentType: "application/json",
+        }).catch(() => null);
+
+    if (seed?.url) {
+      usersBlobUrlCache = seed.url;
+    }
+  }
+
+  if (!usersBlobUrlCache) {
+    return [];
+  }
+
+  const fetchUrl = usersBlobUrlCache;
+  const response = await fetch(fetchUrl, { cache: "no-store" });
+  if (!response.ok) {
+    return [];
+  }
+
+  const data = (await response.json()) as Member[];
+  return Array.isArray(data) ? data : [];
+}
+
+async function writeUsersToBlob(members: Member[]) {
+  if (!hasBlobStorage()) {
+    return;
+  }
+
+  const blob = await put(USERS_BLOB_KEY, JSON.stringify(members, null, 2), {
+    access: "public",
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: "application/json",
+  });
+  usersBlobUrlCache = blob.url;
+}
 
 async function ensureUsersFile() {
+  if (hasBlobStorage()) {
+    await writeUsersToBlob(await readUsersFromBlob());
+    return;
+  }
+
+  const usersFilePath = resolveUsersFilePath();
   try {
-    await fs.access(USERS_FILE);
+    await fs.access(usersFilePath);
   } catch {
-    await fs.mkdir(path.dirname(USERS_FILE), { recursive: true });
-    await fs.writeFile(USERS_FILE, JSON.stringify([], null, 2), "utf-8");
+    await fs.mkdir(path.dirname(usersFilePath), { recursive: true });
+    await fs.writeFile(usersFilePath, JSON.stringify([], null, 2), "utf-8");
   }
 }
 
 async function readMembers(): Promise<Member[]> {
+  if (hasBlobStorage()) {
+    return readUsersFromBlob();
+  }
+
   await ensureUsersFile();
-  const raw = await fs.readFile(USERS_FILE, "utf-8");
+  const raw = await fs.readFile(resolveUsersFilePath(), "utf-8");
   return JSON.parse(raw) as Member[];
 }
 
 async function writeMembers(members: Member[]) {
-  await fs.writeFile(USERS_FILE, JSON.stringify(members, null, 2), "utf-8");
+  if (hasBlobStorage()) {
+    await writeUsersToBlob(members);
+    return;
+  }
+
+  await fs.writeFile(resolveUsersFilePath(), JSON.stringify(members, null, 2), "utf-8");
 }
 
 function decodeSession(value: string): Session | null {
