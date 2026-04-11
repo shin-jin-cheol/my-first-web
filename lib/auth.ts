@@ -9,6 +9,7 @@ export type UserRole = "owner" | "member";
 export type Session = {
   userId: string;
   role: UserRole;
+  userName?: string;
 };
 
 type Member = {
@@ -53,14 +54,18 @@ function hasBlobStorage() {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 }
 
+async function refreshUsersBlobUrlCache() {
+  const existing = await list({ prefix: USERS_BLOB_KEY, limit: 100 });
+  usersBlobUrlCache = pickLatestBlobUrl(existing.blobs);
+}
+
 async function readUsersFromBlob(): Promise<Member[]> {
   if (!hasBlobStorage()) {
     return [];
   }
 
   if (!usersBlobUrlCache) {
-    const existing = await list({ prefix: USERS_BLOB_KEY, limit: 100 });
-    usersBlobUrlCache = pickLatestBlobUrl(existing.blobs);
+    await refreshUsersBlobUrlCache();
 
     const seed = usersBlobUrlCache
       ? null
@@ -81,9 +86,18 @@ async function readUsersFromBlob(): Promise<Member[]> {
   }
 
   const fetchUrl = usersBlobUrlCache;
-  const response = await fetch(fetchUrl, { cache: "no-store" });
+  let response = await fetch(fetchUrl, { cache: "no-store" });
   if (!response.ok) {
-    return [];
+    await refreshUsersBlobUrlCache();
+
+    if (!usersBlobUrlCache) {
+      return [];
+    }
+
+    response = await fetch(usersBlobUrlCache, { cache: "no-store" });
+    if (!response.ok) {
+      return [];
+    }
   }
 
   const data = (await response.json()) as Member[];
@@ -197,7 +211,7 @@ export async function requireOwner(): Promise<Session> {
 
 export async function login(id: string, password: string): Promise<Session | null> {
   if (id === OWNER_ID && password === OWNER_PASSWORD) {
-    return { userId: OWNER_ID, role: "owner" };
+    return { userId: OWNER_ID, role: "owner", userName: "신진철" };
   }
 
   const members = await readMembers();
@@ -206,7 +220,11 @@ export async function login(id: string, password: string): Promise<Session | nul
     return null;
   }
 
-  return { userId: member.id, role: "member" };
+  return {
+    userId: member.id,
+    role: "member",
+    userName: member.name?.trim() || member.id,
+  };
 }
 
 export async function registerMember(id: string, name: string, password: string): Promise<{ ok: boolean; message?: string }> {

@@ -39,6 +39,7 @@ export default async function PostsPage() {
       title: post.title,
       content: post.content,
       authorId: post.authorId ?? post.author,
+      authorName: post.author,
       date: post.date,
     }))
     .filter((post) => !guestPostSignatures.has(`${post.title}|${post.content}|${post.authorId}|${post.date}`));
@@ -90,7 +91,7 @@ export default async function PostsPage() {
                 <p className="mb-5 line-clamp-4 text-base leading-7 text-zinc-300">{post.content}</p>
                 <div className="space-y-2 text-sm text-zinc-400">
                   <p>
-                    <strong>{t(locale, "작성자", "Author")}:</strong> {memberNameById.get(post.authorId) || post.authorId}
+                    <strong>{t(locale, "작성자", "Author")}:</strong> {post.authorName || memberNameById.get(post.authorId) || post.authorId}
                   </p>
                   <p>
                     <strong>{t(locale, "날짜", "Date")}:</strong> {post.date}

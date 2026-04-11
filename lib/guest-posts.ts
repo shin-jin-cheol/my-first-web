@@ -7,6 +7,7 @@ export type GuestPost = {
   title: string;
   content: string;
   authorId: string;
+  authorName?: string;
   date: string;
 };
 
@@ -14,6 +15,7 @@ type NewGuestPostInput = {
   title: string;
   content: string;
   authorId: string;
+  authorName?: string;
 };
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -41,6 +43,11 @@ function hasBlobStorage() {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 }
 
+async function refreshGuestPostsBlobUrlCache() {
+  const existing = await list({ prefix: GUEST_POSTS_BLOB_KEY, limit: 100 });
+  guestPostsBlobUrlCache = pickLatestBlobUrl(existing.blobs);
+}
+
 function resolveGuestPostsFilePath() {
   // Vercel deployment filesystem is read-only except /tmp.
   if (process.env.VERCEL) {
@@ -55,8 +62,7 @@ async function readGuestPostsFromBlob(): Promise<GuestPost[]> {
   }
 
   if (!guestPostsBlobUrlCache) {
-    const existing = await list({ prefix: GUEST_POSTS_BLOB_KEY, limit: 100 });
-    guestPostsBlobUrlCache = pickLatestBlobUrl(existing.blobs);
+    await refreshGuestPostsBlobUrlCache();
 
     const seed = guestPostsBlobUrlCache
       ? null
@@ -76,9 +82,18 @@ async function readGuestPostsFromBlob(): Promise<GuestPost[]> {
     return [];
   }
 
-  const response = await fetch(guestPostsBlobUrlCache, { cache: "no-store" });
+  let response = await fetch(guestPostsBlobUrlCache, { cache: "no-store" });
   if (!response.ok) {
-    return [];
+    await refreshGuestPostsBlobUrlCache();
+
+    if (!guestPostsBlobUrlCache) {
+      return [];
+    }
+
+    response = await fetch(guestPostsBlobUrlCache, { cache: "no-store" });
+    if (!response.ok) {
+      return [];
+    }
   }
 
   const data = (await response.json()) as GuestPost[];
@@ -148,6 +163,7 @@ export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost>
     title: input.title,
     content: input.content,
     authorId: input.authorId,
+    authorName: input.authorName,
     date: new Date().toISOString().slice(0, 10),
   };
 

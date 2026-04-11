@@ -63,7 +63,7 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
               <h2 className="text-xl font-bold text-zinc-100">{post.title}</h2>
               <p className="text-zinc-300">{post.content}</p>
               <div className="flex items-center justify-between text-sm text-zinc-400">
-                <p>{t(locale, "작성자", "Author")}: {memberNameById.get(post.authorId) || post.authorId}</p>
+                <p>{t(locale, "작성자", "Author")}: {post.authorName || memberNameById.get(post.authorId) || post.authorId}</p>
                 <p>{post.date}</p>
               </div>
 

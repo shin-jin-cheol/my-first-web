@@ -30,7 +30,7 @@ async function createPost(formData: FormData) {
     let author = rawAuthor;
     if (session.role === "member") {
       const profile = await getMemberProfile(session.userId);
-      author = profile?.name?.trim() || session.userId;
+      author = profile?.name?.trim() || session.userName?.trim() || session.userId;
     }
 
     if (!title || !author || !content) {
@@ -43,6 +43,7 @@ async function createPost(formData: FormData) {
         title,
         content,
         authorId: session.userId,
+        authorName: author,
       });
     } else {
       await addPost({
@@ -76,7 +77,7 @@ type NewPostPageProps = {
 export default async function NewPostPage({ searchParams }: NewPostPageProps) {
   const session = await requireSession();
   const profile = session.role === "member" ? await getMemberProfile(session.userId) : null;
-  const defaultAuthor = session.role === "member" ? (profile?.name?.trim() || session.userId) : "";
+  const defaultAuthor = session.role === "member" ? (profile?.name?.trim() || session.userName?.trim() || session.userId) : "";
   const params = await searchParams;
   const errorMessage = params.error ? decodeURIComponent(params.error) : "";
 
