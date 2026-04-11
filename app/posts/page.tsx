@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { getPosts } from "@/lib/posts";
+import { getLocale, t } from "@/lib/i18n";
 
 export default async function PostsPage() {
+  const locale = await getLocale();
   const posts = await getPosts();
 
   return (
@@ -11,7 +13,7 @@ export default async function PostsPage() {
           Blog Posts
         </p>
         <h1 className="text-4xl font-extrabold text-zinc-100 drop-shadow-[0_0_14px_rgba(129,216,208,0.45)]">
-          게시글 목록
+          {t(locale, "게시글 목록", "Post List")}
         </h1>
       </div>
       <div className="grid gap-7 md:grid-cols-2">
@@ -24,10 +26,10 @@ export default async function PostsPage() {
               </p>
               <div className="space-y-2 text-sm text-zinc-400">
                 <p>
-                  <strong>작성자:</strong> {post.author}
+                  <strong>{t(locale, "작성자", "Author")}:</strong> {post.author}
                 </p>
                 <p>
-                  <strong>날짜:</strong> {post.date}
+                  <strong>{t(locale, "날짜", "Date")}:</strong> {post.date}
                 </p>
               </div>
             </article>

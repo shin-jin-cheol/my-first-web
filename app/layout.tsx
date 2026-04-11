@@ -3,6 +3,8 @@ import Link from "next/link";
 import BgmPlayer from "./components/BgmPlayer";
 import { clearSession, getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { getLocale, t } from "@/lib/i18n";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -16,12 +18,28 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getSession();
+  const locale = await getLocale();
 
   async function logoutAction() {
     "use server";
 
     await clearSession();
     redirect("/auth/login");
+  }
+
+  async function setLanguageAction(formData: FormData) {
+    "use server";
+
+    const nextLang = String(formData.get("lang") ?? "ko");
+    const store = await (await import("next/headers")).cookies();
+    store.set("lang", nextLang === "en" ? "en" : "ko", {
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    const referer = (await headers()).get("referer") ?? "/";
+    redirect(referer);
   }
 
   return (
@@ -33,25 +51,25 @@ export default async function RootLayout({
               공인재 신진철의 생존일기
             </span>
             <Link href="/" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
-              홈
+              {t(locale, "홈", "Home")}
             </Link>
             <Link href="/posts" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
-              블로그
+              {t(locale, "블로그", "Blog")}
             </Link>
             <Link href="/guest" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
-              guest
+              {t(locale, "게스트 게시판", "Guest Board")}
             </Link>
             {session?.role === "owner" ? (
               <Link
                 href="/posts/new"
                 className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-3 py-1.5 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.6)] transition hover:-translate-y-0.5 hover:bg-[#96e1da] hover:shadow-[0_0_28px_rgba(129,216,208,0.75)]"
               >
-                새 글 쓰기
+                {t(locale, "새 글 쓰기", "Write")}
               </Link>
             ) : null}
             {session?.role === "owner" ? (
               <Link href="/admin/members" className="text-sm font-medium text-zinc-300 transition hover:text-white">
-                회원관리
+                {t(locale, "회원관리", "Members")}
               </Link>
             ) : null}
             {session ? (
@@ -62,10 +80,10 @@ export default async function RootLayout({
             {!session ? (
               <>
                 <Link href="/auth/login" className="text-sm font-medium text-zinc-300 transition hover:text-white">
-                  로그인
+                  {t(locale, "로그인", "Login")}
                 </Link>
                 <Link href="/auth/signup" className="text-sm font-medium text-zinc-300 transition hover:text-white">
-                  회원가입
+                  {t(locale, "회원가입", "Sign up")}
                 </Link>
               </>
             ) : (
@@ -74,16 +92,34 @@ export default async function RootLayout({
                   type="submit"
                   className="rounded-full border border-zinc-500 bg-zinc-700 px-3 py-1.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-600"
                 >
-                  로그아웃
+                  {t(locale, "로그아웃", "Logout")}
                 </button>
               </form>
             )}
+            <form action={setLanguageAction} className="inline-flex items-center gap-1 rounded-full border border-zinc-600 bg-zinc-800/80 p-1 text-xs">
+              <button
+                type="submit"
+                name="lang"
+                value="ko"
+                className={`rounded-full px-2 py-1 transition ${locale === "ko" ? "bg-zinc-200 text-zinc-900" : "text-zinc-300 hover:text-white"}`}
+              >
+                KO
+              </button>
+              <button
+                type="submit"
+                name="lang"
+                value="en"
+                className={`rounded-full px-2 py-1 transition ${locale === "en" ? "bg-zinc-200 text-zinc-900" : "text-zinc-300 hover:text-white"}`}
+              >
+                EN
+              </button>
+            </form>
           </div>
         </nav>
         <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">{children}</main>
         <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-700 bg-zinc-950/95 py-4 text-center text-sm text-zinc-400 shadow-[0_-12px_24px_-20px_rgba(129,216,208,0.3)] backdrop-blur">
           <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-3 px-6">
-            <p>© 2026 공인재 신진철의 생존일기</p>
+            <p>{t(locale, "© 2026 공인재 신진철의 생존일기", "© 2026 SJC Survival Log")}</p>
             <div className="flex items-center gap-3">
               <a
                 href="https://www.instagram.com/whflwls"

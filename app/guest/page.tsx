@@ -2,12 +2,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addGuestPost, deleteGuestPostById, getGuestPosts } from "@/lib/guest-posts";
 import { changeMemberPassword, clearSession, deleteMemberAccount, requireSession } from "@/lib/auth";
+import { getLocale, t } from "@/lib/i18n";
 
 type GuestBoardPageProps = {
   searchParams: Promise<{ error?: string; success?: string }>;
 };
 
 export default async function GuestBoardPage({ searchParams }: GuestBoardPageProps) {
+  const locale = await getLocale();
   const session = await requireSession();
   const posts = await getGuestPosts();
   const params = await searchParams;
@@ -15,9 +17,9 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
   const successKey = params.success ?? "";
   const successMessage =
     successKey === "password"
-      ? "비밀번호가 변경되었습니다."
+      ? t(locale, "비밀번호가 변경되었습니다.", "Password changed successfully.")
       : successKey === "withdraw"
-        ? "회원 탈퇴가 완료되었습니다."
+        ? t(locale, "회원 탈퇴가 완료되었습니다.", "Your account has been deleted.")
         : "";
 
   async function createGuestPostAction(formData: FormData) {
@@ -107,9 +109,9 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
     <section className="space-y-8">
       <header className="space-y-2">
         <p className="text-sm font-semibold uppercase tracking-wider text-zinc-400">Guest Board</p>
-        <h1 className="text-4xl font-extrabold text-zinc-100 drop-shadow-[0_0_12px_rgba(129,216,208,0.3)]">guest</h1>
+        <h1 className="text-4xl font-extrabold text-zinc-100 drop-shadow-[0_0_12px_rgba(129,216,208,0.3)]">{t(locale, "게스트 게시판", "Guest Board")}</h1>
         <p className="text-zinc-300">
-          회원은 글 작성만 가능하고, 주인 계정은 글 삭제 관리가 가능합니다.
+          {t(locale, "회원은 글 작성만 가능하고, 주인 계정은 글 삭제 관리가 가능합니다.", "Members can only write posts, while the owner can delete them.")}
         </p>
       </header>
 
@@ -133,6 +135,7 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
           >
             <div className="space-y-2">
               <label htmlFor="guest-title" className="text-sm text-zinc-200">제목</label>
+              
               <input
                 id="guest-title"
                 name="title"
@@ -154,7 +157,7 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
               type="submit"
               className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-zinc-900 shadow-[0_0_16px_rgba(129,216,208,0.5)]"
             >
-              guest 글 작성
+              {t(locale, "게스트 글 작성", "Write Guest Post")}
             </button>
           </form>
 
@@ -162,9 +165,9 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
             action={changePasswordAction}
             className="space-y-4 rounded-2xl border border-zinc-700 bg-zinc-800 p-6"
           >
-            <h2 className="text-lg font-bold text-zinc-100">비밀번호 변경</h2>
+            <h2 className="text-lg font-bold text-zinc-100">{t(locale, "비밀번호 변경", "Change Password")}</h2>
             <div className="space-y-2">
-              <label htmlFor="current-password" className="text-sm text-zinc-200">현재 비밀번호</label>
+              <label htmlFor="current-password" className="text-sm text-zinc-200">{t(locale, "현재 비밀번호", "Current Password")}</label>
               <input
                 id="current-password"
                 name="currentPassword"
@@ -174,7 +177,7 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="new-password" className="text-sm text-zinc-200">새 비밀번호</label>
+              <label htmlFor="new-password" className="text-sm text-zinc-200">{t(locale, "새 비밀번호", "New Password")}</label>
               <input
                 id="new-password"
                 name="newPassword"
@@ -187,7 +190,7 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
               type="submit"
               className="rounded-full border border-cyan-500/50 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-200"
             >
-              비밀번호 변경
+              {t(locale, "비밀번호 변경", "Change Password")}
             </button>
           </form>
 
@@ -195,9 +198,9 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
             action={withdrawAction}
             className="space-y-4 rounded-2xl border border-red-500/40 bg-red-500/10 p-6"
           >
-            <h2 className="text-lg font-bold text-red-200">회원 탈퇴</h2>
+            <h2 className="text-lg font-bold text-red-200">{t(locale, "회원 탈퇴", "Delete Account")}</h2>
             <div className="space-y-2">
-              <label htmlFor="withdraw-password" className="text-sm text-red-200">비밀번호 확인</label>
+              <label htmlFor="withdraw-password" className="text-sm text-red-200">{t(locale, "비밀번호 확인", "Confirm Password")}</label>
               <input
                 id="withdraw-password"
                 name="withdrawPassword"
@@ -210,26 +213,26 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
               type="submit"
               className="rounded-full border border-red-400/70 bg-red-500/30 px-4 py-2 text-sm font-semibold text-red-100"
             >
-              회원 탈퇴하기
+              {t(locale, "회원 탈퇴하기", "Delete Account")}
             </button>
           </form>
           </div>
       ) : (
         <p className="rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-200">
-          주인 계정으로 접속 중입니다. 회원이 작성한 guest 게시글을 관리할 수 있습니다.
+          {t(locale, "주인 계정으로 접속 중입니다. 회원이 작성한 게스트 게시글을 관리할 수 있습니다.", "You are logged in as owner and can manage guest posts.")}
         </p>
       )}
 
       <div className="space-y-4">
         {posts.length === 0 ? (
-          <p className="text-zinc-400">아직 guest 게시글이 없습니다.</p>
+          <p className="text-zinc-400">{t(locale, "아직 게스트 게시글이 없습니다.", "There are no guest posts yet.")}</p>
         ) : (
           posts.map((post) => (
             <article key={post.id} className="space-y-3 rounded-2xl border border-zinc-700 bg-zinc-800 p-5">
               <h2 className="text-xl font-bold text-zinc-100">{post.title}</h2>
               <p className="text-zinc-300">{post.content}</p>
               <div className="flex items-center justify-between text-sm text-zinc-400">
-                <p>작성자: {post.authorId}</p>
+                <p>{t(locale, "작성자", "Author")}: {post.authorId}</p>
                 <p>{post.date}</p>
               </div>
 
@@ -240,7 +243,7 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
                     type="submit"
                     className="rounded-full border border-red-400/60 bg-red-500/20 px-4 py-1.5 text-sm font-semibold text-red-300 hover:bg-red-500/30"
                   >
-                    삭제하기
+                    {t(locale, "삭제하기", "Delete")}
                   </button>
                 </form>
               ) : null}
