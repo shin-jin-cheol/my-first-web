@@ -72,6 +72,11 @@ export default async function RootLayout({
                 {t(locale, "회원관리", "Members")}
               </Link>
             ) : null}
+            {session?.role === "member" ? (
+              <Link href="/guest/account" className="text-sm font-medium text-zinc-300 transition hover:text-white">
+                {t(locale, "회원정보", "Account")}
+              </Link>
+            ) : null}
             {session ? (
               <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-cyan-200">
                 {session.role}

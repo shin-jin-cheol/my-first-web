@@ -2,12 +2,13 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addPost } from "@/lib/posts";
-import { requireOwner } from "@/lib/auth";
+import { addGuestPost } from "@/lib/guest-posts";
+import { requireSession } from "@/lib/auth";
 
 async function createPost(formData: FormData) {
   "use server";
 
-  await requireOwner();
+  const session = await requireSession();
 
   const title = String(formData.get("title") ?? "").trim();
   const author = String(formData.get("author") ?? "").trim();
@@ -27,13 +28,22 @@ async function createPost(formData: FormData) {
     attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
   });
 
+  if (session.role === "member") {
+    await addGuestPost({
+      title,
+      content,
+      authorId: session.userId,
+    });
+  }
+
   revalidatePath("/");
   revalidatePath("/posts");
+  revalidatePath("/guest");
   redirect("/posts");
 }
 
 export default async function NewPostPage() {
-  await requireOwner();
+  await requireSession();
 
   return (
     <section className="space-y-8">

@@ -163,7 +163,7 @@ export default function BgmPlayer() {
 
   return (
     <div className="fixed bottom-5 right-5 z-50 flex w-[min(88vw,340px)] flex-col gap-3">
-      <LiveClock className="w-full rounded-3xl border-white/20 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-800/60 px-4 py-2.5 text-center shadow-[0_0_40px_rgba(129,216,208,0.2),0_0_80px_rgba(129,216,208,0.1)]" />
+      <LiveClock className="w-full rounded-3xl border-white/20 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-800/60 px-4 py-2.5 text-center" />
 
       <div className="space-y-3 rounded-3xl border border-white/20 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-800/60 p-4 shadow-[0_0_40px_rgba(129,216,208,0.2),0_0_80px_rgba(129,216,208,0.1)] backdrop-blur-xl">
         <audio ref={audioRef} src={selectedSrc} preload="auto" />

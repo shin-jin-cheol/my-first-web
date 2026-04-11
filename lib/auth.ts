@@ -13,6 +13,7 @@ export type Session = {
 
 type Member = {
   id: string;
+  name?: string;
   password: string;
   createdAt: string;
 };
@@ -196,9 +197,9 @@ export async function login(id: string, password: string): Promise<Session | nul
   return { userId: member.id, role: "member" };
 }
 
-export async function registerMember(id: string, password: string): Promise<{ ok: boolean; message?: string }> {
-  if (!id || !password) {
-    return { ok: false, message: "아이디와 비밀번호를 입력해 주세요." };
+export async function registerMember(id: string, name: string, password: string): Promise<{ ok: boolean; message?: string }> {
+  if (!id || !name || !password) {
+    return { ok: false, message: "이름, 아이디, 비밀번호를 입력해 주세요." };
   }
 
   if (id === OWNER_ID) {
@@ -212,6 +213,7 @@ export async function registerMember(id: string, password: string): Promise<{ ok
 
   members.push({
     id,
+    name,
     password,
     createdAt: new Date().toISOString(),
   });
@@ -222,6 +224,49 @@ export async function registerMember(id: string, password: string): Promise<{ ok
 export async function getMembersForOwner(): Promise<Member[]> {
   await requireOwner();
   return readMembers();
+}
+
+export async function getMemberProfile(userId: string): Promise<{ id: string; name: string; createdAt: string } | null> {
+  if (!userId || userId === OWNER_ID) {
+    return null;
+  }
+
+  const members = await readMembers();
+  const member = members.find((item) => item.id === userId);
+  if (!member) {
+    return null;
+  }
+
+  return {
+    id: member.id,
+    name: member.name ?? "",
+    createdAt: member.createdAt,
+  };
+}
+
+export async function updateMemberProfile(userId: string, name: string): Promise<{ ok: boolean; message?: string }> {
+  if (!userId || userId === OWNER_ID) {
+    return { ok: false, message: "회원 계정만 수정할 수 있습니다." };
+  }
+
+  if (!name) {
+    return { ok: false, message: "이름을 입력해 주세요." };
+  }
+
+  const members = await readMembers();
+  const index = members.findIndex((member) => member.id === userId);
+
+  if (index === -1) {
+    return { ok: false, message: "회원 정보를 찾을 수 없습니다." };
+  }
+
+  members[index] = {
+    ...members[index],
+    name,
+  };
+  await writeMembers(members);
+
+  return { ok: true };
 }
 
 export async function changeMemberPassword(

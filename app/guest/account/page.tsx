@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { changeMemberPassword, clearSession, deleteMemberAccount, requireSession } from "@/lib/auth";
+import {
+  changeMemberPassword,
+  clearSession,
+  deleteMemberAccount,
+  getMemberProfile,
+  requireSession,
+  updateMemberProfile,
+} from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
 
 type GuestAccountPageProps = {
@@ -18,9 +25,33 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
   const params = await searchParams;
   const errorMessage = params.error ? decodeURIComponent(params.error) : "";
   const successMessage =
+    params.success === "profile"
+      ? t(locale, "회원정보가 수정되었습니다.", "Member profile updated successfully.")
+      :
     params.success === "password"
       ? t(locale, "비밀번호가 변경되었습니다.", "Password changed successfully.")
       : "";
+
+  const profile = await getMemberProfile(session.userId);
+
+  async function updateProfileAction(formData: FormData) {
+    "use server";
+
+    const currentSession = await requireSession();
+    if (currentSession.role !== "member") {
+      return;
+    }
+
+    const name = String(formData.get("name") ?? "").trim();
+    const result = await updateMemberProfile(currentSession.userId, name);
+
+    if (!result.ok) {
+      const message = encodeURIComponent(result.message ?? "회원정보 수정에 실패했습니다.");
+      redirect(`/guest/account?error=${message}`);
+    }
+
+    redirect("/guest/account?success=profile");
+  }
 
   async function changePasswordAction(formData: FormData) {
     "use server";
@@ -78,6 +109,32 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
       {successMessage ? (
         <p className="rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-200">{successMessage}</p>
       ) : null}
+
+      <form action={updateProfileAction} className="space-y-4 rounded-2xl border border-zinc-700 bg-zinc-800 p-6">
+        <h2 className="text-lg font-bold text-zinc-100">{t(locale, "회원정보 수정", "Edit Member Profile")}</h2>
+        <div className="space-y-2">
+          <label htmlFor="member-id" className="text-sm text-zinc-200">{t(locale, "아이디", "ID")}</label>
+          <input
+            id="member-id"
+            value={profile?.id ?? session.userId}
+            readOnly
+            className="w-full cursor-not-allowed rounded-xl border border-zinc-700 bg-zinc-900/60 px-4 py-2.5 text-zinc-400 outline-none"
+          />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="name" className="text-sm text-zinc-200">{t(locale, "이름", "Name")}</label>
+          <input
+            id="name"
+            name="name"
+            defaultValue={profile?.name ?? ""}
+            required
+            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none focus:border-[#81d8d0]"
+          />
+        </div>
+        <button type="submit" className="rounded-full border border-cyan-500/50 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-200">
+          {t(locale, "회원정보 저장", "Save Profile")}
+        </button>
+      </form>
 
       <form action={changePasswordAction} className="space-y-4 rounded-2xl border border-zinc-700 bg-zinc-800 p-6">
         <h2 className="text-lg font-bold text-zinc-100">{t(locale, "비밀번호 변경", "Change Password")}</h2>
