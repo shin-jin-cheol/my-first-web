@@ -188,27 +188,30 @@ export default function BgmPlayer() {
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center justify-center gap-3">
         <button
           type="button"
           onClick={playPreviousTrack}
-          className="rounded-full border border-white/40 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white/90 transition backdrop-blur hover:bg-white/20 hover:border-white/60"
+          className="rounded-full border border-white/40 bg-white/10 px-3.5 py-2.5 text-lg text-white/90 transition backdrop-blur hover:bg-white/20 hover:border-white/60"
+          title="이전곡"
         >
-          prev
+          ⏮
         </button>
         <button
           type="button"
           onClick={togglePlayback}
-          className="rounded-full border border-white/50 bg-white/20 px-6 py-2.5 text-sm font-bold text-white shadow-[0_0_20px_rgba(129,216,208,0.3)] transition backdrop-blur hover:bg-white/30 hover:border-white/70"
+          className="rounded-full border border-white/50 bg-white/20 px-5 py-2.5 text-xl font-bold text-white shadow-[0_0_20px_rgba(129,216,208,0.3)] transition backdrop-blur hover:bg-white/30 hover:border-white/70"
+          title={isPlaying ? "일시정지" : "재생"}
         >
-          {isPlaying ? "pause" : "play"}
+          {isPlaying ? "⏸" : "▶"}
         </button>
         <button
           type="button"
           onClick={playNextTrack}
-          className="rounded-full border border-white/40 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white/90 transition backdrop-blur hover:bg-white/20 hover:border-white/60"
+          className="rounded-full border border-white/40 bg-white/10 px-3.5 py-2.5 text-lg text-white/90 transition backdrop-blur hover:bg-white/20 hover:border-white/60"
+          title="다음곡"
         >
-          next
+          ⏭
         </button>
       </div>
     </div>

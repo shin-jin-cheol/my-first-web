@@ -14,7 +14,7 @@ export default async function Home() {
           게시글 목록
         </h1>
       </div>
-      <div className="grid gap-7 md:grid-cols-2">
+      <div className="grid gap-7 grid-cols-1 max-w-2xl">
         {posts.map((post) => (
           <Link key={post.id} href={`/posts/${post.id}`}>
             <article className="block h-full min-h-64 cursor-pointer rounded-2xl border border-zinc-700 bg-zinc-800 p-7 shadow-[0_0_22px_rgba(129,216,208,0.12)] transition hover:border-[#81d8d0] hover:bg-zinc-700 hover:shadow-[0_0_34px_rgba(129,216,208,0.28)]">
