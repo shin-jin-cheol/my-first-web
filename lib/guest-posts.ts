@@ -25,14 +25,14 @@ const GUEST_POSTS_BLOB_KEY = "guest/guest-posts.json";
 
 let guestPostsBlobUrlCache: string | undefined;
 
-function pickLatestBlobUrl(blobs: Array<{ url: string; uploadedAt?: string | Date }>): string | undefined {
+function pickLatestBlobUrl(blobs: Array<{ url: string; uploadedAt?: string | Date; pathname?: string }>): string | undefined {
   if (blobs.length === 0) {
     return undefined;
   }
 
   const sorted = [...blobs].sort((a, b) => {
-    const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : 0;
-    const bTime = b.uploadedAt ? new Date(b.uploadedAt).getTime() : 0;
+    const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : Number.MIN_SAFE_INTEGER;
+    const bTime = b.uploadedAt ? new Date(b.uploadedAt).getTime() : Number.MIN_SAFE_INTEGER;
     return bTime - aTime;
   });
 
@@ -45,7 +45,8 @@ function hasBlobStorage() {
 
 async function refreshGuestPostsBlobUrlCache() {
   const existing = await list({ prefix: GUEST_POSTS_BLOB_KEY, limit: 100 });
-  guestPostsBlobUrlCache = pickLatestBlobUrl(existing.blobs);
+  const exactPathBlobs = existing.blobs.filter((blob) => blob.pathname === GUEST_POSTS_BLOB_KEY);
+  guestPostsBlobUrlCache = pickLatestBlobUrl(exactPathBlobs.length > 0 ? exactPathBlobs : existing.blobs);
 }
 
 function resolveGuestPostsFilePath() {
@@ -80,7 +81,8 @@ async function readGuestPostsFromBlob(): Promise<GuestPost[]> {
     return [];
   }
 
-  let response = await fetch(guestPostsBlobUrlCache, { cache: "no-store" });
+  const fetchUrl = `${guestPostsBlobUrlCache}${guestPostsBlobUrlCache.includes("?") ? "&" : "?"}ts=${Date.now()}`;
+  let response = await fetch(fetchUrl, { cache: "no-store" });
   if (!response.ok) {
     await refreshGuestPostsBlobUrlCache();
 
@@ -88,7 +90,8 @@ async function readGuestPostsFromBlob(): Promise<GuestPost[]> {
       return [];
     }
 
-    response = await fetch(guestPostsBlobUrlCache, { cache: "no-store" });
+    const retryUrl = `${guestPostsBlobUrlCache}${guestPostsBlobUrlCache.includes("?") ? "&" : "?"}ts=${Date.now()}`;
+    response = await fetch(retryUrl, { cache: "no-store" });
     if (!response.ok) {
       return [];
     }

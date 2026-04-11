@@ -28,14 +28,14 @@ const USERS_BLOB_KEY = "auth/users.json";
 
 let usersBlobUrlCache: string | undefined;
 
-function pickLatestBlobUrl(blobs: Array<{ url: string; uploadedAt?: string | Date }>): string | undefined {
+function pickLatestBlobUrl(blobs: Array<{ url: string; uploadedAt?: string | Date; pathname?: string }>): string | undefined {
   if (blobs.length === 0) {
     return undefined;
   }
 
   const sorted = [...blobs].sort((a, b) => {
-    const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : 0;
-    const bTime = b.uploadedAt ? new Date(b.uploadedAt).getTime() : 0;
+    const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : Number.MIN_SAFE_INTEGER;
+    const bTime = b.uploadedAt ? new Date(b.uploadedAt).getTime() : Number.MIN_SAFE_INTEGER;
     return bTime - aTime;
   });
 
@@ -56,7 +56,8 @@ function hasBlobStorage() {
 
 async function refreshUsersBlobUrlCache() {
   const existing = await list({ prefix: USERS_BLOB_KEY, limit: 100 });
-  usersBlobUrlCache = pickLatestBlobUrl(existing.blobs);
+  const exactPathBlobs = existing.blobs.filter((blob) => blob.pathname === USERS_BLOB_KEY);
+  usersBlobUrlCache = pickLatestBlobUrl(exactPathBlobs.length > 0 ? exactPathBlobs : existing.blobs);
 }
 
 async function readUsersFromBlob(): Promise<Member[]> {
@@ -83,7 +84,7 @@ async function readUsersFromBlob(): Promise<Member[]> {
     return [];
   }
 
-  const fetchUrl = usersBlobUrlCache;
+  const fetchUrl = `${usersBlobUrlCache}${usersBlobUrlCache.includes("?") ? "&" : "?"}ts=${Date.now()}`;
   let response = await fetch(fetchUrl, { cache: "no-store" });
   if (!response.ok) {
     await refreshUsersBlobUrlCache();
@@ -92,7 +93,8 @@ async function readUsersFromBlob(): Promise<Member[]> {
       return [];
     }
 
-    response = await fetch(usersBlobUrlCache, { cache: "no-store" });
+    const retryUrl = `${usersBlobUrlCache}${usersBlobUrlCache.includes("?") ? "&" : "?"}ts=${Date.now()}`;
+    response = await fetch(retryUrl, { cache: "no-store" });
     if (!response.ok) {
       return [];
     }
