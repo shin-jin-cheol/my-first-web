@@ -110,9 +110,6 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
       <header className="space-y-2">
         <p className="text-sm font-semibold uppercase tracking-wider text-zinc-400">Guest Board</p>
         <h1 className="text-4xl font-extrabold text-zinc-100 drop-shadow-[0_0_12px_rgba(129,216,208,0.3)]">{t(locale, "게스트 게시판", "Guest Board")}</h1>
-        <p className="text-zinc-300">
-          {t(locale, "회원은 글 작성만 가능하고, 주인 계정은 글 삭제 관리가 가능합니다.", "Members can only write posts, while the owner can delete them.")}
-        </p>
       </header>
 
       {errorMessage ? (

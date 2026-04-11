@@ -44,9 +44,6 @@ export default async function NewPostPage() {
         <h1 className="text-4xl font-extrabold text-zinc-100 drop-shadow-[0_0_12px_rgba(129,216,208,0.35)]">
           새 글 쓰기
         </h1>
-        <p className="text-zinc-300">
-          차콜 테마와 글로우 감성을 유지한 상태에서 바로 게시글을 작성할 수 있어요.
-        </p>
       </header>
 
       <form
