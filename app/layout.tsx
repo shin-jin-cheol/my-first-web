@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BgmPlayer from "./components/BgmPlayer";
-import LiveClock from "./components/LiveClock";
 import { clearSession, getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
@@ -175,7 +174,6 @@ export default async function RootLayout({
           </div>
         </footer>
         <div className="h-24" />
-        <LiveClock />
         <BgmPlayer />
       </body>
     </html>
