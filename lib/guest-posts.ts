@@ -12,6 +12,15 @@ export type GuestPost = {
   linkUrl?: string;
   fileUrl?: string;
   fileName?: string;
+  comments?: GuestComment[];
+};
+
+export type GuestComment = {
+  id: number;
+  authorId: string;
+  authorName: string;
+  content: string;
+  dateTime: string;
 };
 
 type NewGuestPostInput = {
@@ -67,6 +76,21 @@ function getKstDateString() {
   return new Intl.DateTimeFormat("sv-SE", {
     timeZone: "Asia/Seoul",
   }).format(new Date());
+}
+
+function getKstDateTimeString() {
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  })
+    .format(new Date())
+    .replace(",", "");
 }
 
 function sanitizeFileName(fileName: string) {
@@ -316,4 +340,36 @@ export async function updateGuestPostById(
   posts[index] = updatedPost;
   await writeGuestPosts(posts);
   return updatedPost;
+}
+
+export async function addGuestCommentById(
+  postId: number,
+  input: { authorId: string; authorName: string; content: string },
+): Promise<GuestComment | undefined> {
+  const posts = await readGuestPosts();
+  const index = posts.findIndex((post) => post.id === postId);
+
+  if (index === -1) {
+    return undefined;
+  }
+
+  const currentPost = posts[index];
+  const currentComments = currentPost.comments ?? [];
+  const nextCommentId = currentComments.reduce((maxId, comment) => Math.max(maxId, comment.id), 0) + 1;
+
+  const comment: GuestComment = {
+    id: nextCommentId,
+    authorId: input.authorId,
+    authorName: input.authorName,
+    content: input.content,
+    dateTime: getKstDateTimeString(),
+  };
+
+  posts[index] = {
+    ...currentPost,
+    comments: [...currentComments, comment],
+  };
+
+  await writeGuestPosts(posts);
+  return comment;
 }
