@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>웹 프로그래밍 실전 모의고사</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col items-center py-10">
+
+  <main class="bg-white p-8 rounded-lg shadow-md w-full max-w-2xl">
+    <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">📝 웹 프로그래밍 실전 모의고사</h1>
+    
+    <div id="quiz-container">
+      </div>
+
+    <div id="result-container" class="hidden mt-8 text-center">
+      <h2 class="text-xl font-bold mb-4">🎉 테스트 완료!</h2>
+      <p id="score-text" class="text-lg font-semibold text-gray-700"></p>
+      <button onclick="location.reload()" class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+        다시 풀기
+      </button>
+    </div>
+  </main>
+
+  <script>
+    // 문제 데이터 (Ch.4 배열과 객체 복습!)
+    const questions = [
+      {
+        question: "문제 1. 다음 중 HTTP 상태 코드와 그 의미가 올바르게 짝지어지지 않은 것은?",
+        options: [
+          "200 - 정상 응답 (OK)",
+          "301 - 주소가 완전히 바뀌었음 (Moved Permanently)",
+          "404 - 서버 자체에 심각한 문제가 생겼음 (Internal Server Error)",
+          "500 - 서버에 문제가 생겼다 (Internal Server Error)"
+        ],
+        answer: 2 // 3번째 보기 (인덱스 2)
+      },
+      {
+        question: "문제 2. AI가 페이지 이동을 위해 `import { useRouter } from 'next/router';` 코드를 제안했다. 이와 가장 관련 깊은 AI의 한계는?",
+        options: ["환각 (Hallucination)", "버전 불일치", "컨텍스트 소실", "에이전트 스킬 오류"],
+        answer: 1
+      },
+      {
+        question: "문제 3. 다음 중 JSX 문법과 Tailwind CSS를 활용하여 가장 올바르게 작성된 코드는?",
+        options: [
+          "<div class=\"grid-cols-2 md:grid-cols-1\">",
+          "<label for=\"username\">사용자 이름</label>",
+          "<button onclick={submitForm}>제출하기</button>",
+          "<div className=\"grid-cols-1 md:grid-cols-2\">"
+        ],
+        answer: 3
+      },
+      {
+        question: "문제 4. JavaScript의 배열 메서드에 대한 설명으로 올바른 것은?",
+        options: [
+          "map()은 조건에 맞는 특정 요소들만 걸러내어 새로운 배열을 만든다.",
+          "find()는 조건에 맞는 단 하나의 값(첫 번째 요소)만 찾아 반환한다.",
+          "filter()는 배열 요소를 변환하여 전체 길이가 같은 새로운 배열을 만든다.",
+          "블로그 게시글 10개를 카드 10개로 변환할 때는 주로 find()를 사용한다."
+        ],
+        answer: 1
+      },
+      {
+        question: "문제 5. Next.js 16 이상 환경에서 라우팅과 특수 파일에 대한 설명으로 틀린 것은?",
+        options: [
+          "폴더 안에 page.tsx 파일이 없다면 URL로 동작하지 않는다.",
+          "layout.tsx 내부에는 {children} 속성이 반드시 포함되어야 한다.",
+          "동적 라우팅 폴더명은 [id]와 같이 대괄호로 감싸서 만든다.",
+          "파라미터를 읽을 때는 const { id } = params; 형태로 동기적으로 읽어야 한다."
+        ],
+        answer: 3
+      }
+    ];
+
+    const quizContainer = document.getElementById('quiz-container');
+    const resultContainer = document.getElementById('result-container');
+    const scoreText = document.getElementById('score-text');
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    // 문제 화면 그리기 함수
+    function renderQuestion() {
+      quizContainer.innerHTML = ''; // 초기화
+      
+      const q = questions[currentQuestionIndex];
+      
+      const questionTitle = document.createElement('h2');
+      questionTitle.className = "text-lg font-bold mb-4";
+      questionTitle.innerText = q.question;
+      quizContainer.appendChild(questionTitle);
+
+      const optionsDiv = document.createElement('div');
+      optionsDiv.className = "flex flex-col gap-3";
+
+      q.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.className = "text-left bg-gray-50 hover:bg-blue-100 border border-gray-300 p-3 rounded-md transition-colors";
+        button.innerText = `${index + 1}번: ${option}`;
+        
+        // 클릭 이벤트 (Ch.5 이벤트 핸들러 복습!)
+        button.onclick = () => checkAnswer(index, button);
+        optionsDiv.appendChild(button);
+      });
+
+      quizContainer.appendChild(optionsDiv);
+    }
+
+    // 정답 확인 함수
+    function checkAnswer(selectedIndex, buttonElement) {
+      const q = questions[currentQuestionIndex];
+      const allButtons = quizContainer.querySelectorAll('button');
+      
+      // 버튼 비활성화 (중복 클릭 방지)
+      allButtons.forEach(btn => btn.disabled = true);
+
+      if (selectedIndex === q.answer) {
+        buttonElement.classList.replace('bg-gray-50', 'bg-green-200');
+        buttonElement.classList.replace('hover:bg-blue-100', 'bg-green-200');
+        buttonElement.classList.add('border-green-500', 'font-bold');
+        score += 20; // 한 문제당 20점
+      } else {
+        buttonElement.classList.replace('bg-gray-50', 'bg-red-200');
+        buttonElement.classList.replace('hover:bg-blue-100', 'bg-red-200');
+        buttonElement.classList.add('border-red-500');
+        
+        // 정답 버튼을 초록색으로 표시
+        allButtons[q.answer].classList.replace('bg-gray-50', 'bg-green-200');
+        allButtons[q.answer].classList.add('border-green-500', 'font-bold');
+      }
+
+      // 1.5초 뒤 다음 문제로 이동
+      setTimeout(() => {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+          renderQuestion();
+        } else {
+          showResult();
+        }
+      }, 1500);
+    }
+
+    // 결과 화면 보여주기 함수
+    function showResult() {
+      quizContainer.classList.add('hidden');
+      resultContainer.classList.remove('hidden');
+      scoreText.innerText = `총 100점 만점에 ${score}점 입니다!`;
+      
+      if(score === 100) {
+        scoreText.innerText += " 완벽해요! A+ 예약입니다 🎉";
+      } else {
+        scoreText.innerText += " 요약본을 한 번만 더 읽어보시면 만점 가능합니다 💪";
+      }
+    }
+
+    // 첫 문제 실행
+    renderQuestion();
+  </script>
+</body>
+</html>
