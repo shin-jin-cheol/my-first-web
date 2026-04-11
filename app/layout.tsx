@@ -18,7 +18,7 @@ export default function RootLayout({
       <body className="flex min-h-screen flex-col bg-zinc-900 text-zinc-100 shadow-[inset_0_120px_120px_-120px_rgba(129,216,208,0.2)] pb-24">
         <nav className="border-b border-zinc-700 bg-zinc-950 text-zinc-100 shadow-[0_0_24px_rgba(129,216,208,0.18)]">
           <div className="mx-auto flex w-full max-w-4xl items-center gap-6 px-6 py-4">
-            <span className="rounded-full border border-cyan-700/40 bg-gradient-to-r from-zinc-950 via-zinc-800 to-[#2b6661] px-3 py-1 text-base font-bold text-zinc-100 shadow-[0_0_12px_rgba(129,216,208,0.25)] md:text-lg">
+            <span className="rounded-full border border-white/25 bg-white/10 px-3 py-1 text-base font-bold text-zinc-100 shadow-[0_0_14px_rgba(129,216,208,0.35)] backdrop-blur-md md:text-lg">
               공인재 신진철의 생존일기
             </span>
             <Link href="/" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
