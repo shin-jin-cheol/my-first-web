@@ -173,7 +173,7 @@ export default function BgmPlayer() {
         className="h-10 w-full rounded-2xl border border-white/30 bg-white/10 px-3 py-2.5 text-sm font-medium text-white outline-none transition backdrop-blur-md hover:bg-white/15 focus:border-white/50 focus:bg-white/20"
       >
         {tracks.map((track) => (
-          <option key={track.src} value={track.src}>
+          <option key={track.src} value={track.src} className="bg-zinc-900 text-zinc-100">
             {track.label}
           </option>
         ))}
