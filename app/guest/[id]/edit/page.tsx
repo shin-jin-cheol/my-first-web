@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { getGuestPostById, updateGuestPostById } from "@/lib/guest-posts";
 import { getLocale, t } from "@/lib/i18n";
 import { requireSession } from "@/lib/auth";
@@ -14,10 +14,15 @@ export default async function EditGuestPostPage({ params }: EditGuestPostPagePro
   const session = await requireSession();
   const { id } = await params;
   const postId = Number(id);
+
+  if (!Number.isFinite(postId) || postId <= 0) {
+    redirect("/guest");
+  }
+
   const post = await getGuestPostById(postId);
 
   if (!post) {
-    notFound();
+    redirect("/guest");
   }
 
   const canEdit = session.role === "owner" || (session.role === "member" && post.authorId === session.userId);

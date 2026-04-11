@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { getPostById, updatePostById } from "@/lib/posts";
 import { requireSession } from "@/lib/auth";
 
@@ -13,10 +13,15 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
   const { id } = await params;
   const postId = Number(id);
+
+  if (!Number.isFinite(postId) || postId <= 0) {
+    redirect("/posts");
+  }
+
   const post = await getPostById(postId);
 
   if (!post) {
-    notFound();
+    redirect("/posts");
   }
 
   const canEdit = session.role === "owner" || (session.role === "member" && post.authorId === session.userId);
