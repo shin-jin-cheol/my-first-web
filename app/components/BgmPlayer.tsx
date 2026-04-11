@@ -67,13 +67,20 @@ export default function BgmPlayer() {
     audio.src = selectedSrc;
     window.localStorage.setItem("bgm-track", selectedSrc);
     setCurrentTime(0);
+  }, [selectedSrc]);
 
-    if (!audio.paused || isPlaying) {
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+
+    if (isPlaying) {
       void audio.play().catch(() => {
         setIsPlaying(false);
       });
     }
-  }, [selectedSrc, isPlaying]);
+  }, [isPlaying]);
 
   useEffect(() => {
     const audio = audioRef.current;
