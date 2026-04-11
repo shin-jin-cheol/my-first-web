@@ -38,7 +38,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <header className="space-y-2">
         <p className="text-sm font-semibold uppercase tracking-wider text-zinc-400">Auth</p>
         <h1 className="text-3xl font-extrabold text-zinc-100">{t(locale, "로그인", "Login")}</h1>
-        <p className="text-zinc-300">{t(locale, "회원 또는 주인 계정으로 로그인하세요.", "Login with a member or owner account.")}</p>
+        <p className="text-zinc-300">{t(locale, "로그인 후 이용 가능합니다.", "Login required to continue.")}</p>
       </header>
 
       {showError ? (
