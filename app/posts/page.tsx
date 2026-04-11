@@ -2,11 +2,43 @@ import Link from "next/link";
 import { getPosts } from "@/lib/posts";
 import { getLocale, t } from "@/lib/i18n";
 import { getGuestPosts } from "@/lib/guest-posts";
+import { getMemberSummaries } from "@/lib/auth";
 
 export default async function PostsPage() {
   const locale = await getLocale();
   const posts = await getPosts();
   const guestPosts = await getGuestPosts();
+  const members = await getMemberSummaries();
+
+  const memberIdSet = new Set(members.map((member) => member.id));
+  const memberNameSet = new Set(
+    members.map((member) => member.name.trim()).filter((name) => Boolean(name)),
+  );
+
+  const memberPosts = posts.filter(
+    (post) =>
+      (post.authorId ? memberIdSet.has(post.authorId) : false) ||
+      memberIdSet.has(post.author) ||
+      memberNameSet.has(post.author),
+  );
+
+  const blogPosts = posts.filter((post) => !memberPosts.some((memberPost) => memberPost.id === post.id));
+
+  const guestPostSignatures = new Set(
+    guestPosts.map((post) => `${post.title}|${post.content}|${post.authorId}|${post.date}`),
+  );
+
+  const migratedMemberPosts = memberPosts
+    .map((post) => ({
+      id: -post.id,
+      title: post.title,
+      content: post.content,
+      authorId: post.authorId ?? post.author,
+      date: post.date,
+    }))
+    .filter((post) => !guestPostSignatures.has(`${post.title}|${post.content}|${post.authorId}|${post.date}`));
+
+  const allGuestPosts = [...migratedMemberPosts, ...guestPosts];
 
   return (
     <div className="space-y-8">
@@ -19,7 +51,7 @@ export default async function PostsPage() {
         </h1>
       </div>
       <div className="grid gap-7 md:grid-cols-2">
-        {posts.map((post) => (
+        {blogPosts.map((post) => (
           <Link key={post.id} href={`/posts/${post.id}`}>
             <article className="block h-full min-h-64 cursor-pointer rounded-2xl border border-zinc-700 bg-zinc-800 p-7 shadow-[0_0_22px_rgba(129,216,208,0.12)] transition hover:border-[#81d8d0] hover:bg-zinc-700 hover:shadow-[0_0_34px_rgba(129,216,208,0.28)]">
               <h2 className="mb-3 text-xl font-bold text-zinc-100">{post.title}</h2>
@@ -43,11 +75,11 @@ export default async function PostsPage() {
         <h2 className="text-2xl font-bold text-zinc-100 drop-shadow-[0_0_10px_rgba(129,216,208,0.3)]">
           {t(locale, "게스트 게시글", "Guest Posts")}
         </h2>
-        {guestPosts.length === 0 ? (
+        {allGuestPosts.length === 0 ? (
           <p className="text-zinc-400">{t(locale, "아직 게스트 게시글이 없습니다.", "No guest posts yet.")}</p>
         ) : (
           <div className="grid gap-7 md:grid-cols-2">
-            {guestPosts.map((post) => (
+            {allGuestPosts.map((post) => (
               <article key={post.id} className="h-full min-h-56 rounded-2xl border border-zinc-700 bg-zinc-800 p-7 shadow-[0_0_22px_rgba(129,216,208,0.12)]">
                 <h3 className="mb-3 text-xl font-bold text-zinc-100">{post.title}</h3>
                 <p className="mb-5 line-clamp-4 text-base leading-7 text-zinc-300">{post.content}</p>

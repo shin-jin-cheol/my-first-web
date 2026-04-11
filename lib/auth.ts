@@ -226,6 +226,14 @@ export async function getMembersForOwner(): Promise<Member[]> {
   return readMembers();
 }
 
+export async function getMemberSummaries(): Promise<Array<{ id: string; name: string }>> {
+  const members = await readMembers();
+  return members.map((member) => ({
+    id: member.id,
+    name: member.name ?? "",
+  }));
+}
+
 export async function getMemberProfile(userId: string): Promise<{ id: string; name: string; createdAt: string } | null> {
   if (!userId || userId === OWNER_ID) {
     return null;

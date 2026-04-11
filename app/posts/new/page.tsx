@@ -26,20 +26,20 @@ async function createPost(formData: FormData) {
     return;
   }
 
-  await addPost({
-    title,
-    author,
-    authorId: session.role === "member" ? session.userId : undefined,
-    content,
-    linkUrl,
-    attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
-  });
-
   if (session.role === "member") {
     await addGuestPost({
       title,
       content,
       authorId: session.userId,
+    });
+  } else {
+    await addPost({
+      title,
+      author,
+      authorId: undefined,
+      content,
+      linkUrl,
+      attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
     });
   }
 
