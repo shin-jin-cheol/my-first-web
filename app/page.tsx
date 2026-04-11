@@ -1,37 +1,50 @@
 import Link from "next/link";
-import { getPosts } from "@/lib/posts";
+import Image from "next/image";
 
 export default async function Home() {
-  const posts = await getPosts();
-
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <p className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
-          Blog Posts
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <section className="space-y-5">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-400">
+          Y2K Cyber Deck
         </p>
-        <h1 className="text-4xl font-extrabold text-zinc-100 drop-shadow-[0_0_14px_rgba(129,216,208,0.45)]">
-          게시글 목록
+        <h1 className="text-4xl font-black text-zinc-100 drop-shadow-[0_0_16px_rgba(129,216,208,0.45)] md:text-5xl">
+          공인재 신진철의 생존일기
         </h1>
-      </div>
-      <div className="grid gap-7 grid-cols-1 max-w-2xl">
-        {posts.map((post) => (
-          <Link key={post.id} href={`/posts/${post.id}`}>
-            <article className="block h-full min-h-64 cursor-pointer rounded-2xl border border-zinc-700 bg-zinc-800 p-7 shadow-[0_0_22px_rgba(129,216,208,0.12)] transition hover:border-[#81d8d0] hover:bg-zinc-700 hover:shadow-[0_0_34px_rgba(129,216,208,0.28)]">
-              <h2 className="mb-3 text-xl font-bold text-zinc-100">{post.title}</h2>
-              <p className="mb-5 line-clamp-4 text-base leading-7 text-zinc-300">{post.content}</p>
-              <div className="space-y-2 text-sm text-zinc-400">
-                <p>
-                  <strong>작성자:</strong> {post.author}
-                </p>
-                <p>
-                  <strong>날짜:</strong> {post.date}
-                </p>
-              </div>
-            </article>
+        <p className="max-w-2xl text-zinc-300">
+          회로 신호가 흐르는 Y2K 사이버 감성의 메인 화면입니다. 게시글은 우측 사이드바에서 바로 이동해 확인하세요.
+        </p>
+
+        <div className="relative overflow-hidden rounded-3xl border border-cyan-400/30 bg-zinc-900/60 shadow-[0_0_32px_rgba(129,216,208,0.2)] backdrop-blur">
+          <Image
+            src="/cyber-circuit.svg"
+            alt="Y2K 사이버 회로도 배경"
+            width={1600}
+            height={1000}
+            priority
+            className="h-[460px] w-full object-cover"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(129,216,208,0.2),transparent_45%),radial-gradient(circle_at_80%_70%,rgba(129,216,208,0.12),transparent_40%)]" />
+        </div>
+      </section>
+
+      <aside className="lg:sticky lg:top-24 lg:self-start">
+        <div className="space-y-4 rounded-2xl border border-white/20 bg-white/10 p-5 shadow-[0_0_28px_rgba(129,216,208,0.15)] backdrop-blur-md">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
+            Quick Menu
+          </p>
+          <h2 className="text-xl font-bold text-zinc-100">게시글 바로가기</h2>
+          <p className="text-sm text-zinc-300">
+            전체 게시글 목록 화면으로 이동합니다.
+          </p>
+          <Link
+            href="/posts"
+            className="inline-flex w-full items-center justify-center rounded-full border border-cyan-500/60 bg-gradient-to-r from-zinc-900 via-zinc-800 to-[#2b6661] px-4 py-2.5 text-sm font-semibold text-zinc-100 shadow-[0_0_18px_rgba(129,216,208,0.35)] transition hover:-translate-y-0.5 hover:brightness-110"
+          >
+            게시글 목록 열기
           </Link>
-        ))}
-      </div>
+        </div>
+      </aside>
     </div>
   );
 }
