@@ -2,6 +2,7 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { deletePostById, getPostById } from "@/lib/posts";
+import { getSession, requireOwner } from "@/lib/auth";
 
 type PostDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -11,9 +12,12 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const { id } = await params;
   const postId = Number(id);
   const post = await getPostById(postId);
+  const session = await getSession();
 
   async function deletePostAction() {
     "use server";
+
+    await requireOwner();
 
     await deletePostById(postId);
     revalidatePath("/");
@@ -84,20 +88,24 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         >
           목록으로 돌아가기
         </Link>
-        <Link
-          href={`/posts/${post.id}/edit`}
-          className="inline-flex rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.5)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
-        >
-          수정하기
-        </Link>
-        <form action={deletePostAction}>
-          <button
-            type="submit"
-            className="inline-flex rounded-full border border-red-400/60 bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-300 transition hover:bg-red-500/30"
+        {session?.role === "owner" ? (
+          <Link
+            href={`/posts/${post.id}/edit`}
+            className="inline-flex rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.5)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
           >
-            삭제하기
-          </button>
-        </form>
+            수정하기
+          </Link>
+        ) : null}
+        {session?.role === "owner" ? (
+          <form action={deletePostAction}>
+            <button
+              type="submit"
+              className="inline-flex rounded-full border border-red-400/60 bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-300 transition hover:bg-red-500/30"
+            >
+              삭제하기
+            </button>
+          </form>
+        ) : null}
       </div>
     </article>
   );

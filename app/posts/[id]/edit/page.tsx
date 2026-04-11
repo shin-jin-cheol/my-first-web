@@ -2,12 +2,15 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import { getPostById, updatePostById } from "@/lib/posts";
+import { requireOwner } from "@/lib/auth";
 
 type EditPostPageProps = {
   params: Promise<{ id: string }>;
 };
 
 export default async function EditPostPage({ params }: EditPostPageProps) {
+  await requireOwner();
+
   const { id } = await params;
   const postId = Number(id);
   const post = await getPostById(postId);
@@ -18,6 +21,8 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
   async function updatePostAction(formData: FormData) {
     "use server";
+
+    await requireOwner();
 
     const title = String(formData.get("title") ?? "").trim();
     const author = String(formData.get("author") ?? "").trim();

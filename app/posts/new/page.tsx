@@ -2,9 +2,12 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addPost } from "@/lib/posts";
+import { requireOwner } from "@/lib/auth";
 
 async function createPost(formData: FormData) {
   "use server";
+
+  await requireOwner();
 
   const title = String(formData.get("title") ?? "").trim();
   const author = String(formData.get("author") ?? "").trim();
@@ -29,7 +32,9 @@ async function createPost(formData: FormData) {
   redirect("/posts");
 }
 
-export default function NewPostPage() {
+export default async function NewPostPage() {
+  await requireOwner();
+
   return (
     <section className="space-y-8">
       <header className="space-y-2">

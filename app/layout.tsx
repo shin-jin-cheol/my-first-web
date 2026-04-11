@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BgmPlayer from "./components/BgmPlayer";
+import { clearSession, getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -8,11 +10,20 @@ export const metadata: Metadata = {
   description: "공인재 신진철의 생존일기 소개 페이지",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getSession();
+
+  async function logoutAction() {
+    "use server";
+
+    await clearSession();
+    redirect("/auth/login");
+  }
+
   return (
     <html lang="ko">
       <body className="flex min-h-screen flex-col bg-zinc-900 text-zinc-100 shadow-[inset_0_120px_120px_-120px_rgba(129,216,208,0.2)] pb-24">
@@ -27,12 +38,41 @@ export default function RootLayout({
             <Link href="/posts" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
               블로그
             </Link>
-            <Link
-              href="/posts/new"
-              className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-3 py-1.5 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.6)] transition hover:-translate-y-0.5 hover:bg-[#96e1da] hover:shadow-[0_0_28px_rgba(129,216,208,0.75)]"
-            >
-              새 글 쓰기
+            <Link href="/guest" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
+              guest
             </Link>
+            {session?.role === "owner" ? (
+              <Link
+                href="/posts/new"
+                className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-3 py-1.5 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.6)] transition hover:-translate-y-0.5 hover:bg-[#96e1da] hover:shadow-[0_0_28px_rgba(129,216,208,0.75)]"
+              >
+                새 글 쓰기
+              </Link>
+            ) : null}
+            {session?.role === "owner" ? (
+              <Link href="/admin/members" className="text-sm font-medium text-zinc-300 transition hover:text-white">
+                회원관리
+              </Link>
+            ) : null}
+            {!session ? (
+              <>
+                <Link href="/auth/login" className="text-sm font-medium text-zinc-300 transition hover:text-white">
+                  로그인
+                </Link>
+                <Link href="/auth/signup" className="text-sm font-medium text-zinc-300 transition hover:text-white">
+                  회원가입
+                </Link>
+              </>
+            ) : (
+              <form action={logoutAction}>
+                <button
+                  type="submit"
+                  className="rounded-full border border-zinc-500 bg-zinc-700 px-3 py-1.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-600"
+                >
+                  로그아웃
+                </button>
+              </form>
+            )}
           </div>
         </nav>
         <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">{children}</main>
