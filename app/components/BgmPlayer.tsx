@@ -188,11 +188,11 @@ export default function BgmPlayer() {
         </div>
       </div>
 
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center justify-center gap-6">
         <button
           type="button"
           onClick={playPreviousTrack}
-          className="rounded-full border border-white/40 bg-white/10 px-3.5 py-2.5 text-lg text-white/90 transition backdrop-blur hover:bg-white/20 hover:border-white/60"
+          className="text-lg text-white/70 transition hover:text-white hover:drop-shadow-[0_0_6px_rgba(129,216,208,0.6)]"
           title="이전곡"
         >
           ⏮
@@ -200,7 +200,7 @@ export default function BgmPlayer() {
         <button
           type="button"
           onClick={togglePlayback}
-          className="rounded-full border border-white/50 bg-white/20 px-5 py-2.5 text-xl font-bold text-white shadow-[0_0_20px_rgba(129,216,208,0.3)] transition backdrop-blur hover:bg-white/30 hover:border-white/70"
+          className="rounded-full border border-white/40 bg-white/10 px-6 py-3 text-lg text-white transition backdrop-blur hover:border-white/70 hover:bg-white/20"
           title={isPlaying ? "일시정지" : "재생"}
         >
           {isPlaying ? "⏸" : "▶"}
@@ -208,7 +208,7 @@ export default function BgmPlayer() {
         <button
           type="button"
           onClick={playNextTrack}
-          className="rounded-full border border-white/40 bg-white/10 px-3.5 py-2.5 text-lg text-white/90 transition backdrop-blur hover:bg-white/20 hover:border-white/60"
+          className="text-lg text-white/70 transition hover:text-white hover:drop-shadow-[0_0_6px_rgba(129,216,208,0.6)]"
           title="다음곡"
         >
           ⏭
