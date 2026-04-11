@@ -44,7 +44,7 @@ export default function RootLayout({
               target="_blank"
               rel="noopener noreferrer"
               aria-label="인스타그램 바로가기"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-600/60 bg-gradient-to-br from-zinc-600 via-zinc-700 to-zinc-800 text-zinc-200 shadow-[0_0_14px_rgba(113,113,122,0.3)] transition hover:-translate-y-0.5 hover:brightness-110"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-pink-400/40 bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#515bd4] text-white shadow-[0_0_14px_rgba(221,42,123,0.45)] transition hover:-translate-y-0.5 hover:brightness-110"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
