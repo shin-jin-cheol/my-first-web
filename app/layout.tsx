@@ -37,14 +37,14 @@ export default function RootLayout({
         </nav>
         <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">{children}</main>
         <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-700 bg-zinc-950/95 py-4 text-center text-sm text-zinc-400 shadow-[0_-12px_24px_-20px_rgba(129,216,208,0.3)] backdrop-blur">
-          <div className="mx-auto flex w-full max-w-4xl items-center justify-between px-6">
+          <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-3 px-6">
             <p>© 2026 공인재 신진철의 생존일기</p>
             <a
               href="https://www.instagram.com/whflwls"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="인스타그램 바로가기"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-300/40 bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#515bd4] text-white shadow-[0_0_14px_rgba(221,42,123,0.45)] transition hover:-translate-y-0.5 hover:brightness-110"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-600/60 bg-gradient-to-br from-zinc-600 via-zinc-700 to-zinc-800 text-zinc-200 shadow-[0_0_14px_rgba(113,113,122,0.3)] transition hover:-translate-y-0.5 hover:brightness-110"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

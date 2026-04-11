@@ -192,7 +192,7 @@ export default function BgmPlayer() {
         <button
           type="button"
           onClick={playPreviousTrack}
-          className="text-lg text-white/70 transition hover:text-white hover:drop-shadow-[0_0_6px_rgba(129,216,208,0.6)]"
+          className="text-lg text-zinc-500 transition hover:text-zinc-300 hover:drop-shadow-[0_0_6px_rgba(113,113,122,0.4)]"
           title="이전곡"
         >
           ⏮
@@ -200,7 +200,7 @@ export default function BgmPlayer() {
         <button
           type="button"
           onClick={togglePlayback}
-          className="rounded-full border border-white/40 bg-white/10 px-6 py-3 text-lg text-white transition backdrop-blur hover:border-white/70 hover:bg-white/20"
+          className="rounded-full border border-zinc-600 bg-zinc-700/40 px-6 py-3 text-lg text-zinc-200 transition backdrop-blur hover:border-zinc-500 hover:bg-zinc-600/50"
           title={isPlaying ? "일시정지" : "재생"}
         >
           {isPlaying ? "⏸" : "▶"}
@@ -208,7 +208,7 @@ export default function BgmPlayer() {
         <button
           type="button"
           onClick={playNextTrack}
-          className="text-lg text-white/70 transition hover:text-white hover:drop-shadow-[0_0_6px_rgba(129,216,208,0.6)]"
+          className="text-lg text-zinc-500 transition hover:text-zinc-300 hover:drop-shadow-[0_0_6px_rgba(113,113,122,0.4)]"
           title="다음곡"
         >
           ⏭
