@@ -3,6 +3,16 @@ import { redirect } from "next/navigation";
 import { registerMember } from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
 
+function isRedirectError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof (error as { digest?: unknown }).digest === "string" &&
+    (error as { digest: string }).digest.includes("NEXT_REDIRECT")
+  );
+}
+
 async function signupAction(formData: FormData) {
   "use server";
 
@@ -18,7 +28,11 @@ async function signupAction(formData: FormData) {
     }
 
     redirect("/auth/login");
-  } catch {
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+
     const message = encodeURIComponent("서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
     redirect(`/auth/signup?error=${message}`);
   }

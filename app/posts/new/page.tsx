@@ -5,6 +5,16 @@ import { addPost } from "@/lib/posts";
 import { addGuestPost } from "@/lib/guest-posts";
 import { getMemberProfile, requireSession } from "@/lib/auth";
 
+function isRedirectError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof (error as { digest?: unknown }).digest === "string" &&
+    (error as { digest: string }).digest.includes("NEXT_REDIRECT")
+  );
+}
+
 async function createPost(formData: FormData) {
   "use server";
 
@@ -49,7 +59,11 @@ async function createPost(formData: FormData) {
     revalidatePath("/posts");
     revalidatePath("/guest");
     redirect("/posts");
-  } catch {
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+
     const message = encodeURIComponent("서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
     redirect(`/posts/new?error=${message}`);
   }
