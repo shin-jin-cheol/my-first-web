@@ -6,7 +6,7 @@ export default async function Home() {
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
       <section className="space-y-5">
         <h1 className="text-3xl font-black text-zinc-100 drop-shadow-[0_0_16px_rgba(129,216,208,0.45)] md:text-4xl">
-          공인재 신진철의 생존일기
+          신진철의 홈페이지 입니다
         </h1>
         <p className="max-w-2xl text-zinc-300">
           한신대학교 공공인재빅데이터융합학과 신진철의 생존과정

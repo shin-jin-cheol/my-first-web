@@ -161,7 +161,7 @@ export default function BgmPlayer() {
   };
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 w-[min(92vw,420px)] space-y-3 rounded-3xl border border-white/20 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-800/60 p-4 shadow-[0_0_40px_rgba(129,216,208,0.2),0_0_80px_rgba(129,216,208,0.1)] backdrop-blur-xl">
+    <div className="fixed bottom-5 right-5 z-50 w-[min(88vw,340px)] space-y-3 rounded-3xl border border-white/20 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-800/60 p-4 shadow-[0_0_40px_rgba(129,216,208,0.2),0_0_80px_rgba(129,216,208,0.1)] backdrop-blur-xl">
       <audio ref={audioRef} src={selectedSrc} preload="auto" />
       <label htmlFor="bgm-track" className="sr-only">
         BGM 선택
