@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { del, put } from "@vercel/blob";
 
 export type Post = {
   id: number;
@@ -92,10 +93,24 @@ async function saveAttachmentFile(file?: File | null): Promise<{ fileUrl: string
     return undefined;
   }
 
-  await ensureUploadsDir();
-
   const safeName = sanitizeFileName(file.name || "upload.bin");
   const uniqueName = `${Date.now()}-${safeName}`;
+
+  // In production (or when token is configured), upload to Vercel Blob for persistent storage.
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`uploads/${uniqueName}`, file, {
+      access: "public",
+      addRandomSuffix: false,
+    });
+
+    return {
+      fileUrl: blob.url,
+      fileName: file.name || safeName,
+    };
+  }
+
+  await ensureUploadsDir();
+
   const filePath = path.join(UPLOADS_DIR, uniqueName);
   const fileBuffer = Buffer.from(await file.arrayBuffer());
 
@@ -117,6 +132,25 @@ async function removeLocalAttachment(fileUrl?: string) {
     await fs.unlink(filePath);
   } catch {
     // no-op when file does not exist
+  }
+}
+
+async function removeAttachment(fileUrl?: string) {
+  if (!fileUrl) {
+    return;
+  }
+
+  if (fileUrl.startsWith("/uploads/")) {
+    await removeLocalAttachment(fileUrl);
+    return;
+  }
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
+      await del(fileUrl);
+    } catch {
+      // no-op when deletion fails or file already removed
+    }
   }
 }
 
@@ -169,11 +203,14 @@ export async function addPost(input: NewPostInput): Promise<Post> {
 
 export async function deletePostById(id: number): Promise<boolean> {
   const posts = await readPosts();
+  const targetPost = posts.find((post) => post.id === id);
   const filtered = posts.filter((post) => post.id !== id);
 
   if (filtered.length === posts.length) {
     return false;
   }
+
+  await removeAttachment(targetPost?.fileUrl);
 
   await writePosts(filtered);
   return true;
@@ -194,13 +231,13 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
   let nextFileName = currentPost.fileName;
 
   if (input.removeAttachment) {
-    await removeLocalAttachment(currentPost.fileUrl);
+    await removeAttachment(currentPost.fileUrl);
     nextFileUrl = undefined;
     nextFileName = undefined;
   }
 
   if (attachment) {
-    await removeLocalAttachment(currentPost.fileUrl);
+    await removeAttachment(currentPost.fileUrl);
     nextFileUrl = attachment.fileUrl;
     nextFileName = attachment.fileName;
   }
