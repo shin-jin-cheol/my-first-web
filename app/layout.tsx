@@ -58,6 +58,9 @@ export default function RootLayout({
                 </svg>
                 <span className="sr-only">인스타그램 바로가기 (@whflwls)</span>
               </a>
+              <p className="bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#515bd4] bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_10px_rgba(221,42,123,0.35)]">
+                @whflwls
+              </p>
               <a
                 href="mailto:sjc5001@hs.ac.kr"
                 aria-label="이메일 보내기"
@@ -75,7 +78,9 @@ export default function RootLayout({
                 </svg>
                 <span className="sr-only">이메일 보내기 (sjc5001@hs.ac.kr)</span>
               </a>
-              <p className="text-sm text-zinc-300">sjc5001@hs.ac.kr</p>
+              <p className="bg-gradient-to-br from-[#ea4335] via-[#fbbc05] to-[#34a853] bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_10px_rgba(234,67,53,0.3)]">
+                sjc5001@hs.ac.kr
+              </p>
             </div>
           </div>
         </footer>
