@@ -5,14 +5,11 @@ export default async function Home() {
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
       <section className="space-y-5">
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-400">
-          Y2K Cyber Deck
-        </p>
-        <h1 className="text-4xl font-black text-zinc-100 drop-shadow-[0_0_16px_rgba(129,216,208,0.45)] md:text-5xl">
+        <h1 className="text-3xl font-black text-zinc-100 drop-shadow-[0_0_16px_rgba(129,216,208,0.45)] md:text-4xl">
           공인재 신진철의 생존일기
         </h1>
         <p className="max-w-2xl text-zinc-300">
-          회로 신호가 흐르는 Y2K 사이버 감성의 메인 화면입니다. 게시글은 우측 사이드바에서 바로 이동해 확인하세요.
+          한신대학교 공공인재빅데이터융합학과 신진철의 생존과정
         </p>
 
         <div className="relative overflow-hidden rounded-3xl border border-cyan-400/30 bg-zinc-900/60 shadow-[0_0_32px_rgba(129,216,208,0.2)] backdrop-blur">
@@ -29,7 +26,7 @@ export default async function Home() {
       </section>
 
       <aside className="lg:sticky lg:top-24 lg:self-start">
-        <div className="space-y-4 rounded-2xl border border-white/20 bg-white/10 p-5 shadow-[0_0_28px_rgba(129,216,208,0.15)] backdrop-blur-md">
+        <div className="min-h-[560px] space-y-4 rounded-2xl border border-white/20 bg-white/10 p-5 shadow-[0_0_28px_rgba(129,216,208,0.15)] backdrop-blur-md">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
             Quick Menu
           </p>
@@ -43,6 +40,15 @@ export default async function Home() {
           >
             게시글 목록 열기
           </Link>
+          <Link
+            href="/posts/new"
+            className="inline-flex w-full items-center justify-center rounded-full border border-zinc-500 bg-zinc-800/80 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:-translate-y-0.5 hover:bg-zinc-700"
+          >
+            새 글 쓰기
+          </Link>
+          <div className="rounded-xl border border-zinc-700/80 bg-zinc-900/60 p-3 text-xs leading-6 text-zinc-400">
+            QUICK NOTE: 우측 메뉴에서 게시글 목록으로 이동하고, 새 글 작성도 바로 시작할 수 있습니다.
+          </div>
         </div>
       </aside>
     </div>
