@@ -8,6 +8,8 @@ export type Post = {
   author: string;
   date: string;
   linkUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
 };
 
 type NewPostInput = {
@@ -15,6 +17,7 @@ type NewPostInput = {
   content: string;
   author: string;
   linkUrl?: string;
+  attachmentFile?: File | null;
 };
 
 type UpdatePostInput = {
@@ -22,10 +25,13 @@ type UpdatePostInput = {
   content: string;
   author: string;
   linkUrl?: string;
+  attachmentFile?: File | null;
+  removeAttachment?: boolean;
 };
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const POSTS_FILE = path.join(DATA_DIR, "posts.json");
+const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
 
 const initialPosts: Post[] = [
   {
@@ -73,6 +79,47 @@ async function writePosts(posts: Post[]) {
   await fs.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2), "utf-8");
 }
 
+function sanitizeFileName(fileName: string): string {
+  return fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
+}
+
+async function ensureUploadsDir() {
+  await fs.mkdir(UPLOADS_DIR, { recursive: true });
+}
+
+async function saveAttachmentFile(file?: File | null): Promise<{ fileUrl: string; fileName: string } | undefined> {
+  if (!file || file.size === 0) {
+    return undefined;
+  }
+
+  await ensureUploadsDir();
+
+  const safeName = sanitizeFileName(file.name || "upload.bin");
+  const uniqueName = `${Date.now()}-${safeName}`;
+  const filePath = path.join(UPLOADS_DIR, uniqueName);
+  const fileBuffer = Buffer.from(await file.arrayBuffer());
+
+  await fs.writeFile(filePath, fileBuffer);
+
+  return {
+    fileUrl: `/uploads/${uniqueName}`,
+    fileName: file.name || safeName,
+  };
+}
+
+async function removeLocalAttachment(fileUrl?: string) {
+  if (!fileUrl || !fileUrl.startsWith("/uploads/")) {
+    return;
+  }
+
+  const filePath = path.join(process.cwd(), "public", fileUrl.replace(/^\//, ""));
+  try {
+    await fs.unlink(filePath);
+  } catch {
+    // no-op when file does not exist
+  }
+}
+
 function normalizeLinkUrl(input?: string): string | undefined {
   if (!input) {
     return undefined;
@@ -102,6 +149,7 @@ export async function getPostById(id: number): Promise<Post | undefined> {
 export async function addPost(input: NewPostInput): Promise<Post> {
   const posts = await readPosts();
   const nextPostId = posts.reduce((maxId, post) => Math.max(maxId, post.id), 0) + 1;
+  const attachment = await saveAttachmentFile(input.attachmentFile);
 
   const post: Post = {
     id: nextPostId,
@@ -110,6 +158,8 @@ export async function addPost(input: NewPostInput): Promise<Post> {
     author: input.author,
     date: new Date().toISOString().slice(0, 10),
     linkUrl: normalizeLinkUrl(input.linkUrl),
+    fileUrl: attachment?.fileUrl,
+    fileName: attachment?.fileName,
   };
 
   posts.unshift(post);
@@ -137,12 +187,32 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
     return undefined;
   }
 
+  const currentPost = posts[index];
+  const attachment = await saveAttachmentFile(input.attachmentFile);
+
+  let nextFileUrl = currentPost.fileUrl;
+  let nextFileName = currentPost.fileName;
+
+  if (input.removeAttachment) {
+    await removeLocalAttachment(currentPost.fileUrl);
+    nextFileUrl = undefined;
+    nextFileName = undefined;
+  }
+
+  if (attachment) {
+    await removeLocalAttachment(currentPost.fileUrl);
+    nextFileUrl = attachment.fileUrl;
+    nextFileName = attachment.fileName;
+  }
+
   const updatedPost: Post = {
-    ...posts[index],
+    ...currentPost,
     title: input.title,
     content: input.content,
     author: input.author,
     linkUrl: normalizeLinkUrl(input.linkUrl),
+    fileUrl: nextFileUrl,
+    fileName: nextFileName,
   };
 
   posts[index] = updatedPost;

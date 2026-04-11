@@ -10,12 +10,19 @@ async function createPost(formData: FormData) {
   const author = String(formData.get("author") ?? "").trim();
   const content = String(formData.get("content") ?? "").trim();
   const linkUrl = String(formData.get("linkUrl") ?? "").trim();
+  const attachmentFile = formData.get("attachment");
 
   if (!title || !author || !content) {
     return;
   }
 
-  await addPost({ title, author, content, linkUrl });
+  await addPost({
+    title,
+    author,
+    content,
+    linkUrl,
+    attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
+  });
 
   revalidatePath("/");
   revalidatePath("/posts");
@@ -93,6 +100,18 @@ export default function NewPostPage() {
             type="url"
             placeholder="https://example.com"
             className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none transition focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="attachment" className="text-sm font-medium text-zinc-200">
+            파일 업로드 (선택)
+          </label>
+          <input
+            id="attachment"
+            name="attachment"
+            type="file"
+            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-100 file:mr-4 file:rounded-full file:border-0 file:bg-zinc-700 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-zinc-100 hover:file:bg-zinc-600"
           />
         </div>
 

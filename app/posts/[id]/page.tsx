@@ -65,6 +65,18 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         </a>
       ) : null}
 
+      {post.fileUrl ? (
+        <a
+          href={post.fileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-full border border-zinc-500/60 bg-white/10 px-4 py-2 text-sm font-semibold text-zinc-100 shadow-[0_0_14px_rgba(129,216,208,0.25)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
+        >
+          <span className="inline-block h-2 w-2 rounded-full bg-zinc-200" />
+          파일 열기
+        </a>
+      ) : null}
+
       <div className="flex items-center gap-3">
         <Link
           href="/posts"
