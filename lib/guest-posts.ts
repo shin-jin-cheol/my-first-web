@@ -61,21 +61,19 @@ async function readGuestPostsFromBlob(): Promise<GuestPost[]> {
     return [];
   }
 
-  if (!guestPostsBlobUrlCache) {
-    await refreshGuestPostsBlobUrlCache();
+  await refreshGuestPostsBlobUrlCache();
 
-    const seed = guestPostsBlobUrlCache
-      ? null
-      : await put(GUEST_POSTS_BLOB_KEY, JSON.stringify([], null, 2), {
-          access: "public",
-          addRandomSuffix: false,
-          allowOverwrite: false,
-          contentType: "application/json",
-        }).catch(() => null);
+  const seed = guestPostsBlobUrlCache
+    ? null
+    : await put(GUEST_POSTS_BLOB_KEY, JSON.stringify([], null, 2), {
+        access: "public",
+        addRandomSuffix: false,
+        allowOverwrite: false,
+        contentType: "application/json",
+      }).catch(() => null);
 
-    if (seed?.url) {
-      guestPostsBlobUrlCache = seed.url;
-    }
+  if (seed?.url) {
+    guestPostsBlobUrlCache = seed.url;
   }
 
   if (!guestPostsBlobUrlCache) {

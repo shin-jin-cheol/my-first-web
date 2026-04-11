@@ -64,21 +64,19 @@ async function readUsersFromBlob(): Promise<Member[]> {
     return [];
   }
 
-  if (!usersBlobUrlCache) {
-    await refreshUsersBlobUrlCache();
+  await refreshUsersBlobUrlCache();
 
-    const seed = usersBlobUrlCache
-      ? null
-      : await put(USERS_BLOB_KEY, JSON.stringify([], null, 2), {
-          access: "public",
-          addRandomSuffix: false,
-          allowOverwrite: false,
-          contentType: "application/json",
-        }).catch(() => null);
+  const seed = usersBlobUrlCache
+    ? null
+    : await put(USERS_BLOB_KEY, JSON.stringify([], null, 2), {
+        access: "public",
+        addRandomSuffix: false,
+        allowOverwrite: false,
+        contentType: "application/json",
+      }).catch(() => null);
 
-    if (seed?.url) {
-      usersBlobUrlCache = seed.url;
-    }
+  if (seed?.url) {
+    usersBlobUrlCache = seed.url;
   }
 
   if (!usersBlobUrlCache) {
