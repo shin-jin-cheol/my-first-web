@@ -9,9 +9,11 @@
   {
     "id": 4,
     "title": "웹프로그래밍 Quiz",
-    "content": "html 업로드 예정",
+    "content": "파일을 다운로드 후 Chrom브라우저를 실행 시켜 첫 화면에 드래그 하여 옮기면 퀴즈가 시작 됩니다.",
     "author": "신진철",
-    "date": "2026-04-11"
+    "date": "2026-04-11",
+    "fileUrl": "/uploads/1775919291063-quiz.html",
+    "fileName": "quiz.html"
   },
   {
     "id": 1,
