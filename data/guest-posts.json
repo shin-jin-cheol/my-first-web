@@ -4,7 +4,16 @@
     "title": "테스트",
     "content": "테스트",
     "authorId": "sss111",
-    "date": "2026-04-11"
+    "date": "2026-04-11",
+    "comments": [
+      {
+        "id": 1,
+        "authorId": "sss111",
+        "authorName": "sss111",
+        "content": "ㅎㅇ",
+        "dateTime": "2026-04-12 02:12:12"
+      }
+    ]
   },
   {
     "id": 2,
