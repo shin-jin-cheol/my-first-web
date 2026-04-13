@@ -1,12 +1,42 @@
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import { del, put } from "@vercel/blob";
+
 export type Post = {
   id: number;
   title: string;
   content: string;
   author: string;
+  authorId?: string;
   date: string;
+  linkUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
 };
 
-export const posts: Post[] = [
+type NewPostInput = {
+  title: string;
+  content: string;
+  author: string;
+  authorId?: string;
+  linkUrl?: string;
+  attachmentFile?: File | null;
+};
+
+type UpdatePostInput = {
+  title: string;
+  content: string;
+  author: string;
+  linkUrl?: string;
+  attachmentFile?: File | null;
+  removeAttachment?: boolean;
+};
+
+const DATA_DIR = path.join(process.cwd(), "data");
+const POSTS_FILE = path.join(DATA_DIR, "posts.json");
+const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
+
+const initialPosts: Post[] = [
   {
     id: 1,
     title: "Next.js 16 App Router 시작하기",
@@ -32,3 +62,206 @@ export const posts: Post[] = [
     date: "2026-03-31",
   },
 ];
+
+async function ensurePostsFile() {
+  try {
+    await fs.access(POSTS_FILE);
+  } catch {
+    await fs.mkdir(DATA_DIR, { recursive: true });
+    await fs.writeFile(POSTS_FILE, JSON.stringify(initialPosts, null, 2), "utf-8");
+  }
+}
+
+async function readPosts(): Promise<Post[]> {
+  await ensurePostsFile();
+  const raw = await fs.readFile(POSTS_FILE, "utf-8");
+  return JSON.parse(raw) as Post[];
+}
+
+async function writePosts(posts: Post[]) {
+  await fs.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2), "utf-8");
+}
+
+function sanitizeFileName(fileName: string): string {
+  return fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
+}
+
+async function ensureUploadsDir() {
+  await fs.mkdir(UPLOADS_DIR, { recursive: true });
+}
+
+async function saveAttachmentFile(file?: File | null): Promise<{ fileUrl: string; fileName: string } | undefined> {
+  if (!file || file.size === 0) {
+    return undefined;
+  }
+
+  const safeName = sanitizeFileName(file.name || "upload.bin");
+  const uniqueName = `${Date.now()}-${safeName}`;
+
+  // In production (or when token is configured), upload to Vercel Blob for persistent storage.
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    const blob = await put(`uploads/${uniqueName}`, file, {
+      access: "public",
+      addRandomSuffix: false,
+    });
+
+    return {
+      fileUrl: blob.url,
+      fileName: file.name || safeName,
+    };
+  }
+
+  await ensureUploadsDir();
+
+  const filePath = path.join(UPLOADS_DIR, uniqueName);
+  const fileBuffer = Buffer.from(await file.arrayBuffer());
+
+  await fs.writeFile(filePath, fileBuffer);
+
+  return {
+    fileUrl: `/uploads/${uniqueName}`,
+    fileName: file.name || safeName,
+  };
+}
+
+async function removeLocalAttachment(fileUrl?: string) {
+  if (!fileUrl || !fileUrl.startsWith("/uploads/")) {
+    return;
+  }
+
+  const filePath = path.join(process.cwd(), "public", fileUrl.replace(/^\//, ""));
+  try {
+    await fs.unlink(filePath);
+  } catch {
+    // no-op when file does not exist
+  }
+}
+
+async function removeAttachment(fileUrl?: string) {
+  if (!fileUrl) {
+    return;
+  }
+
+  if (fileUrl.startsWith("/uploads/")) {
+    await removeLocalAttachment(fileUrl);
+    return;
+  }
+
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
+      await del(fileUrl);
+    } catch {
+      // no-op when deletion fails or file already removed
+    }
+  }
+}
+
+function normalizeLinkUrl(input?: string): string | undefined {
+  if (!input) {
+    return undefined;
+  }
+
+  const trimmed = input.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+
+  return `https://${trimmed}`;
+}
+
+function getKstDateString() {
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Seoul",
+  }).format(new Date());
+}
+
+export async function getPosts(): Promise<Post[]> {
+  return readPosts();
+}
+
+export async function getPostById(id: number): Promise<Post | undefined> {
+  const posts = await readPosts();
+  return posts.find((post) => post.id === id);
+}
+
+export async function addPost(input: NewPostInput): Promise<Post> {
+  const posts = await readPosts();
+  const nextPostId = posts.reduce((maxId, post) => Math.max(maxId, post.id), 0) + 1;
+  const attachment = await saveAttachmentFile(input.attachmentFile);
+
+  const post: Post = {
+    id: nextPostId,
+    title: input.title,
+    content: input.content,
+    author: input.author,
+    authorId: input.authorId,
+    date: getKstDateString(),
+    linkUrl: normalizeLinkUrl(input.linkUrl),
+    fileUrl: attachment?.fileUrl,
+    fileName: attachment?.fileName,
+  };
+
+  posts.unshift(post);
+  await writePosts(posts);
+  return post;
+}
+
+export async function deletePostById(id: number): Promise<boolean> {
+  const posts = await readPosts();
+  const targetPost = posts.find((post) => post.id === id);
+  const filtered = posts.filter((post) => post.id !== id);
+
+  if (filtered.length === posts.length) {
+    return false;
+  }
+
+  await removeAttachment(targetPost?.fileUrl);
+
+  await writePosts(filtered);
+  return true;
+}
+
+export async function updatePostById(id: number, input: UpdatePostInput): Promise<Post | undefined> {
+  const posts = await readPosts();
+  const index = posts.findIndex((post) => post.id === id);
+
+  if (index === -1) {
+    return undefined;
+  }
+
+  const currentPost = posts[index];
+  const attachment = await saveAttachmentFile(input.attachmentFile);
+
+  let nextFileUrl = currentPost.fileUrl;
+  let nextFileName = currentPost.fileName;
+
+  if (input.removeAttachment) {
+    await removeAttachment(currentPost.fileUrl);
+    nextFileUrl = undefined;
+    nextFileName = undefined;
+  }
+
+  if (attachment) {
+    await removeAttachment(currentPost.fileUrl);
+    nextFileUrl = attachment.fileUrl;
+    nextFileName = attachment.fileName;
+  }
+
+  const updatedPost: Post = {
+    ...currentPost,
+    title: input.title,
+    content: input.content,
+    author: input.author,
+    linkUrl: normalizeLinkUrl(input.linkUrl),
+    fileUrl: nextFileUrl,
+    fileName: nextFileName,
+  };
+
+  posts[index] = updatedPost;
+  await writePosts(posts);
+  return updatedPost;
+}
