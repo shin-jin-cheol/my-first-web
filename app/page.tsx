@@ -7,7 +7,7 @@ export default async function Home() {
   const isEnglish = locale === "en";
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
+    <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_280px]">
       <section className="space-y-5">
         <div className="min-h-[128px] space-y-3 md:min-h-[150px]">
           <h1
@@ -35,7 +35,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <aside className="lg:h-full">
+      <aside className="hidden md:block md:h-full">
         <div className="space-y-4 rounded-2xl border border-white/20 bg-white/10 p-5 shadow-[0_0_28px_rgba(129,216,208,0.15)] backdrop-blur-md lg:h-full">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
             Quick Menu
