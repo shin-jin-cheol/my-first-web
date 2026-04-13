@@ -4,21 +4,28 @@ import { getLocale, t } from "@/lib/i18n";
 
 export default async function Home() {
   const locale = await getLocale();
+  const isEnglish = locale === "en";
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
       <section className="space-y-5">
-        <h1 className="text-3xl font-black text-zinc-100 drop-shadow-[0_0_16px_rgba(129,216,208,0.45)] md:text-4xl">
-          {t(locale, "신진철의 홈페이지 입니다", "Welcome to SJC's Homepage")}
-        </h1>
-        <p className="max-w-2xl text-zinc-300">
-          {t(locale, "한신대학교 공공인재빅데이터융합학과 신진철의 생존과정", "Survival journey of Jincheol Shin, Public Talent and Big Data Convergence, Hanshin University")}
-        </p>
+        <div className="min-h-[128px] space-y-3 md:min-h-[150px]">
+          <h1
+            className={`font-black text-zinc-100 drop-shadow-[0_0_16px_rgba(129,216,208,0.45)] ${
+              isEnglish ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl"
+            }`}
+          >
+            {t(locale, "신진철의 홈페이지 입니다", "Welcome to SJC's Homepage")}
+          </h1>
+          <p className={`max-w-2xl text-zinc-300 ${isEnglish ? "text-sm" : "text-base"}`}>
+            {t(locale, "한신대학교 공공인재빅데이터융합학과 신진철의 생존과정", "Survival journey of Jincheol Shin, Public Talent and Big Data Convergence, Hanshin University")}
+          </p>
+        </div>
 
         <div className="relative overflow-hidden rounded-3xl border border-cyan-400/30 bg-zinc-900/60 shadow-[0_0_32px_rgba(129,216,208,0.2)] backdrop-blur">
           <Image
-            src="/cyber-circuit.svg"
-            alt="Y2K 사이버 회로도 배경"
+            src="/mz-hero.svg"
+            alt="MZ 감성 무드보드 스타일 배경"
             width={1600}
             height={1000}
             priority
@@ -28,8 +35,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <aside className="lg:sticky lg:top-24 lg:self-start">
-        <div className="min-h-[560px] space-y-4 rounded-2xl border border-white/20 bg-white/10 p-5 shadow-[0_0_28px_rgba(129,216,208,0.15)] backdrop-blur-md">
+      <aside className="lg:h-full">
+        <div className="space-y-4 rounded-2xl border border-white/20 bg-white/10 p-5 shadow-[0_0_28px_rgba(129,216,208,0.15)] backdrop-blur-md lg:h-full">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
             Quick Menu
           </p>

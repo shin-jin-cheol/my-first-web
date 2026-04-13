@@ -7,12 +7,15 @@ import { requireSession } from "@/lib/auth";
 
 type EditGuestPostPageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 };
 
-export default async function EditGuestPostPage({ params }: EditGuestPostPageProps) {
+export default async function EditGuestPostPage({ params, searchParams }: EditGuestPostPageProps) {
   const locale = await getLocale();
   const session = await requireSession();
   const { id } = await params;
+  const query = await searchParams;
+  const errorMessage = query.error ? decodeURIComponent(query.error) : "";
   const postId = Number(id);
 
   if (!Number.isFinite(postId) || postId <= 0) {
@@ -46,8 +49,14 @@ export default async function EditGuestPostPage({ params }: EditGuestPostPagePro
     const title = String(formData.get("title") ?? "").trim();
     const content = String(formData.get("content") ?? "").trim();
 
-    if (!title || !content) {
-      return;
+    if (!title) {
+      const message = encodeURIComponent("제목을 입력하세요");
+      redirect(`/guest/${postId}/edit?error=${message}`);
+    }
+
+    if (!content) {
+      const message = encodeURIComponent("내용을 입력해 주세요.");
+      redirect(`/guest/${postId}/edit?error=${message}`);
     }
 
     await updateGuestPostById(postId, { title, content });
@@ -63,6 +72,10 @@ export default async function EditGuestPostPage({ params }: EditGuestPostPagePro
         <h1 className="text-4xl font-extrabold text-zinc-100">{t(locale, "게스트 글 수정", "Edit Guest Post")}</h1>
       </header>
 
+      {errorMessage ? (
+        <p className="rounded-xl border border-red-400/50 bg-red-500/10 px-4 py-3 text-sm text-red-300">{errorMessage}</p>
+      ) : null}
+
       <form action={updateGuestPostAction} className="space-y-5 rounded-2xl border border-zinc-700 bg-zinc-800 p-6">
         <div className="space-y-2">
           <label htmlFor="title" className="text-sm font-medium text-zinc-200">
@@ -72,7 +85,6 @@ export default async function EditGuestPostPage({ params }: EditGuestPostPagePro
             id="title"
             name="title"
             type="text"
-            required
             defaultValue={post.title}
             className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none focus:border-[#81d8d0]"
           />

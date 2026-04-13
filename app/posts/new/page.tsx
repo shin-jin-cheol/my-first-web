@@ -33,8 +33,13 @@ async function createPost(formData: FormData) {
       author = profile?.name?.trim() || session.userName?.trim() || session.userId;
     }
 
-    if (!title || !author || !content) {
-      const message = encodeURIComponent("제목, 작성자, 내용을 입력해 주세요.");
+    if (!title) {
+      const message = encodeURIComponent("제목을 입력하시오");
+      redirect(`/posts/new?error=${message}`);
+    }
+
+    if (!author || !content) {
+      const message = encodeURIComponent("작성자, 내용을 입력해 주세요.");
       redirect(`/posts/new?error=${message}`);
     }
 
@@ -110,7 +115,6 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             id="title"
             name="title"
             type="text"
-            required
             placeholder="제목을 입력하세요"
             className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none transition focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"
           />

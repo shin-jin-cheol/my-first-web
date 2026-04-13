@@ -4,6 +4,7 @@ import Link from "next/link";
 import { deleteGuestPostById, getGuestPosts } from "@/lib/guest-posts";
 import { getMemberSummaries, requireSession } from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
+import GuestPostsSearchList from "@/app/components/GuestPostsSearchList";
 
 type GuestBoardPageProps = {
   searchParams: Promise<{ error?: string }>;
@@ -63,44 +64,26 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
       ) : null}
 
       <div className="space-y-4">
-        {posts.length === 0 ? (
-          <p className="text-zinc-400">{t(locale, "아직 게스트 게시글이 없습니다.", "There are no guest posts yet.")}</p>
-        ) : (
-          posts.map((post) => (
-            <article key={post.id} className="space-y-3 rounded-2xl border border-zinc-700 bg-zinc-800 p-5">
-              <h2 className="text-xl font-bold text-zinc-100">
-                <Link href={`/guest/${post.id}`} className="transition hover:text-cyan-200">
-                  {post.title}
-                </Link>
-              </h2>
-              <p className="text-zinc-300">{post.content}</p>
-              <div className="flex items-center justify-between text-sm text-zinc-400">
-                <p>{t(locale, "작성자", "Author")}: {post.authorName || memberNameById.get(post.authorId) || post.authorId}</p>
-                <p>{post.date}</p>
-              </div>
-
-              {session.role === "owner" || (session.role === "member" && post.authorId === session.userId) ? (
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={`/guest/${post.id}/edit`}
-                    className="rounded-full border border-cyan-500/50 bg-cyan-500/10 px-4 py-1.5 text-sm font-semibold text-cyan-200 hover:bg-cyan-500/20"
-                  >
-                    {t(locale, "수정하기", "Edit")}
-                  </Link>
-                  <form action={deleteGuestPostAction}>
-                    <input type="hidden" name="postId" value={post.id} />
-                    <button
-                      type="submit"
-                      className="rounded-full border border-red-400/60 bg-red-500/20 px-4 py-1.5 text-sm font-semibold text-red-300 hover:bg-red-500/30"
-                    >
-                      {t(locale, "삭제하기", "Delete")}
-                    </button>
-                  </form>
-                </div>
-              ) : null}
-            </article>
-          ))
-        )}
+        <GuestPostsSearchList
+          posts={posts.map((post) => ({
+            id: post.id,
+            title: post.title,
+            content: post.content,
+            authorId: post.authorId,
+            authorDisplay: post.authorName || memberNameById.get(post.authorId) || post.authorId,
+            date: post.date,
+          }))}
+          labels={{
+            searchPlaceholder: t(locale, "제목, 내용, 작성자 검색", "Search title, content, author"),
+            empty: t(locale, "검색 결과가 없습니다.", "No matching posts found."),
+            author: t(locale, "작성자", "Author"),
+            edit: t(locale, "수정하기", "Edit"),
+            delete: t(locale, "삭제하기", "Delete"),
+          }}
+          sessionRole={session.role}
+          sessionUserId={session.userId}
+          deleteAction={deleteGuestPostAction}
+        />
       </div>
     </section>
   );
