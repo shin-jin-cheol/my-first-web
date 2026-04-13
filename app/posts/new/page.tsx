@@ -105,6 +105,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
 
       <form
         action={createPost}
+        encType="multipart/form-data"
         className="space-y-5 rounded-2xl border border-zinc-700 bg-zinc-800 p-6 shadow-[0_0_28px_rgba(129,216,208,0.16)]"
       >
         <div className="space-y-2">
@@ -157,7 +158,9 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
           <input
             id="linkUrl"
             name="linkUrl"
-            type="url"
+            type="text"
+            inputMode="url"
+            autoComplete="url"
             placeholder="https://example.com"
             className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none transition focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"
           />

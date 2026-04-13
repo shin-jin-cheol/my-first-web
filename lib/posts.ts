@@ -70,6 +70,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SUPABASE_POSTS_TABLE = process.env.SUPABASE_POSTS_TABLE || "posts";
 const SUPABASE_POST_COMMENTS_TABLE = process.env.SUPABASE_POST_COMMENTS_TABLE || "post_comments";
+const SUPABASE_UPLOADS_BUCKET = process.env.SUPABASE_UPLOADS_BUCKET || "uploads";
 
 const initialPosts: Post[] = [
   {
@@ -120,6 +121,23 @@ function getSupabasePostCommentsEndpoint(query = "") {
 
   const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${SUPABASE_POST_COMMENTS_TABLE}`;
   return `${base}${query}`;
+}
+
+function getSupabaseStorageObjectEndpoint(pathname = "") {
+  if (!SUPABASE_URL) {
+    return "";
+  }
+
+  const base = `${SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object`;
+  return `${base}${pathname}`;
+}
+
+function getSupabasePublicFileUrl(storagePath: string) {
+  if (!SUPABASE_URL) {
+    return "";
+  }
+
+  return `${SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object/public/${SUPABASE_UPLOADS_BUCKET}/${storagePath}`;
 }
 
 async function requestSupabase<T>(
@@ -337,6 +355,93 @@ function sanitizeFileName(fileName: string): string {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
 }
 
+async function uploadAttachmentToSupabaseStorage(file: File, uniqueName: string) {
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    return undefined;
+  }
+
+  const storagePath = `uploads/${uniqueName}`;
+  const response = await fetch(
+    getSupabaseStorageObjectEndpoint(`/${SUPABASE_UPLOADS_BUCKET}/${storagePath}`),
+    {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        "Content-Type": file.type || "application/octet-stream",
+        "x-upsert": "false",
+      },
+      body: Buffer.from(await file.arrayBuffer()),
+      cache: "no-store",
+    },
+  );
+
+  if (!response.ok) {
+    return undefined;
+  }
+
+  return {
+    fileUrl: getSupabasePublicFileUrl(storagePath),
+    fileName: file.name || uniqueName,
+  };
+}
+
+function extractSupabaseStoragePath(fileUrl?: string) {
+  if (!fileUrl) {
+    return undefined;
+  }
+
+  const publicPrefix = `/storage/v1/object/public/${SUPABASE_UPLOADS_BUCKET}/`;
+  const privatePrefix = `/storage/v1/object/${SUPABASE_UPLOADS_BUCKET}/`;
+
+  try {
+    const parsed = new URL(fileUrl);
+    if (parsed.pathname.startsWith(publicPrefix)) {
+      return parsed.pathname.slice(publicPrefix.length);
+    }
+
+    if (parsed.pathname.startsWith(privatePrefix)) {
+      return parsed.pathname.slice(privatePrefix.length);
+    }
+
+    return undefined;
+  } catch {
+    if (fileUrl.startsWith(publicPrefix)) {
+      return fileUrl.slice(publicPrefix.length);
+    }
+
+    if (fileUrl.startsWith(privatePrefix)) {
+      return fileUrl.slice(privatePrefix.length);
+    }
+
+    return undefined;
+  }
+}
+
+async function removeSupabaseAttachment(fileUrl?: string) {
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    return;
+  }
+
+  const storagePath = extractSupabaseStoragePath(fileUrl);
+  if (!storagePath) {
+    return;
+  }
+
+  try {
+    await fetch(getSupabaseStorageObjectEndpoint(`/${SUPABASE_UPLOADS_BUCKET}/${storagePath}`), {
+      method: "DELETE",
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      },
+      cache: "no-store",
+    });
+  } catch {
+    // no-op when deletion fails or file already removed
+  }
+}
+
 async function ensureUploadsDir() {
   await fs.mkdir(UPLOADS_DIR, { recursive: true });
 }
@@ -348,6 +453,13 @@ async function saveAttachmentFile(file?: File | null): Promise<{ fileUrl: string
 
   const safeName = sanitizeFileName(file.name || "upload.bin");
   const uniqueName = `${Date.now()}-${safeName}`;
+
+  if (hasSupabaseStorage()) {
+    const uploaded = await uploadAttachmentToSupabaseStorage(file, uniqueName);
+    if (uploaded) {
+      return uploaded;
+    }
+  }
 
   // In production (or when token is configured), upload to Vercel Blob for persistent storage.
   if (process.env.BLOB_READ_WRITE_TOKEN) {
@@ -391,6 +503,10 @@ async function removeLocalAttachment(fileUrl?: string) {
 async function removeAttachment(fileUrl?: string) {
   if (!fileUrl) {
     return;
+  }
+
+  if (hasSupabaseStorage()) {
+    await removeSupabaseAttachment(fileUrl);
   }
 
   if (fileUrl.startsWith("/uploads/")) {

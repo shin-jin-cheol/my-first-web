@@ -69,3 +69,8 @@ alter table public.post_comments
   add constraint post_comments_author_name_not_empty check (char_length(trim(author_name)) > 0),
   add constraint post_comments_content_not_empty check (char_length(trim(content)) > 0),
   add constraint post_comments_date_time_not_empty check (char_length(trim(date_time)) > 0);
+
+-- Durable attachment storage (files) in Supabase Storage
+insert into storage.buckets (id, name, public)
+values ('uploads', 'uploads', true)
+on conflict (id) do nothing;
