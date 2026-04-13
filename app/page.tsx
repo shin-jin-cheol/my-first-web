@@ -18,7 +18,7 @@ export default async function Home() {
             {t(locale, "Welecome to jincheol.zip-", "real survival story of jincheol.exe")}
           </h1>
           <p className={`max-w-2xl text-zinc-300 ${isEnglish ? "text-sm" : "text-base"}`}>
-            {t(locale, "Welcome to jincheol.zip-", "Real survival story of Jincheol.exe [at Hanshin University]")}
+            {t(locale, " Real survival story of Jincheol.exe [at Hanshin University]", "Real survival story of Jincheol.exe [at Hanshin University]")}
           </p>
         </div>
 
