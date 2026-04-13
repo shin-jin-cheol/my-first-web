@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { addGuestCommentById, deleteGuestPostById, getGuestPostById } from "@/lib/guest-posts";
+import {
+  addGuestCommentById,
+  deleteGuestCommentById,
+  deleteGuestPostById,
+  getGuestPostById,
+  updateGuestCommentById,
+} from "@/lib/guest-posts";
 import { getLocale, t } from "@/lib/i18n";
 import { requireSession } from "@/lib/auth";
 
@@ -74,6 +80,59 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
     redirect(`/guest/${postId}?commented=${Date.now()}`);
   }
 
+  async function updateCommentAction(formData: FormData) {
+    "use server";
+
+    const currentSession = await requireSession();
+    const commentId = Number(formData.get("commentId") ?? 0);
+    const content = String(formData.get("content") ?? "").trim();
+
+    if (!commentId || !content) {
+      redirect(`/guest/${postId}`);
+    }
+
+    const currentPost = await getGuestPostById(postId);
+    const targetComment = currentPost?.comments?.find((comment) => comment.id === commentId);
+    const canManageComment =
+      currentSession.role === "owner" || targetComment?.authorId === currentSession.userId;
+
+    if (!canManageComment) {
+      redirect(`/guest/${postId}`);
+    }
+
+    await updateGuestCommentById(postId, commentId, content);
+    revalidatePath(`/guest/${postId}`, "page");
+    revalidatePath("/guest", "page");
+    revalidatePath("/posts", "page");
+    redirect(`/guest/${postId}?comment-updated=${Date.now()}`);
+  }
+
+  async function deleteCommentAction(formData: FormData) {
+    "use server";
+
+    const currentSession = await requireSession();
+    const commentId = Number(formData.get("commentId") ?? 0);
+
+    if (!commentId) {
+      redirect(`/guest/${postId}`);
+    }
+
+    const currentPost = await getGuestPostById(postId);
+    const targetComment = currentPost?.comments?.find((comment) => comment.id === commentId);
+    const canManageComment =
+      currentSession.role === "owner" || targetComment?.authorId === currentSession.userId;
+
+    if (!canManageComment) {
+      redirect(`/guest/${postId}`);
+    }
+
+    await deleteGuestCommentById(postId, commentId);
+    revalidatePath(`/guest/${postId}`, "page");
+    revalidatePath("/guest", "page");
+    revalidatePath("/posts", "page");
+    redirect(`/guest/${postId}?comment-deleted=${Date.now()}`);
+  }
+
   return (
     <article className="space-y-6 rounded-2xl border border-zinc-700 bg-zinc-800 p-8 shadow-[0_0_22px_rgba(129,216,208,0.12)]">
       <header className="space-y-3">
@@ -143,6 +202,39 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
                   <p>{comment.dateTime}</p>
                 </div>
                 <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-300">{comment.content}</p>
+
+                {session.role === "owner" || session.userId === comment.authorId ? (
+                  <div className="mt-3 space-y-2">
+                    <form action={updateCommentAction} className="space-y-2">
+                      <input type="hidden" name="commentId" value={comment.id} />
+                      <textarea
+                        name="content"
+                        defaultValue={comment.content}
+                        required
+                        minLength={1}
+                        maxLength={500}
+                        rows={3}
+                        className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 outline-none ring-cyan-400/60 focus:ring"
+                      />
+                      <button
+                        type="submit"
+                        className="rounded-full border border-cyan-500/50 bg-cyan-500/10 px-4 py-1.5 text-sm font-semibold text-cyan-200"
+                      >
+                        {t(locale, "댓글 수정", "Edit Comment")}
+                      </button>
+                    </form>
+
+                    <form action={deleteCommentAction}>
+                      <input type="hidden" name="commentId" value={comment.id} />
+                      <button
+                        type="submit"
+                        className="rounded-full border border-red-400/60 bg-red-500/20 px-4 py-1.5 text-sm font-semibold text-red-300"
+                      >
+                        {t(locale, "댓글 삭제", "Delete Comment")}
+                      </button>
+                    </form>
+                  </div>
+                ) : null}
               </li>
             ))}
           </ul>

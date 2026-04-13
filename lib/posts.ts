@@ -14,6 +14,15 @@ export type Post = {
   fileName?: string;
 };
 
+export type PostComment = {
+  id: number;
+  postId: number;
+  authorId: string;
+  authorName: string;
+  content: string;
+  dateTime: string;
+};
+
 type NewPostInput = {
   title: string;
   content: string;
@@ -32,9 +41,35 @@ type UpdatePostInput = {
   removeAttachment?: boolean;
 };
 
+type SupabasePostRow = {
+  id: number;
+  title: string;
+  content: string;
+  author: string;
+  author_id: string | null;
+  date: string;
+  link_url: string | null;
+  file_url: string | null;
+  file_name: string | null;
+};
+
+type SupabasePostCommentRow = {
+  id: number;
+  post_id: number;
+  author_id: string;
+  author_name: string;
+  content: string;
+  date_time: string;
+};
+
 const DATA_DIR = path.join(process.cwd(), "data");
-const POSTS_FILE = path.join(DATA_DIR, "posts.json");
+const POSTS_FILE_LOCAL = path.join(DATA_DIR, "posts.json");
+const POSTS_FILE_TMP = path.join("/tmp", "my-first-web-posts.json");
 const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_POSTS_TABLE = process.env.SUPABASE_POSTS_TABLE || "posts";
+const SUPABASE_POST_COMMENTS_TABLE = process.env.SUPABASE_POST_COMMENTS_TABLE || "post_comments";
 
 const initialPosts: Post[] = [
   {
@@ -63,23 +98,239 @@ const initialPosts: Post[] = [
   },
 ];
 
+let hasTriedSupabasePostsBootstrap = false;
+
+function hasSupabaseStorage() {
+  return Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+}
+
+function getSupabasePostsEndpoint(query = "") {
+  if (!SUPABASE_URL) {
+    return "";
+  }
+
+  const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${SUPABASE_POSTS_TABLE}`;
+  return `${base}${query}`;
+}
+
+function getSupabasePostCommentsEndpoint(query = "") {
+  if (!SUPABASE_URL) {
+    return "";
+  }
+
+  const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${SUPABASE_POST_COMMENTS_TABLE}`;
+  return `${base}${query}`;
+}
+
+async function requestSupabase<T>(
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  query: string,
+  body?: unknown,
+  prefer?: string,
+): Promise<{ ok: boolean; status: number; data: T | null }> {
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    return { ok: false, status: 500, data: null };
+  }
+
+  const headers: Record<string, string> = {
+    apikey: SUPABASE_SERVICE_ROLE_KEY,
+    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+    "Content-Type": "application/json",
+  };
+
+  if (prefer) {
+    headers.Prefer = prefer;
+  }
+
+  const response = await fetch(getSupabasePostsEndpoint(query), {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    return { ok: false, status: response.status, data: null };
+  }
+
+  if (response.status === 204) {
+    return { ok: true, status: response.status, data: null };
+  }
+
+  const data = (await response.json()) as T;
+  return { ok: true, status: response.status, data };
+}
+
+async function requestSupabasePostComments<T>(
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  query: string,
+  body?: unknown,
+  prefer?: string,
+): Promise<{ ok: boolean; status: number; data: T | null }> {
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    return { ok: false, status: 500, data: null };
+  }
+
+  const headers: Record<string, string> = {
+    apikey: SUPABASE_SERVICE_ROLE_KEY,
+    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+    "Content-Type": "application/json",
+  };
+
+  if (prefer) {
+    headers.Prefer = prefer;
+  }
+
+  const response = await fetch(getSupabasePostCommentsEndpoint(query), {
+    method,
+    headers,
+    body: body ? JSON.stringify(body) : undefined,
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    return { ok: false, status: response.status, data: null };
+  }
+
+  if (response.status === 204) {
+    return { ok: true, status: response.status, data: null };
+  }
+
+  const data = (await response.json()) as T;
+  return { ok: true, status: response.status, data };
+}
+
+function getKstDateTimeString() {
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  })
+    .format(new Date())
+    .replace(",", "");
+}
+
+function mapSupabaseRowToPost(row: SupabasePostRow): Post {
+  return {
+    id: row.id,
+    title: row.title,
+    content: row.content,
+    author: row.author,
+    authorId: row.author_id ?? undefined,
+    date: row.date,
+    linkUrl: row.link_url ?? undefined,
+    fileUrl: row.file_url ?? undefined,
+    fileName: row.file_name ?? undefined,
+  };
+}
+
+function mapPostToSupabaseRow(post: Post) {
+  return {
+    id: post.id,
+    title: post.title,
+    content: post.content,
+    author: post.author,
+    author_id: post.authorId ?? null,
+    date: post.date,
+    link_url: post.linkUrl ?? null,
+    file_url: post.fileUrl ?? null,
+    file_name: post.fileName ?? null,
+  };
+}
+
+async function readPostsFromSupabase(): Promise<Post[]> {
+  const result = await requestSupabase<SupabasePostRow[]>(
+    "GET",
+    "?select=id,title,content,author,author_id,date,link_url,file_url,file_name&order=id.desc",
+  );
+
+  if (!result.ok || !Array.isArray(result.data)) {
+    return [];
+  }
+
+  return result.data.map(mapSupabaseRowToPost);
+}
+
+async function upsertPostsToSupabase(posts: Post[]) {
+  const rows = posts.map(mapPostToSupabaseRow);
+  await requestSupabase(
+    "POST",
+    "?on_conflict=id",
+    rows,
+    "resolution=merge-duplicates,return=minimal",
+  );
+}
+
+async function getNextSupabasePostId() {
+  const result = await requestSupabase<SupabasePostRow[]>("GET", "?select=id&order=id.desc&limit=1");
+  if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+    return 1;
+  }
+
+  return result.data[0].id + 1;
+}
+
 async function ensurePostsFile() {
+  const postsFilePath = resolvePostsFilePath();
+
   try {
-    await fs.access(POSTS_FILE);
+    await fs.access(postsFilePath);
   } catch {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    await fs.writeFile(POSTS_FILE, JSON.stringify(initialPosts, null, 2), "utf-8");
+    await fs.mkdir(path.dirname(postsFilePath), { recursive: true });
+    await fs.writeFile(postsFilePath, JSON.stringify(initialPosts, null, 2), "utf-8");
   }
 }
 
-async function readPosts(): Promise<Post[]> {
+function resolvePostsFilePath() {
+  // Vercel deployment filesystem is read-only except /tmp.
+  if (process.env.VERCEL) {
+    return POSTS_FILE_TMP;
+  }
+  return POSTS_FILE_LOCAL;
+}
+
+async function readPostsFromLegacyStorage(): Promise<Post[]> {
   await ensurePostsFile();
-  const raw = await fs.readFile(POSTS_FILE, "utf-8");
+  const raw = await fs.readFile(resolvePostsFilePath(), "utf-8");
   return JSON.parse(raw) as Post[];
 }
 
+async function writePostsToLegacyStorage(posts: Post[]) {
+  await fs.writeFile(resolvePostsFilePath(), JSON.stringify(posts, null, 2), "utf-8");
+}
+
+async function readPosts(): Promise<Post[]> {
+  if (!hasSupabaseStorage()) {
+    return readPostsFromLegacyStorage();
+  }
+
+  const supabasePosts = await readPostsFromSupabase();
+  if (supabasePosts.length > 0 || hasTriedSupabasePostsBootstrap) {
+    return supabasePosts;
+  }
+
+  hasTriedSupabasePostsBootstrap = true;
+  const legacyPosts = await readPostsFromLegacyStorage();
+  if (legacyPosts.length === 0) {
+    return [];
+  }
+
+  await upsertPostsToSupabase(legacyPosts);
+  return readPostsFromSupabase();
+}
+
 async function writePosts(posts: Post[]) {
-  await fs.writeFile(POSTS_FILE, JSON.stringify(posts, null, 2), "utf-8");
+  if (hasSupabaseStorage()) {
+    await upsertPostsToSupabase(posts);
+    return;
+  }
+
+  await writePostsToLegacyStorage(posts);
 }
 
 function sanitizeFileName(fileName: string): string {
@@ -179,19 +430,224 @@ function getKstDateString() {
   }).format(new Date());
 }
 
+function mapSupabaseRowToPostComment(row: SupabasePostCommentRow): PostComment {
+  return {
+    id: row.id,
+    postId: row.post_id,
+    authorId: row.author_id,
+    authorName: row.author_name,
+    content: row.content,
+    dateTime: row.date_time,
+  };
+}
+
+function mapPostCommentToSupabaseRow(comment: PostComment) {
+  return {
+    id: comment.id,
+    post_id: comment.postId,
+    author_id: comment.authorId,
+    author_name: comment.authorName,
+    content: comment.content,
+    date_time: comment.dateTime,
+  };
+}
+
+export async function getPostCommentsByPostId(postId: number): Promise<PostComment[]> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabasePostComments<SupabasePostCommentRow[]>(
+      "GET",
+      `?select=id,post_id,author_id,author_name,content,date_time&post_id=eq.${postId}&order=id.asc`,
+    );
+
+    if (!result.ok || !Array.isArray(result.data)) {
+      return [];
+    }
+
+    return result.data.map(mapSupabaseRowToPostComment);
+  }
+
+  const posts = await readPosts();
+  const post = posts.find((item) => item.id === postId) as (Post & { comments?: PostComment[] }) | undefined;
+  return post?.comments ?? [];
+}
+
+export async function addPostCommentByPostId(
+  postId: number,
+  input: { authorId: string; authorName: string; content: string },
+): Promise<PostComment | undefined> {
+  if (hasSupabaseStorage()) {
+    const nextIdResult = await requestSupabasePostComments<SupabasePostCommentRow[]>(
+      "GET",
+      `?select=id&post_id=eq.${postId}&order=id.desc&limit=1`,
+    );
+
+    const nextCommentId =
+      !nextIdResult.ok || !Array.isArray(nextIdResult.data) || nextIdResult.data.length === 0
+        ? 1
+        : nextIdResult.data[0].id + 1;
+
+    const comment: PostComment = {
+      id: nextCommentId,
+      postId,
+      authorId: input.authorId,
+      authorName: input.authorName,
+      content: input.content,
+      dateTime: getKstDateTimeString(),
+    };
+
+    const result = await requestSupabasePostComments<SupabasePostCommentRow[]>(
+      "POST",
+      "",
+      [mapPostCommentToSupabaseRow(comment)],
+      "return=representation",
+    );
+
+    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+      return undefined;
+    }
+
+    return mapSupabaseRowToPostComment(result.data[0]);
+  }
+
+  const posts = await readPosts();
+  const index = posts.findIndex((item) => item.id === postId);
+  if (index === -1) {
+    return undefined;
+  }
+
+  const currentPost = posts[index] as Post & { comments?: PostComment[] };
+  const currentComments = currentPost.comments ?? [];
+  const nextCommentId = currentComments.reduce((maxId, comment) => Math.max(maxId, comment.id), 0) + 1;
+  const comment: PostComment = {
+    id: nextCommentId,
+    postId,
+    authorId: input.authorId,
+    authorName: input.authorName,
+    content: input.content,
+    dateTime: getKstDateTimeString(),
+  };
+
+  posts[index] = {
+    ...posts[index],
+    comments: [...currentComments, comment],
+  } as Post;
+
+  await writePosts(posts);
+  return comment;
+}
+
+export async function updatePostCommentById(
+  postId: number,
+  commentId: number,
+  content: string,
+): Promise<PostComment | undefined> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabasePostComments<SupabasePostCommentRow[]>(
+      "PATCH",
+      `?post_id=eq.${postId}&id=eq.${commentId}&select=id,post_id,author_id,author_name,content,date_time`,
+      { content },
+      "return=representation",
+    );
+
+    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+      return undefined;
+    }
+
+    return mapSupabaseRowToPostComment(result.data[0]);
+  }
+
+  const posts = await readPosts();
+  const postIndex = posts.findIndex((item) => item.id === postId);
+  if (postIndex === -1) {
+    return undefined;
+  }
+
+  const currentPost = posts[postIndex] as Post & { comments?: PostComment[] };
+  const currentComments = currentPost.comments ?? [];
+  const commentIndex = currentComments.findIndex((comment) => comment.id === commentId);
+  if (commentIndex === -1) {
+    return undefined;
+  }
+
+  const updatedComment: PostComment = {
+    ...currentComments[commentIndex],
+    content,
+  };
+
+  const nextComments = [...currentComments];
+  nextComments[commentIndex] = updatedComment;
+
+  posts[postIndex] = {
+    ...posts[postIndex],
+    comments: nextComments,
+  } as Post;
+
+  await writePosts(posts);
+  return updatedComment;
+}
+
+export async function deletePostCommentById(postId: number, commentId: number): Promise<boolean> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabasePostComments<SupabasePostCommentRow[]>(
+      "DELETE",
+      `?post_id=eq.${postId}&id=eq.${commentId}&select=id,post_id,author_id,author_name,content,date_time`,
+      undefined,
+      "return=representation",
+    );
+
+    return Boolean(result.ok && Array.isArray(result.data) && result.data.length > 0);
+  }
+
+  const posts = await readPosts();
+  const postIndex = posts.findIndex((item) => item.id === postId);
+  if (postIndex === -1) {
+    return false;
+  }
+
+  const currentPost = posts[postIndex] as Post & { comments?: PostComment[] };
+  const currentComments = currentPost.comments ?? [];
+  const filteredComments = currentComments.filter((comment) => comment.id !== commentId);
+  if (filteredComments.length === currentComments.length) {
+    return false;
+  }
+
+  posts[postIndex] = {
+    ...posts[postIndex],
+    comments: filteredComments,
+  } as Post;
+
+  await writePosts(posts);
+  return true;
+}
+
 export async function getPosts(): Promise<Post[]> {
   return readPosts();
 }
 
 export async function getPostById(id: number): Promise<Post | undefined> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabase<SupabasePostRow[]>(
+      "GET",
+      `?select=id,title,content,author,author_id,date,link_url,file_url,file_name&id=eq.${id}&limit=1`,
+    );
+
+    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+      return undefined;
+    }
+
+    return mapSupabaseRowToPost(result.data[0]);
+  }
+
   const posts = await readPosts();
   return posts.find((post) => post.id === id);
 }
 
 export async function addPost(input: NewPostInput): Promise<Post> {
-  const posts = await readPosts();
-  const nextPostId = posts.reduce((maxId, post) => Math.max(maxId, post.id), 0) + 1;
   const attachment = await saveAttachmentFile(input.attachmentFile);
+
+  const nextPostId = hasSupabaseStorage()
+    ? await getNextSupabasePostId()
+    : (await readPosts()).reduce((maxId, post) => Math.max(maxId, post.id), 0) + 1;
 
   const post: Post = {
     id: nextPostId,
@@ -205,12 +661,45 @@ export async function addPost(input: NewPostInput): Promise<Post> {
     fileName: attachment?.fileName,
   };
 
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabase<SupabasePostRow[]>(
+      "POST",
+      "",
+      [mapPostToSupabaseRow(post)],
+      "return=representation",
+    );
+
+    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+      return post;
+    }
+
+    return mapSupabaseRowToPost(result.data[0]);
+  }
+
+  const posts = await readPosts();
   posts.unshift(post);
   await writePosts(posts);
   return post;
 }
 
 export async function deletePostById(id: number): Promise<boolean> {
+  if (hasSupabaseStorage()) {
+    const targetPost = await getPostById(id);
+    const result = await requestSupabase<SupabasePostRow[]>(
+      "DELETE",
+      `?id=eq.${id}&select=id,title,content,author,author_id,date,link_url,file_url,file_name`,
+      undefined,
+      "return=representation",
+    );
+
+    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+      return false;
+    }
+
+    await removeAttachment(targetPost?.fileUrl);
+    return true;
+  }
+
   const posts = await readPosts();
   const targetPost = posts.find((post) => post.id === id);
   const filtered = posts.filter((post) => post.id !== id);
@@ -226,14 +715,11 @@ export async function deletePostById(id: number): Promise<boolean> {
 }
 
 export async function updatePostById(id: number, input: UpdatePostInput): Promise<Post | undefined> {
-  const posts = await readPosts();
-  const index = posts.findIndex((post) => post.id === id);
-
-  if (index === -1) {
+  const currentPost = await getPostById(id);
+  if (!currentPost) {
     return undefined;
   }
 
-  const currentPost = posts[index];
   const attachment = await saveAttachmentFile(input.attachmentFile);
 
   let nextFileUrl = currentPost.fileUrl;
@@ -260,6 +746,27 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
     fileUrl: nextFileUrl,
     fileName: nextFileName,
   };
+
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabase<SupabasePostRow[]>(
+      "PATCH",
+      `?id=eq.${id}&select=id,title,content,author,author_id,date,link_url,file_url,file_name`,
+      mapPostToSupabaseRow(updatedPost),
+      "return=representation",
+    );
+
+    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+      return undefined;
+    }
+
+    return mapSupabaseRowToPost(result.data[0]);
+  }
+
+  const posts = await readPosts();
+  const index = posts.findIndex((post) => post.id === id);
+  if (index === -1) {
+    return undefined;
+  }
 
   posts[index] = updatedPost;
   await writePosts(posts);
