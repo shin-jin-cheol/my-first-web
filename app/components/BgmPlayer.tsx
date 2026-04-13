@@ -19,6 +19,7 @@ const tracks: Track[] = [
 
 export default function BgmPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const isPlayingRef = useRef(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -76,9 +77,11 @@ export default function BgmPlayer() {
     void audio
       .play()
       .then(() => {
+        isPlayingRef.current = true;
         setIsPlaying(true);
       })
       .catch(() => {
+        isPlayingRef.current = false;
         setIsPlaying(false);
       });
   }, []);
@@ -90,8 +93,16 @@ export default function BgmPlayer() {
     }
 
     audio.src = selectedSrc;
+    audio.load();
     window.localStorage.setItem("bgm-track", selectedSrc);
     setCurrentTime(0);
+
+    if (isPlayingRef.current) {
+      void audio.play().catch(() => {
+        isPlayingRef.current = false;
+        setIsPlaying(false);
+      });
+    }
   }, [selectedSrc]);
 
   useEffect(() => {
@@ -100,12 +111,42 @@ export default function BgmPlayer() {
       return;
     }
 
+    isPlayingRef.current = isPlaying;
+
     if (isPlaying) {
       void audio.play().catch(() => {
+        isPlayingRef.current = false;
         setIsPlaying(false);
       });
     }
   }, [isPlaying]);
+
+  useEffect(() => {
+    const handleGesture = () => {
+      const audio = audioRef.current;
+      if (!audio || isPlayingRef.current || !audio.paused) {
+        return;
+      }
+
+      void audio.play().then(() => {
+        isPlayingRef.current = true;
+        setIsPlaying(true);
+      }).catch(() => {
+        isPlayingRef.current = false;
+        setIsPlaying(false);
+      });
+    };
+
+    window.addEventListener("pointerdown", handleGesture, { once: true });
+    window.addEventListener("keydown", handleGesture, { once: true });
+    window.addEventListener("touchstart", handleGesture, { once: true });
+
+    return () => {
+      window.removeEventListener("pointerdown", handleGesture);
+      window.removeEventListener("keydown", handleGesture);
+      window.removeEventListener("touchstart", handleGesture);
+    };
+  }, []);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -123,6 +164,7 @@ export default function BgmPlayer() {
 
     const onEnded = () => {
       setSelectedIndex((prev) => (prev + 1) % tracks.length);
+      isPlayingRef.current = true;
       setIsPlaying(true);
     };
 
@@ -146,14 +188,17 @@ export default function BgmPlayer() {
     if (audio.paused) {
       try {
         await audio.play();
+        isPlayingRef.current = true;
         setIsPlaying(true);
       } catch {
+        isPlayingRef.current = false;
         setIsPlaying(false);
       }
       return;
     }
 
     audio.pause();
+    isPlayingRef.current = false;
     setIsPlaying(false);
   };
 
@@ -166,11 +211,13 @@ export default function BgmPlayer() {
 
   const playPreviousTrack = () => {
     setSelectedIndex((prev) => (prev - 1 + tracks.length) % tracks.length);
+    isPlayingRef.current = true;
     setIsPlaying(true);
   };
 
   const playNextTrack = () => {
     setSelectedIndex((prev) => (prev + 1) % tracks.length);
+    isPlayingRef.current = true;
     setIsPlaying(true);
   };
 
