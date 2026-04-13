@@ -4,5 +4,11 @@
     "name": "김민서",
     "password": "minseo",
     "createdAt": "2026-04-13T04:15:46.914Z"
+  },
+  {
+    "id": "qwer",
+    "name": "관리자",
+    "password": "qwer",
+    "createdAt": "2026-04-13T05:48:22.407Z"
   }
 ]
