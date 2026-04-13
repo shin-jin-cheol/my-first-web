@@ -20,6 +20,8 @@ export default function BgmPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
 
   const selectedSrc = tracks[selectedIndex].src;
 
@@ -33,6 +35,25 @@ export default function BgmPlayer() {
       .padStart(2, "0");
     return `${minutes}:${remain}`;
   };
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const applyViewport = (event: MediaQueryList | MediaQueryListEvent) => {
+      const isMobile = event.matches;
+      setIsMobileViewport(isMobile);
+      if (!isMobile) {
+        setIsMobileExpanded(false);
+      }
+    };
+
+    applyViewport(mediaQuery);
+    const onChange = (event: MediaQueryListEvent) => applyViewport(event);
+    mediaQuery.addEventListener("change", onChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", onChange);
+    };
+  }, []);
 
   useEffect(() => {
     const savedTrack = window.localStorage.getItem("bgm-track");
@@ -162,10 +183,36 @@ export default function BgmPlayer() {
   };
 
   return (
-    <div className="fixed bottom-3 right-3 z-50 flex w-[min(82vw,280px)] flex-col gap-2 md:bottom-5 md:right-5 md:w-[min(88vw,340px)] md:gap-3">
-      <LiveClock className="w-full rounded-2xl border-white/20 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-800/60 px-3 py-2 text-center md:rounded-3xl md:px-4 md:py-2.5" />
+    <div className="fixed bottom-24 right-3 z-50 flex w-[min(82vw,280px)] flex-col gap-2 md:bottom-5 md:right-5 md:w-[min(88vw,340px)] md:gap-3">
+      {!isMobileViewport || isMobileExpanded ? (
+        <LiveClock className="w-full rounded-2xl border-white/20 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-800/60 px-3 py-2 text-center md:rounded-3xl md:px-4 md:py-2.5" />
+      ) : null}
 
-      <div className="space-y-2 rounded-2xl border border-white/20 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-800/60 p-3 backdrop-blur-xl md:space-y-3 md:rounded-3xl md:p-4">
+      {isMobileViewport ? (
+        <div className="flex items-center gap-2 rounded-full border border-white/25 bg-zinc-950/90 px-3 py-2 shadow-[0_8px_18px_rgba(0,0,0,0.35)] backdrop-blur">
+          <button
+            type="button"
+            onClick={togglePlayback}
+            className="rounded-full border border-cyan-600/50 bg-gradient-to-br from-[#081d1a] via-[#1a4a46] to-[#2d6b67] px-3 py-1.5 text-xs text-cyan-100"
+            title={isPlaying ? "일시정지" : "재생"}
+          >
+            {isPlaying ? "||" : "▶"}
+          </button>
+          <p className="min-w-0 flex-1 truncate text-xs text-zinc-200">{tracks[selectedIndex].label}</p>
+          <button
+            type="button"
+            onClick={() => setIsMobileExpanded((prev) => !prev)}
+            className="rounded-full border border-zinc-500 bg-zinc-800 px-2 py-1 text-xs text-zinc-200"
+            title={isMobileExpanded ? "접기" : "펼치기"}
+          >
+            {isMobileExpanded ? "▼" : "▲"}
+          </button>
+        </div>
+      ) : null}
+
+      <div
+        className={`${isMobileViewport && !isMobileExpanded ? "hidden" : "space-y-2 rounded-2xl border border-white/20 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-800/60 p-3 backdrop-blur-xl md:space-y-3 md:rounded-3xl md:p-4"}`}
+      >
         <audio ref={audioRef} src={selectedSrc} preload="auto" />
         <label htmlFor="bgm-track" className="sr-only">
           BGM 선택

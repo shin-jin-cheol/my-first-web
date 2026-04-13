@@ -15,10 +15,10 @@ export default async function Home() {
               isEnglish ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl"
             }`}
           >
-            {t(locale, "신진철의 홈페이지 입니다", "Welcome to SJC's Homepage")}
+            {t(locale, "Welecome to jincheol.zip-", "real survival story of jincheol.exe")}
           </h1>
           <p className={`max-w-2xl text-zinc-300 ${isEnglish ? "text-sm" : "text-base"}`}>
-            {t(locale, "한신대학교 공공인재빅데이터융합학과 신진철의 생존과정", "Survival journey of Jincheol Shin, Public Talent and Big Data Convergence, Hanshin University")}
+            {t(locale, "Welcome to jincheol.zip-", "Real survival story of Jincheol.exe [at Hanshin University]")}
           </p>
         </div>
 

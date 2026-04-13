@@ -46,79 +46,169 @@ export default async function RootLayout({
     <html lang="ko">
       <body className="flex min-h-screen flex-col bg-zinc-900 text-zinc-100 shadow-[inset_0_120px_120px_-120px_rgba(129,216,208,0.2)] pb-24">
         <nav className="border-b border-zinc-700 bg-zinc-950 text-zinc-100 shadow-[0_0_24px_rgba(129,216,208,0.18)]">
-          <div className="mx-auto flex w-full max-w-4xl flex-wrap items-center gap-x-4 gap-y-2 px-6 py-4">
-            <span className="shrink-0 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-base font-bold text-zinc-100 shadow-[0_0_14px_rgba(129,216,208,0.35)] backdrop-blur-md md:text-lg">
-              공인재 신진철의 생존일기
-            </span>
-            <Link href="/" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
-              {t(locale, "홈", "Home")}
-            </Link>
-            <Link href="/posts" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
-              {t(locale, "블로그", "Blog")}
-            </Link>
-            <Link href="/guest" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
-              {t(locale, "게스트 게시판", "Guest Board")}
-            </Link>
-            {session ? (
-              <Link
-                href="/posts/new"
-                className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-3 py-1.5 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.6)] transition hover:-translate-y-0.5 hover:bg-[#96e1da] hover:shadow-[0_0_28px_rgba(129,216,208,0.75)]"
-              >
-                {t(locale, "새 글 쓰기", "Write")}
-              </Link>
-            ) : null}
-            {session?.role === "owner" ? (
-              <Link href="/admin/members" className="text-sm font-medium text-zinc-300 transition hover:text-white">
-                {t(locale, "회원관리", "Members")}
-              </Link>
-            ) : null}
-            {session?.role === "member" ? (
-              <Link href="/guest/account" className="text-sm font-medium text-zinc-300 transition hover:text-white">
-                {t(locale, "회원정보", "Account")}
-              </Link>
-            ) : null}
-            {session ? (
-              <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-cyan-200">
-                {session.role}
+          <div className="mx-auto w-full max-w-4xl px-4 py-3 md:px-6 md:py-4">
+            <div className="flex items-center justify-between gap-3 md:hidden">
+              <span className="max-w-[68vw] truncate rounded-full border border-white/25 bg-white/10 px-3 py-1 text-sm font-bold text-zinc-100 shadow-[0_0_14px_rgba(129,216,208,0.35)] backdrop-blur-md">
+                공인재 신진철의 생존일기
               </span>
-            ) : null}
-            {!session ? (
-              <>
-                <Link href="/auth/login" className="text-sm font-medium text-zinc-300 transition hover:text-white">
-                  {t(locale, "로그인", "Login")}
+              <div className="flex items-center gap-2">
+                {session ? (
+                  <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-cyan-200">
+                    {session.role}
+                  </span>
+                ) : null}
+                <details className="group relative">
+                  <summary className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full border border-zinc-500 bg-zinc-800 text-zinc-100 transition hover:bg-zinc-700">
+                    ☰
+                  </summary>
+                  <div className="absolute right-0 top-11 z-50 w-56 space-y-2 rounded-2xl border border-zinc-700 bg-zinc-900/95 p-3 text-sm shadow-[0_12px_30px_rgba(0,0,0,0.45)] backdrop-blur">
+                    <Link href="/" className="block rounded-lg px-2 py-1.5 text-zinc-200 transition hover:bg-zinc-800 hover:text-white">
+                      {t(locale, "홈", "Home")}
+                    </Link>
+                    <Link href="/posts" className="block rounded-lg px-2 py-1.5 text-zinc-200 transition hover:bg-zinc-800 hover:text-white">
+                      {t(locale, "블로그", "Blog")}
+                    </Link>
+                    <Link href="/guest" className="block rounded-lg px-2 py-1.5 text-zinc-200 transition hover:bg-zinc-800 hover:text-white">
+                      {t(locale, "게스트 게시판", "Guest Board")}
+                    </Link>
+
+                    {session ? (
+                      <Link
+                        href="/posts/new"
+                        className="block rounded-lg border border-[#b8ece7] bg-[#81d8d0] px-2 py-1.5 text-center font-semibold text-zinc-900"
+                      >
+                        {t(locale, "새 글 쓰기", "Write")}
+                      </Link>
+                    ) : null}
+
+                    {session?.role === "owner" ? (
+                      <Link href="/admin/members" className="block rounded-lg px-2 py-1.5 text-zinc-200 transition hover:bg-zinc-800 hover:text-white">
+                        {t(locale, "회원관리", "Members")}
+                      </Link>
+                    ) : null}
+                    {session?.role === "member" ? (
+                      <Link href="/guest/account" className="block rounded-lg px-2 py-1.5 text-zinc-200 transition hover:bg-zinc-800 hover:text-white">
+                        {t(locale, "회원정보", "Account")}
+                      </Link>
+                    ) : null}
+
+                    {!session ? (
+                      <>
+                        <Link href="/auth/login" className="block rounded-lg px-2 py-1.5 text-zinc-200 transition hover:bg-zinc-800 hover:text-white">
+                          {t(locale, "로그인", "Login")}
+                        </Link>
+                        <Link href="/auth/signup" className="block rounded-lg px-2 py-1.5 text-zinc-200 transition hover:bg-zinc-800 hover:text-white">
+                          {t(locale, "회원가입", "Sign up")}
+                        </Link>
+                      </>
+                    ) : (
+                      <form action={logoutAction}>
+                        <button
+                          type="submit"
+                          className="w-full rounded-lg border border-zinc-500 bg-zinc-700 px-2 py-1.5 font-semibold text-zinc-100 transition hover:bg-zinc-600"
+                        >
+                          {t(locale, "로그아웃", "Logout")}
+                        </button>
+                      </form>
+                    )}
+
+                    <form action={setLanguageAction} className="inline-flex items-center gap-1 rounded-full border border-zinc-600 bg-zinc-800/80 p-1 text-xs">
+                      <button
+                        type="submit"
+                        name="lang"
+                        value="ko"
+                        className={`rounded-full px-2 py-1 transition ${locale === "ko" ? "bg-zinc-200 text-zinc-900" : "text-zinc-300 hover:text-white"}`}
+                      >
+                        KO
+                      </button>
+                      <button
+                        type="submit"
+                        name="lang"
+                        value="en"
+                        className={`rounded-full px-2 py-1 transition ${locale === "en" ? "bg-zinc-200 text-zinc-900" : "text-zinc-300 hover:text-white"}`}
+                      >
+                        EN
+                      </button>
+                    </form>
+                  </div>
+                </details>
+              </div>
+            </div>
+
+            <div className="hidden flex-wrap items-center gap-x-4 gap-y-2 md:flex">
+              <span className="shrink-0 rounded-full border border-white/25 bg-white/10 px-3 py-1 text-base font-bold text-zinc-100 shadow-[0_0_14px_rgba(129,216,208,0.35)] backdrop-blur-md md:text-lg">
+                공인재 신진철의 생존일기
+              </span>
+              <Link href="/" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
+                {t(locale, "홈", "Home")}
+              </Link>
+              <Link href="/posts" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
+                {t(locale, "블로그", "Blog")}
+              </Link>
+              <Link href="/guest" className="text-sm font-medium text-zinc-300 transition hover:text-white hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
+                {t(locale, "게스트 게시판", "Guest Board")}
+              </Link>
+              {session ? (
+                <Link
+                  href="/posts/new"
+                  className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-3 py-1.5 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.6)] transition hover:-translate-y-0.5 hover:bg-[#96e1da] hover:shadow-[0_0_28px_rgba(129,216,208,0.75)]"
+                >
+                  {t(locale, "새 글 쓰기", "Write")}
                 </Link>
-                <Link href="/auth/signup" className="text-sm font-medium text-zinc-300 transition hover:text-white">
-                  {t(locale, "회원가입", "Sign up")}
+              ) : null}
+              {session?.role === "owner" ? (
+                <Link href="/admin/members" className="text-sm font-medium text-zinc-300 transition hover:text-white">
+                  {t(locale, "회원관리", "Members")}
                 </Link>
-              </>
-            ) : (
-              <form action={logoutAction}>
+              ) : null}
+              {session?.role === "member" ? (
+                <Link href="/guest/account" className="text-sm font-medium text-zinc-300 transition hover:text-white">
+                  {t(locale, "회원정보", "Account")}
+                </Link>
+              ) : null}
+              {session ? (
+                <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-cyan-200">
+                  {session.role}
+                </span>
+              ) : null}
+              {!session ? (
+                <>
+                  <Link href="/auth/login" className="text-sm font-medium text-zinc-300 transition hover:text-white">
+                    {t(locale, "로그인", "Login")}
+                  </Link>
+                  <Link href="/auth/signup" className="text-sm font-medium text-zinc-300 transition hover:text-white">
+                    {t(locale, "회원가입", "Sign up")}
+                  </Link>
+                </>
+              ) : (
+                <form action={logoutAction}>
+                  <button
+                    type="submit"
+                    className="rounded-full border border-zinc-500 bg-zinc-700 px-3 py-1.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-600"
+                  >
+                    {t(locale, "로그아웃", "Logout")}
+                  </button>
+                </form>
+              )}
+              <form action={setLanguageAction} className="inline-flex items-center gap-1 rounded-full border border-zinc-600 bg-zinc-800/80 p-1 text-xs">
                 <button
                   type="submit"
-                  className="rounded-full border border-zinc-500 bg-zinc-700 px-3 py-1.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-600"
+                  name="lang"
+                  value="ko"
+                  className={`rounded-full px-2 py-1 transition ${locale === "ko" ? "bg-zinc-200 text-zinc-900" : "text-zinc-300 hover:text-white"}`}
                 >
-                  {t(locale, "로그아웃", "Logout")}
+                  KO
+                </button>
+                <button
+                  type="submit"
+                  name="lang"
+                  value="en"
+                  className={`rounded-full px-2 py-1 transition ${locale === "en" ? "bg-zinc-200 text-zinc-900" : "text-zinc-300 hover:text-white"}`}
+                >
+                  EN
                 </button>
               </form>
-            )}
-            <form action={setLanguageAction} className="inline-flex items-center gap-1 rounded-full border border-zinc-600 bg-zinc-800/80 p-1 text-xs">
-              <button
-                type="submit"
-                name="lang"
-                value="ko"
-                className={`rounded-full px-2 py-1 transition ${locale === "ko" ? "bg-zinc-200 text-zinc-900" : "text-zinc-300 hover:text-white"}`}
-              >
-                KO
-              </button>
-              <button
-                type="submit"
-                name="lang"
-                value="en"
-                className={`rounded-full px-2 py-1 transition ${locale === "en" ? "bg-zinc-200 text-zinc-900" : "text-zinc-300 hover:text-white"}`}
-              >
-                EN
-              </button>
-            </form>
+            </div>
           </div>
         </nav>
         <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">{children}</main>
