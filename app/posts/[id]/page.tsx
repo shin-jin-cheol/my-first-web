@@ -23,6 +23,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const comments = await getPostCommentsByPostId(postId);
   const canManagePost =
     session?.role === "owner" || (session?.role === "member" && post?.authorId === session.userId);
+  const fileDownloadUrl = post?.fileUrl
+    ? `${post.fileUrl}${post.fileUrl.includes("?") ? "&" : "?"}download=${encodeURIComponent(post.fileName ?? "attachment")}`
+    : undefined;
 
   async function deletePostAction() {
     "use server";
@@ -167,9 +170,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         </a>
       ) : null}
 
-      {post.fileUrl ? (
+      {fileDownloadUrl ? (
         <a
-          href={post.fileUrl}
+          href={fileDownloadUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 rounded-full border border-zinc-500/60 bg-white/10 px-4 py-2 text-sm font-semibold text-zinc-100 shadow-[0_0_14px_rgba(129,216,208,0.25)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/15"
