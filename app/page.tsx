@@ -24,7 +24,7 @@ export default async function Home() {
 
         <div className="relative overflow-hidden rounded-3xl border border-cyan-400/30 bg-zinc-900/60 shadow-[0_0_32px_rgba(129,216,208,0.2)] backdrop-blur">
           <Image
-            src="/mz-hero.svg"
+            src="/이미지1.svg"
             alt="MZ 감성 무드보드 스타일 배경"
             width={1600}
             height={1000}
