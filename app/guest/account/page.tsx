@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   changeMemberPassword,
@@ -96,10 +96,10 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
   return (
     <section className="space-y-6">
       <header className="space-y-2">
-        <h1 className="text-3xl font-extrabold text-zinc-100">
+        <h1 className="text-3xl font-extrabold text-zinc-700 dark:text-zinc-100">
           {t(locale, "계정 설정", "Account Settings")}
         </h1>
-        <p className="text-zinc-300">{t(locale, "비밀번호 변경 및 회원탈퇴를 관리할 수 있습니다.", "Manage password change and account withdrawal.")}</p>
+        <p className="text-zinc-500 dark:text-zinc-300">{t(locale, "비밀번호 변경 및 회원탈퇴를 관리할 수 있습니다.", "Manage password change and account withdrawal.")}</p>
       </header>
 
       {errorMessage ? (
@@ -107,58 +107,58 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
       ) : null}
 
       {successMessage ? (
-        <p className="rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-200">{successMessage}</p>
+        <p className="rounded-xl border border-cyan-600/40 bg-cyan-500/10 px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">{successMessage}</p>
       ) : null}
 
-      <form action={updateProfileAction} className="space-y-4 rounded-2xl border border-zinc-700 bg-zinc-800 p-6">
-        <h2 className="text-lg font-bold text-zinc-100">{t(locale, "회원정보 수정", "Edit Member Profile")}</h2>
+      <form action={updateProfileAction} className="space-y-4 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-6">
+        <h2 className="text-lg font-bold text-zinc-700 dark:text-zinc-100">{t(locale, "회원정보 수정", "Edit Member Profile")}</h2>
         <div className="space-y-2">
-          <label htmlFor="member-id" className="text-sm text-zinc-200">{t(locale, "아이디", "ID")}</label>
+          <label htmlFor="member-id" className="text-sm text-zinc-600 dark:text-zinc-200">{t(locale, "아이디", "ID")}</label>
           <input
             id="member-id"
             value={profile?.id ?? session.userId}
             readOnly
-            className="w-full cursor-not-allowed rounded-xl border border-zinc-700 bg-zinc-900/60 px-4 py-2.5 text-zinc-400 outline-none"
+            className="w-full cursor-not-allowed rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-100/80 dark:bg-zinc-900/60 px-4 py-2.5 text-zinc-500 dark:text-zinc-400 outline-none"
           />
         </div>
         <div className="space-y-2">
-          <label htmlFor="name" className="text-sm text-zinc-200">{t(locale, "이름", "Name")}</label>
+          <label htmlFor="name" className="text-sm text-zinc-600 dark:text-zinc-200">{t(locale, "이름", "Name")}</label>
           <input
             id="name"
             name="name"
             defaultValue={profile?.name ?? ""}
             required
-            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none focus:border-[#81d8d0]"
           />
         </div>
-        <button type="submit" className="rounded-full border border-cyan-500/50 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-200">
+        <button type="submit" className="rounded-full border border-cyan-600/55 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-[#2f8f88] shadow-[0_0_14px_rgba(129,216,208,0.3)] transition hover:shadow-[0_0_18px_rgba(129,216,208,0.45)] dark:border-cyan-500/50 dark:text-cyan-200 dark:shadow-none">
           {t(locale, "회원정보 저장", "Save Profile")}
         </button>
       </form>
 
-      <form action={changePasswordAction} className="space-y-4 rounded-2xl border border-zinc-700 bg-zinc-800 p-6">
-        <h2 className="text-lg font-bold text-zinc-100">{t(locale, "비밀번호 변경", "Change Password")}</h2>
+      <form action={changePasswordAction} className="space-y-4 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-6">
+        <h2 className="text-lg font-bold text-zinc-700 dark:text-zinc-100">{t(locale, "비밀번호 변경", "Change Password")}</h2>
         <div className="space-y-2">
-          <label htmlFor="current-password" className="text-sm text-zinc-200">{t(locale, "현재 비밀번호", "Current Password")}</label>
+          <label htmlFor="current-password" className="text-sm text-zinc-600 dark:text-zinc-200">{t(locale, "현재 비밀번호", "Current Password")}</label>
           <input
             id="current-password"
             name="currentPassword"
             type="password"
             required
-            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none focus:border-[#81d8d0]"
           />
         </div>
         <div className="space-y-2">
-          <label htmlFor="new-password" className="text-sm text-zinc-200">{t(locale, "새 비밀번호", "New Password")}</label>
+          <label htmlFor="new-password" className="text-sm text-zinc-600 dark:text-zinc-200">{t(locale, "새 비밀번호", "New Password")}</label>
           <input
             id="new-password"
             name="newPassword"
             type="password"
             required
-            className="w-full rounded-xl border border-zinc-600 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none focus:border-[#81d8d0]"
           />
         </div>
-        <button type="submit" className="rounded-full border border-cyan-500/50 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-200">
+        <button type="submit" className="rounded-full border border-cyan-600/55 bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-[#2f8f88] shadow-[0_0_14px_rgba(129,216,208,0.3)] transition hover:shadow-[0_0_18px_rgba(129,216,208,0.45)] dark:border-cyan-500/50 dark:text-cyan-200 dark:shadow-none">
           {t(locale, "비밀번호 변경", "Change Password")}
         </button>
       </form>
@@ -172,7 +172,7 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
             name="withdrawPassword"
             type="password"
             required
-            className="w-full rounded-xl border border-red-400/60 bg-zinc-900 px-4 py-2.5 text-zinc-100 outline-none"
+            className="w-full rounded-xl border border-red-400/60 bg-zinc-100 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none"
           />
         </div>
         <button type="submit" className="rounded-full border border-red-400/70 bg-red-500/30 px-4 py-2 text-sm font-semibold text-red-100">
@@ -180,9 +180,10 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
         </button>
       </form>
 
-      <Link href="/guest" className="inline-flex rounded-full border border-zinc-500 bg-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-600">
+      <Link href="/guest" className="inline-flex rounded-full border border-zinc-300 dark:border-zinc-500 bg-zinc-200 dark:bg-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-700 dark:text-zinc-100 transition hover:bg-zinc-300 dark:hover:bg-zinc-600">
         {t(locale, "게스트 게시판으로 돌아가기", "Back to Guest Board")}
       </Link>
     </section>
   );
 }
+

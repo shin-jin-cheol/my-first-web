@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { getPosts } from "@/lib/posts";
 import { getLocale, t } from "@/lib/i18n";
 import { getGuestPosts } from "@/lib/guest-posts";
@@ -61,10 +61,10 @@ export default async function PostsPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <p className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+        <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
           Blog Posts
         </p>
-        <h1 className="text-4xl font-extrabold text-zinc-100 drop-shadow-[0_0_14px_rgba(129,216,208,0.45)]">
+        <h1 className="text-4xl font-extrabold text-zinc-700 dark:text-zinc-100 drop-shadow-[0_0_14px_rgba(129,216,208,0.45)]">
           {t(locale, "게시글 목록", "Post List")}
         </h1>
       </div>
@@ -91,3 +91,4 @@ export default async function PostsPage() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+﻿import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { deleteGuestPostById, getGuestPosts } from "@/lib/guest-posts";
@@ -47,8 +47,8 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
   return (
     <section className="space-y-8">
       <header className="space-y-2">
-        <p className="text-sm font-semibold uppercase tracking-wider text-zinc-400">Guest Board</p>
-        <h1 className="text-4xl font-extrabold text-zinc-100 drop-shadow-[0_0_12px_rgba(129,216,208,0.3)]">{t(locale, "게스트 게시판", "Guest Board")}</h1>
+        <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Guest Board</p>
+        <h1 className="text-4xl font-extrabold text-zinc-700 dark:text-zinc-100 drop-shadow-[0_0_12px_rgba(129,216,208,0.3)]">{t(locale, "게스트 게시판", "Guest Board")}</h1>
       </header>
 
       {errorMessage ? (
@@ -58,7 +58,7 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
       ) : null}
 
       {session.role === "owner" ? (
-        <p className="rounded-xl border border-cyan-500/40 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-200">
+        <p className="rounded-xl border border-cyan-600/40 bg-cyan-500/10 px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">
           {t(locale, "주인 계정으로 접속 중입니다. 회원이 작성한 게스트 게시글을 관리할 수 있습니다.", "You are logged in as owner and can manage guest posts.")}
         </p>
       ) : null}
@@ -88,3 +88,4 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
     </section>
   );
 }
+

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -58,20 +58,20 @@ export default function GuestPostsSearchList({
       <SearchBar value={query} onChange={setQuery} placeholder={labels.searchPlaceholder} />
 
       {filteredPosts.length === 0 ? (
-        <p className="text-zinc-400">{labels.empty}</p>
+        <p className="text-zinc-500 dark:text-zinc-400">{labels.empty}</p>
       ) : (
         filteredPosts.map((post) => {
           const canManage = sessionRole === "owner" || (sessionRole === "member" && post.authorId === sessionUserId);
 
           return (
-            <article key={post.id} className="space-y-3 rounded-2xl border border-zinc-700 bg-zinc-800 p-5">
-              <h2 className="text-xl font-bold text-zinc-100">
+            <article key={post.id} className="space-y-3 rounded-2xl border border-zinc-500 bg-zinc-300 p-5 transition hover:bg-zinc-400 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800">
+              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
                 <Link href={`/guest/${post.id}`} className="transition hover:text-cyan-200">
                   {post.title}
                 </Link>
               </h2>
-              <p className="text-zinc-300">{post.content}</p>
-              <div className="flex items-center justify-between text-sm text-zinc-400">
+              <p className="text-zinc-700 dark:text-zinc-200">{post.content}</p>
+              <div className="flex items-center justify-between text-sm text-zinc-700 dark:text-zinc-300">
                 <p>{labels.author}: {post.authorDisplay}</p>
                 <p>{post.date}</p>
               </div>
@@ -80,7 +80,7 @@ export default function GuestPostsSearchList({
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/guest/${post.id}/edit`}
-                    className="rounded-full border border-cyan-500/50 bg-cyan-500/10 px-4 py-1.5 text-sm font-semibold text-cyan-200 hover:bg-cyan-500/20"
+                    className="rounded-full border border-zinc-600 bg-zinc-400 px-4 py-1.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-500 dark:border-cyan-500/50 dark:bg-cyan-500/10 dark:text-cyan-200 dark:hover:bg-cyan-500/20"
                   >
                     {labels.edit}
                   </Link>
@@ -88,7 +88,7 @@ export default function GuestPostsSearchList({
                     <input type="hidden" name="postId" value={post.id} />
                     <button
                       type="submit"
-                      className="rounded-full border border-red-400/60 bg-red-500/20 px-4 py-1.5 text-sm font-semibold text-red-300 hover:bg-red-500/30"
+                      className="rounded-full border border-zinc-600 bg-zinc-400 px-4 py-1.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-500 dark:border-red-400/60 dark:bg-red-500/20 dark:text-red-300 dark:hover:bg-red-500/30"
                     >
                       {labels.delete}
                     </button>
@@ -102,3 +102,4 @@ export default function GuestPostsSearchList({
     </div>
   );
 }
+
