@@ -28,11 +28,13 @@ export default async function PostsPage() {
       memberNameSet.has(post.author),
   );
 
-  const blogMemberPosts = memberPosts.map((post) => ({
+  const ownerPosts = posts.filter((post) => !memberPosts.some((memberPost) => memberPost.id === post.id));
+
+  const blogOwnerPosts = ownerPosts.map((post) => ({
     id: post.id,
     title: post.title,
     content: post.content,
-    author: memberNameById.get(post.authorId ?? "") || post.author,
+    author: post.author,
     date: post.date,
     detailHref: `/posts/${post.id}`,
   }));
@@ -41,6 +43,15 @@ export default async function PostsPage() {
     ...post,
     id: `guest-${post.id}`,
     detailHref: `/guest/${post.id}`,
+  }));
+
+  const memberGuestItems = memberPosts.map((post) => ({
+    id: `member-${post.id}`,
+    title: post.title,
+    content: post.content,
+    authorDisplay: memberNameById.get(post.authorId ?? "") || post.author,
+    date: post.date,
+    detailHref: `/posts/${post.id}`,
   }));
 
   return (
@@ -55,18 +66,21 @@ export default async function PostsPage() {
       </div>
 
       <PostsSearchContent
-        memberPosts={blogMemberPosts}
-        guestPosts={guestPostItems.map((post) => ({
+        ownerPosts={blogOwnerPosts}
+        guestPosts={[
+          ...memberGuestItems,
+          ...guestPostItems.map((post) => ({
           id: post.id,
           title: post.title,
           content: post.content,
           authorDisplay: post.authorName || memberNameById.get(post.authorId) || post.authorId,
           date: post.date,
           detailHref: post.detailHref,
-        }))}
+          })),
+        ]}
         labels={{
           searchPlaceholder: t(locale, "제목, 내용, 작성자 검색", "Search title, content, author"),
-          memberSectionTitle: t(locale, "게시글", "Posts"),
+          ownerSectionTitle: t(locale, "게시글", "Posts"),
           blogEmpty: t(locale, "검색 결과가 없습니다.", "No matching posts found."),
           guestSectionTitle: t(locale, "게스트 게시글", "Guest Posts"),
           guestEmpty: t(locale, "검색 결과가 없습니다.", "No matching posts found."),

@@ -22,12 +22,12 @@ type GuestPostItem = {
 };
 
 type PostsSearchContentProps = {
-  memberPosts: BlogPostItem[];
+  ownerPosts: BlogPostItem[];
   guestPosts: GuestPostItem[];
   labels: {
     searchPlaceholder: string;
     blogEmpty: string;
-    memberSectionTitle: string;
+    ownerSectionTitle: string;
     guestSectionTitle: string;
     guestEmpty: string;
     author: string;
@@ -39,19 +39,19 @@ function includesQuery(value: string, query: string) {
   return value.toLowerCase().includes(query.toLowerCase());
 }
 
-export default function PostsSearchContent({ memberPosts, guestPosts, labels }: PostsSearchContentProps) {
+export default function PostsSearchContent({ ownerPosts, guestPosts, labels }: PostsSearchContentProps) {
   const [query, setQuery] = useState("");
   const normalizedQuery = query.trim();
 
-  const filteredMemberPosts = useMemo(() => {
+  const filteredOwnerPosts = useMemo(() => {
     if (!normalizedQuery) {
-      return memberPosts;
+      return ownerPosts;
     }
 
-    return memberPosts.filter((post) =>
+    return ownerPosts.filter((post) =>
       [post.title, post.content, post.author, post.date].some((field) => includesQuery(field, normalizedQuery)),
     );
-  }, [memberPosts, normalizedQuery]);
+  }, [ownerPosts, normalizedQuery]);
 
   const filteredGuestPosts = useMemo(() => {
     if (!normalizedQuery) {
@@ -69,17 +69,17 @@ export default function PostsSearchContent({ memberPosts, guestPosts, labels }: 
 
       <div className="space-y-4">
         <h2 className="text-2xl font-bold text-zinc-700 dark:text-zinc-100 drop-shadow-[0_0_10px_rgba(129,216,208,0.3)]">
-          {labels.memberSectionTitle}
+          {labels.ownerSectionTitle}
         </h2>
-        {filteredMemberPosts.length === 0 ? (
+        {filteredOwnerPosts.length === 0 ? (
           <p className="text-zinc-500 dark:text-zinc-400">{labels.blogEmpty}</p>
         ) : (
           <div className="grid gap-7 md:grid-cols-2">
-            {filteredMemberPosts.map((post) => (
+            {filteredOwnerPosts.map((post) => (
               <Link key={post.id} href={`/posts/${post.id}`}>
                 <article className="block h-full min-h-64 cursor-pointer rounded-2xl border border-zinc-500 bg-zinc-300 p-7 shadow-[0_0_22px_rgba(129,216,208,0.12)] transition hover:border-[#81d8d0] hover:bg-zinc-400 hover:shadow-[0_0_34px_rgba(129,216,208,0.28)] dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800">
                   <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                    {labels.memberSectionTitle}
+                    {labels.ownerSectionTitle}
                   </p>
                   <h3 className="mb-3 text-xl font-bold text-zinc-900 dark:text-zinc-100">{post.title}</h3>
                   <p className="mb-5 line-clamp-4 text-base leading-7 text-zinc-700 dark:text-zinc-200">{post.content}</p>

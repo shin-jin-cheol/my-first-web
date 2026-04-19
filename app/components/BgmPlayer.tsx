@@ -40,6 +40,59 @@ export default function BgmPlayer() {
     return `${minutes}:${remain}`;
   };
 
+  const startPlayback = async (options: { allowMutedFallback?: boolean; unmuteDelayMs?: number } = {}) => {
+    const audio = audioRef.current;
+    if (!audio) {
+      return false;
+    }
+
+    const allowMutedFallback = options.allowMutedFallback ?? false;
+    const unmuteDelayMs = options.unmuteDelayMs ?? 350;
+
+    const tryPlay = async (muted: boolean) => {
+      audio.muted = muted;
+
+      try {
+        await audio.play();
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    try {
+      let played = await tryPlay(false);
+
+      if (!played && allowMutedFallback) {
+        played = await tryPlay(true);
+      }
+
+      if (!played) {
+        audio.muted = false;
+        isPlayingRef.current = false;
+        setIsPlaying(false);
+        return false;
+      }
+
+      if (allowMutedFallback) {
+        window.setTimeout(() => {
+          audio.muted = false;
+        }, unmuteDelayMs);
+      } else {
+        audio.muted = false;
+      }
+
+      isPlayingRef.current = true;
+      setIsPlaying(true);
+      return true;
+    } catch {
+      audio.muted = false;
+      isPlayingRef.current = false;
+      setIsPlaying(false);
+      return false;
+    }
+  };
+
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 767px)");
     const applyViewport = (event: MediaQueryList | MediaQueryListEvent) => {
@@ -74,16 +127,7 @@ export default function BgmPlayer() {
 
     audio.src = savedIndex >= 0 ? tracks[savedIndex].src : tracks[0].src;
 
-    void audio
-      .play()
-      .then(() => {
-        isPlayingRef.current = true;
-        setIsPlaying(true);
-      })
-      .catch(() => {
-        isPlayingRef.current = false;
-        setIsPlaying(false);
-      });
+    void startPlayback({ allowMutedFallback: true, unmuteDelayMs: 500 });
   }, []);
 
   useEffect(() => {
@@ -98,10 +142,7 @@ export default function BgmPlayer() {
     setCurrentTime(0);
 
     if (isPlayingRef.current) {
-      void audio.play().catch(() => {
-        isPlayingRef.current = false;
-        setIsPlaying(false);
-      });
+      void startPlayback();
     }
   }, [selectedSrc]);
 
@@ -114,10 +155,7 @@ export default function BgmPlayer() {
     isPlayingRef.current = isPlaying;
 
     if (isPlaying) {
-      void audio.play().catch(() => {
-        isPlayingRef.current = false;
-        setIsPlaying(false);
-      });
+      void startPlayback();
     }
   }, [isPlaying]);
 
@@ -128,13 +166,7 @@ export default function BgmPlayer() {
         return;
       }
 
-      void audio.play().then(() => {
-        isPlayingRef.current = true;
-        setIsPlaying(true);
-      }).catch(() => {
-        isPlayingRef.current = false;
-        setIsPlaying(false);
-      });
+      void startPlayback();
     };
 
     window.addEventListener("pointerdown", handleGesture, { once: true });
@@ -154,6 +186,12 @@ export default function BgmPlayer() {
       return;
     }
 
+    const retryAutoplay = () => {
+      if (!isPlayingRef.current) {
+        void startPlayback({ allowMutedFallback: true, unmuteDelayMs: 500 });
+      }
+    };
+
     const onLoadedMetadata = () => {
       setDuration(audio.duration || 0);
     };
@@ -171,11 +209,17 @@ export default function BgmPlayer() {
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
     audio.addEventListener("timeupdate", onTimeUpdate);
     audio.addEventListener("ended", onEnded);
+    audio.addEventListener("canplay", retryAutoplay);
+    audio.addEventListener("canplaythrough", retryAutoplay);
+    audio.addEventListener("loadeddata", retryAutoplay);
 
     return () => {
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
       audio.removeEventListener("timeupdate", onTimeUpdate);
       audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("canplay", retryAutoplay);
+      audio.removeEventListener("canplaythrough", retryAutoplay);
+      audio.removeEventListener("loadeddata", retryAutoplay);
     };
   }, []);
 
@@ -187,6 +231,7 @@ export default function BgmPlayer() {
 
     if (audio.paused) {
       try {
+        audio.muted = false;
         await audio.play();
         isPlayingRef.current = true;
         setIsPlaying(true);
@@ -263,7 +308,7 @@ export default function BgmPlayer() {
       <div
         className={`${isMobileViewport && !isMobileExpanded ? "hidden" : "space-y-2 rounded-2xl border border-zinc-400 bg-zinc-300/95 p-3 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-6px_10px_rgba(0,0,0,0.06),0_7px_15px_rgba(0,0,0,0.11)] md:space-y-3 md:rounded-3xl md:p-4 dark:border-zinc-600 dark:bg-zinc-900/85 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-8px_13px_rgba(0,0,0,0.36),0_7px_15px_rgba(0,0,0,0.28)]"}`}
       >
-        <audio ref={audioRef} src={selectedSrc} preload="auto" />
+        <audio ref={audioRef} src={selectedSrc} preload="auto" autoPlay muted playsInline />
         <label htmlFor="bgm-track" className="sr-only">
           Select BGM
         </label>

@@ -1,6 +1,7 @@
 ﻿import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { getPosts } from "@/lib/posts";
 import { deleteGuestPostById, getGuestPosts } from "@/lib/guest-posts";
 import { getMemberSummaries, requireSession } from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
@@ -13,11 +14,48 @@ type GuestBoardPageProps = {
 export default async function GuestBoardPage({ searchParams }: GuestBoardPageProps) {
   const locale = await getLocale();
   const session = await requireSession();
-  const posts = await getGuestPosts();
+  const guestBoardPosts = await getGuestPosts();
+  const blogPosts = await getPosts();
   const members = await getMemberSummaries();
   const params = await searchParams;
   const errorMessage = params.error ? decodeURIComponent(params.error) : "";
   const memberNameById = new Map(members.map((member) => [member.id, member.name.trim()]));
+
+  const memberIdSet = new Set(members.map((member) => member.id));
+  const memberNameSet = new Set(members.map((member) => member.name.trim()).filter((name) => Boolean(name)));
+
+  const memberPosts = blogPosts.filter(
+    (post) =>
+      (post.authorId ? memberIdSet.has(post.authorId) : false) ||
+      memberIdSet.has(post.author) ||
+      memberNameSet.has(post.author),
+  );
+
+  const memberGuestPosts = memberPosts.map((post) => ({
+    id: `member-${post.id}`,
+    title: post.title,
+    content: post.content,
+    authorId: post.authorId ?? post.author,
+    authorDisplay: memberNameById.get(post.authorId ?? "") || post.author,
+    date: post.date,
+    detailHref: `/posts/${post.id}`,
+    canManage: false,
+  }));
+
+  const guestPosts = guestBoardPosts.map((post) => ({
+    id: `guest-${post.id}`,
+    title: post.title,
+    content: post.content,
+    authorId: post.authorId,
+    authorDisplay: post.authorName || memberNameById.get(post.authorId) || post.authorId,
+    date: post.date,
+    detailHref: `/guest/${post.id}`,
+    canManage: session.role === "owner" || (session.role === "member" && post.authorId === session.userId),
+    editHref: `/guest/${post.id}/edit`,
+    postId: post.id,
+  }));
+
+  const posts = [...memberGuestPosts, ...guestPosts];
 
   async function deleteGuestPostAction(formData: FormData) {
     "use server";
@@ -65,14 +103,7 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
 
       <div className="space-y-4">
         <GuestPostsSearchList
-          posts={posts.map((post) => ({
-            id: post.id,
-            title: post.title,
-            content: post.content,
-            authorId: post.authorId,
-            authorDisplay: post.authorName || memberNameById.get(post.authorId) || post.authorId,
-            date: post.date,
-          }))}
+          posts={posts}
           labels={{
             searchPlaceholder: t(locale, "제목, 내용, 작성자 검색", "Search title, content, author"),
             empty: t(locale, "검색 결과가 없습니다.", "No matching posts found."),

@@ -5,12 +5,16 @@ import { useMemo, useState } from "react";
 import SearchBar from "./SearchBar";
 
 type GuestPostItem = {
-  id: number;
+  id: number | string;
   title: string;
   content: string;
   authorId: string;
   authorDisplay: string;
   date: string;
+  detailHref: string;
+  canManage: boolean;
+  editHref?: string;
+  postId?: number;
 };
 
 type Labels = {
@@ -60,32 +64,32 @@ export default function GuestPostsSearchList({
       {filteredPosts.length === 0 ? (
         <p className="text-zinc-500 dark:text-zinc-400">{labels.empty}</p>
       ) : (
-        filteredPosts.map((post) => {
-          const canManage = sessionRole === "owner" || (sessionRole === "member" && post.authorId === sessionUserId);
+        filteredPosts.map((post) => (
+          <article key={String(post.id)} className="space-y-3 rounded-2xl border border-zinc-500 bg-zinc-300 p-5 transition hover:bg-zinc-400 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800">
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+              <Link href={post.detailHref} className="transition hover:text-cyan-200">
+                {post.title}
+              </Link>
+            </h2>
+            <p className="text-zinc-700 dark:text-zinc-200">{post.content}</p>
+            <div className="flex items-center justify-between text-sm text-zinc-700 dark:text-zinc-300">
+              <p>{labels.author}: {post.authorDisplay}</p>
+              <p>{post.date}</p>
+            </div>
 
-          return (
-            <article key={post.id} className="space-y-3 rounded-2xl border border-zinc-500 bg-zinc-300 p-5 transition hover:bg-zinc-400 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800">
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                <Link href={`/guest/${post.id}`} className="transition hover:text-cyan-200">
-                  {post.title}
-                </Link>
-              </h2>
-              <p className="text-zinc-700 dark:text-zinc-200">{post.content}</p>
-              <div className="flex items-center justify-between text-sm text-zinc-700 dark:text-zinc-300">
-                <p>{labels.author}: {post.authorDisplay}</p>
-                <p>{post.date}</p>
-              </div>
-
-              {canManage ? (
-                <div className="flex items-center gap-2">
+            {post.canManage ? (
+              <div className="flex items-center gap-2">
+                {post.editHref ? (
                   <Link
-                    href={`/guest/${post.id}/edit`}
+                    href={post.editHref}
                     className="rounded-full border border-zinc-600 bg-zinc-400 px-4 py-1.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-500 dark:border-cyan-500/50 dark:bg-cyan-500/10 dark:text-cyan-200 dark:hover:bg-cyan-500/20"
                   >
                     {labels.edit}
                   </Link>
+                ) : null}
+                {typeof post.postId === "number" ? (
                   <form action={deleteAction}>
-                    <input type="hidden" name="postId" value={post.id} />
+                    <input type="hidden" name="postId" value={post.postId} />
                     <button
                       type="submit"
                       className="rounded-full border border-zinc-600 bg-zinc-400 px-4 py-1.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-500 dark:border-red-400/60 dark:bg-red-500/20 dark:text-red-300 dark:hover:bg-red-500/30"
@@ -93,11 +97,11 @@ export default function GuestPostsSearchList({
                       {labels.delete}
                     </button>
                   </form>
-                </div>
-              ) : null}
-            </article>
-          );
-        })
+                ) : null}
+              </div>
+            ) : null}
+          </article>
+        ))
       )}
     </div>
   );
