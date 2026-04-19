@@ -1,9 +1,17 @@
 ﻿'use client';
 
+import { Settings } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import { useLocale } from '@/lib/i18n-client';
 
 type Theme = 'light' | 'dark' | 'system';
+
+type ThemeOption = {
+  value: Theme;
+  label: string;
+  icon: ReactNode;
+};
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>('dark');
@@ -41,10 +49,10 @@ export function ThemeToggle() {
     }
   }, [theme]);
 
-  const themeOptions = [
-    { value: 'light' as const, label: locale === 'ko' ? '라이트' : 'Light', icon: '☼' },
-    { value: 'dark' as const, label: locale === 'ko' ? '다크' : 'Dark', icon: '◐' },
-    { value: 'system' as const, label: locale === 'ko' ? '시스템' : 'System', icon: '⚙' },
+  const themeOptions: ThemeOption[] = [
+    { value: 'light', label: locale === 'ko' ? '라이트' : 'Light', icon: '☼' },
+    { value: 'dark', label: locale === 'ko' ? '다크' : 'Dark', icon: '◐' },
+    { value: 'system', label: locale === 'ko' ? '시스템' : 'System', icon: <Settings size={14} /> },
   ];
 
   return (

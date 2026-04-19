@@ -2,7 +2,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { addPost } from "@/lib/posts";
-import { addGuestPost } from "@/lib/guest-posts";
 import { getMemberProfile, requireSession } from "@/lib/auth";
 
 function isRedirectError(error: unknown) {
@@ -43,25 +42,14 @@ async function createPost(formData: FormData) {
       redirect(`/posts/new?error=${message}`);
     }
 
-    if (session.role === "member") {
-      await addGuestPost({
-        title,
-        content,
-        authorId: session.userId,
-        authorName: author,
-        linkUrl,
-        attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
-      });
-    } else {
-      await addPost({
-        title,
-        author,
-        authorId: undefined,
-        content,
-        linkUrl,
-        attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
-      });
-    }
+    await addPost({
+      title,
+      author,
+      authorId: session.role === "member" ? session.userId : undefined,
+      content,
+      linkUrl,
+      attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
+    });
 
     revalidatePath("/");
     revalidatePath("/posts");
@@ -129,7 +117,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             name="author"
             type="text"
             required
-            placeholder="?묒꽦???대쫫"
+            placeholder="작성자 이름"
             defaultValue={defaultAuthor}
             readOnly={session.role === "member"}
             className={`w-full rounded-xl border px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition ${session.role === "member" ? "cursor-not-allowed border-zinc-200 dark:border-zinc-700 bg-zinc-100/80 dark:bg-zinc-900/60 text-zinc-500 dark:text-zinc-300" : "border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 focus:border-[#81d8d0] focus:shadow-[0_0_14px_rgba(129,216,208,0.35)]"}`}
