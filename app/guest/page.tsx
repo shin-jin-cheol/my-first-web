@@ -22,13 +22,9 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
   const memberNameById = new Map(members.map((member) => [member.id, member.name.trim()]));
 
   const memberIdSet = new Set(members.map((member) => member.id));
-  const memberNameSet = new Set(members.map((member) => member.name.trim()).filter((name) => Boolean(name)));
 
   const memberPosts = blogPosts.filter(
-    (post) =>
-      (post.authorId ? memberIdSet.has(post.authorId) : false) ||
-      memberIdSet.has(post.author) ||
-      memberNameSet.has(post.author),
+    (post) => (post.authorId ? memberIdSet.has(post.authorId) : false),
   );
 
   const memberGuestPosts = memberPosts.map((post) => ({

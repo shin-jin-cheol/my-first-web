@@ -49,7 +49,7 @@ export default async function RootLayout({
         <nav className="border-b border-zinc-500 bg-zinc-300 text-zinc-900 shadow-[0_0_24px_rgba(129,216,208,0.11)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:shadow-[0_0_24px_rgba(129,216,208,0.18)]">
           <div className="mx-auto w-full max-w-4xl px-4 py-3 md:px-6 md:py-4">
             <div className="flex items-center justify-between gap-3 md:hidden">
-              <span className="max-w-[68vw] truncate rounded-full border border-zinc-500 bg-zinc-400/90 px-3 py-1 text-sm font-bold text-zinc-800 shadow-[0_0_14px_rgba(129,216,208,0.14)] backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-100 dark:shadow-[0_0_14px_rgba(129,216,208,0.35)]">
+              <span className="max-w-[68vw] truncate rounded-full border border-zinc-500 bg-zinc-300/92 px-3 py-1 text-sm font-bold text-zinc-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-100 dark:shadow-[0_0_14px_rgba(129,216,208,0.35)]">
                 공인재 신진철의 생존일기
               </span>
               <div className="flex items-center gap-2">
@@ -68,7 +68,7 @@ export default async function RootLayout({
             </div>
 
             <div className="hidden flex-wrap items-center gap-x-4 gap-y-2 md:flex">
-              <span className="shrink-0 rounded-full border border-zinc-500 bg-zinc-400/90 px-3 py-1 text-base font-bold text-zinc-800 shadow-[0_0_14px_rgba(129,216,208,0.14)] backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-100 dark:shadow-[0_0_14px_rgba(129,216,208,0.35)] md:text-lg">
+              <span className="shrink-0 rounded-full border border-zinc-500 bg-zinc-300/92 px-3 py-1 text-base font-bold text-zinc-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-100 dark:shadow-[0_0_14px_rgba(129,216,208,0.35)] md:text-lg">
                 공인재 신진철의 생존일기
               </span>
               <Link href="/" className="text-sm font-medium text-zinc-700 transition hover:text-zinc-900 hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.35)] dark:text-zinc-300 dark:hover:text-white dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
@@ -83,7 +83,7 @@ export default async function RootLayout({
               {session ? (
                 <Link
                   href="/posts/new"
-                  className="rounded-full border border-[#74cfc6] bg-[#81d8d0] px-3 py-1.5 text-sm font-semibold text-zinc-900 shadow-[0_0_22px_rgba(129,216,208,0.68)] transition hover:-translate-y-0.5 hover:bg-[#96e1da] hover:shadow-[0_0_30px_rgba(129,216,208,0.8)]"
+                  className="rounded-full border border-[#74cfc6] bg-[#81d8d0] px-3 py-1.5 text-sm font-semibold text-zinc-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_16px_rgba(129,216,208,0.5)] transition hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_22px_rgba(129,216,208,0.62)]"
                 >
                   {t(locale, "새 글 쓰기", "Write")}
                 </Link>
@@ -116,7 +116,7 @@ export default async function RootLayout({
                 <form action={logoutAction}>
                   <button
                     type="submit"
-                    className="rounded-full border border-zinc-600 dark:border-zinc-500 bg-zinc-400 dark:bg-zinc-800 px-3 py-1.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100 transition hover:bg-zinc-500 dark:hover:bg-zinc-700"
+                    className="rounded-full border border-zinc-500 bg-zinc-300/92 px-3 py-1.5 text-sm font-semibold text-zinc-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] transition hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_7px_15px_rgba(0,0,0,0.11)] dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-100 dark:shadow-none dark:hover:bg-zinc-700"
                   >
                     {t(locale, "로그아웃", "Logout")}
                   </button>

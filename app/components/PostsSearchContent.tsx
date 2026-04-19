@@ -23,7 +23,7 @@ type GuestPostItem = {
 
 type PostsSearchContentProps = {
   ownerPosts: BlogPostItem[];
-  guestPosts: GuestPostItem[];
+  memberGuestPosts: GuestPostItem[];
   labels: {
     searchPlaceholder: string;
     blogEmpty: string;
@@ -39,7 +39,7 @@ function includesQuery(value: string, query: string) {
   return value.toLowerCase().includes(query.toLowerCase());
 }
 
-export default function PostsSearchContent({ ownerPosts, guestPosts, labels }: PostsSearchContentProps) {
+export default function PostsSearchContent({ ownerPosts, memberGuestPosts, labels }: PostsSearchContentProps) {
   const [query, setQuery] = useState("");
   const normalizedQuery = query.trim();
 
@@ -53,15 +53,15 @@ export default function PostsSearchContent({ ownerPosts, guestPosts, labels }: P
     );
   }, [ownerPosts, normalizedQuery]);
 
-  const filteredGuestPosts = useMemo(() => {
+  const filteredMemberGuestPosts = useMemo(() => {
     if (!normalizedQuery) {
-      return guestPosts;
+      return memberGuestPosts;
     }
 
-    return guestPosts.filter((post) =>
+    return memberGuestPosts.filter((post) =>
       [post.title, post.content, post.authorDisplay, post.date].some((field) => includesQuery(field, normalizedQuery)),
     );
-  }, [guestPosts, normalizedQuery]);
+  }, [memberGuestPosts, normalizedQuery]);
 
   return (
     <div className="space-y-8">
@@ -102,17 +102,17 @@ export default function PostsSearchContent({ ownerPosts, guestPosts, labels }: P
         <h2 className="text-2xl font-bold text-zinc-700 dark:text-zinc-100 drop-shadow-[0_0_10px_rgba(129,216,208,0.3)]">
           {labels.guestSectionTitle}
         </h2>
-        {filteredGuestPosts.length === 0 ? (
+        {filteredMemberGuestPosts.length === 0 ? (
           <p className="text-zinc-500 dark:text-zinc-400">{labels.guestEmpty}</p>
         ) : (
           <div className="grid gap-7 md:grid-cols-2">
-            {filteredGuestPosts.map((post) => (
+            {filteredMemberGuestPosts.map((post) => (
               <article key={post.id} className="h-full min-h-56 rounded-2xl border border-zinc-500 bg-zinc-300 p-7 shadow-[0_0_22px_rgba(129,216,208,0.12)] transition hover:border-cyan-500/50 hover:bg-zinc-400 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800">
-                <h3 className="mb-3 text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                <h4 className="mb-3 text-xl font-bold text-zinc-900 dark:text-zinc-100">
                   <Link href={post.detailHref} className="transition hover:text-cyan-200">
                     {post.title}
                   </Link>
-                </h3>
+                </h4>
                 <p className="mb-5 line-clamp-4 text-base leading-7 text-zinc-700 dark:text-zinc-200">{post.content}</p>
                 <div className="space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
                   <p>

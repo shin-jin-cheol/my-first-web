@@ -20,6 +20,8 @@ const tracks: Track[] = [
 export default function BgmPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const isPlayingRef = useRef(false);
+  const hasInitializedRef = useRef(false);
+  const autoplayRetryCountRef = useRef(0);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -84,6 +86,7 @@ export default function BgmPlayer() {
 
       isPlayingRef.current = true;
       setIsPlaying(true);
+      autoplayRetryCountRef.current = 0;
       return true;
     } catch {
       audio.muted = false;
@@ -125,14 +128,34 @@ export default function BgmPlayer() {
       return;
     }
 
-    audio.src = savedIndex >= 0 ? tracks[savedIndex].src : tracks[0].src;
+    const initialSrc = savedIndex >= 0 ? tracks[savedIndex].src : tracks[0].src;
+    audio.src = initialSrc;
+    audio.load();
+    hasInitializedRef.current = true;
 
-    void startPlayback({ allowMutedFallback: true, unmuteDelayMs: 500 });
+    void startPlayback({ allowMutedFallback: true, unmuteDelayMs: 900 });
   }, []);
 
   useEffect(() => {
+    if (!hasInitializedRef.current) {
+      return;
+    }
+
     const audio = audioRef.current;
     if (!audio) {
+      return;
+    }
+
+    const currentPath = (() => {
+      try {
+        return new URL(audio.currentSrc || audio.src, window.location.origin).pathname;
+      } catch {
+        return audio.currentSrc || audio.src;
+      }
+    })();
+
+    if (currentPath === selectedSrc) {
+      window.localStorage.setItem("bgm-track", selectedSrc);
       return;
     }
 
@@ -166,12 +189,18 @@ export default function BgmPlayer() {
         return;
       }
 
-      void startPlayback();
+      void startPlayback({ allowMutedFallback: true, unmuteDelayMs: 900 }).then((played) => {
+        if (played) {
+          window.removeEventListener("pointerdown", handleGesture);
+          window.removeEventListener("keydown", handleGesture);
+          window.removeEventListener("touchstart", handleGesture);
+        }
+      });
     };
 
-    window.addEventListener("pointerdown", handleGesture, { once: true });
-    window.addEventListener("keydown", handleGesture, { once: true });
-    window.addEventListener("touchstart", handleGesture, { once: true });
+    window.addEventListener("pointerdown", handleGesture);
+    window.addEventListener("keydown", handleGesture);
+    window.addEventListener("touchstart", handleGesture);
 
     return () => {
       window.removeEventListener("pointerdown", handleGesture);
@@ -188,7 +217,7 @@ export default function BgmPlayer() {
 
     const retryAutoplay = () => {
       if (!isPlayingRef.current) {
-        void startPlayback({ allowMutedFallback: true, unmuteDelayMs: 500 });
+        void startPlayback({ allowMutedFallback: true, unmuteDelayMs: 900 });
       }
     };
 
@@ -220,6 +249,49 @@ export default function BgmPlayer() {
       audio.removeEventListener("canplay", retryAutoplay);
       audio.removeEventListener("canplaythrough", retryAutoplay);
       audio.removeEventListener("loadeddata", retryAutoplay);
+    };
+  }, []);
+
+  useEffect(() => {
+    const attemptAutoplay = () => {
+      if (isPlayingRef.current) {
+        return;
+      }
+
+      if (autoplayRetryCountRef.current >= 25) {
+        return;
+      }
+
+      autoplayRetryCountRef.current += 1;
+      void startPlayback({ allowMutedFallback: true, unmuteDelayMs: 900 });
+    };
+
+    const onVisibilityOrFocus = () => {
+      if (document.visibilityState !== "hidden") {
+        attemptAutoplay();
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      if (isPlayingRef.current || autoplayRetryCountRef.current >= 25) {
+        window.clearInterval(intervalId);
+        return;
+      }
+
+      attemptAutoplay();
+    }, 1200);
+
+    window.addEventListener("focus", onVisibilityOrFocus);
+    window.addEventListener("pageshow", onVisibilityOrFocus);
+    document.addEventListener("visibilitychange", onVisibilityOrFocus);
+
+    attemptAutoplay();
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", onVisibilityOrFocus);
+      window.removeEventListener("pageshow", onVisibilityOrFocus);
+      document.removeEventListener("visibilitychange", onVisibilityOrFocus);
     };
   }, []);
 

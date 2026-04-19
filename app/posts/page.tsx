@@ -1,14 +1,12 @@
 ﻿import Link from "next/link";
 import { getPosts } from "@/lib/posts";
 import { getLocale, t } from "@/lib/i18n";
-import { getGuestPosts } from "@/lib/guest-posts";
 import { getMemberSummaries } from "@/lib/auth";
 import PostsSearchContent from "@/app/components/PostsSearchContent";
 
 export default async function PostsPage() {
   const locale = await getLocale();
   const posts = await getPosts();
-  const guestPosts = await getGuestPosts();
   const members = await getMemberSummaries();
   const memberNameById = new Map(
     members
@@ -17,15 +15,9 @@ export default async function PostsPage() {
   );
 
   const memberIdSet = new Set(members.map((member) => member.id));
-  const memberNameSet = new Set(
-    members.map((member) => member.name.trim()).filter((name) => Boolean(name)),
-  );
 
   const memberPosts = posts.filter(
-    (post) =>
-      (post.authorId ? memberIdSet.has(post.authorId) : false) ||
-      memberIdSet.has(post.author) ||
-      memberNameSet.has(post.author),
+    (post) => (post.authorId ? memberIdSet.has(post.authorId) : false),
   );
 
   const ownerPosts = posts.filter((post) => !memberPosts.some((memberPost) => memberPost.id === post.id));
@@ -37,12 +29,6 @@ export default async function PostsPage() {
     author: post.author,
     date: post.date,
     detailHref: `/posts/${post.id}`,
-  }));
-
-  const guestPostItems = guestPosts.map((post) => ({
-    ...post,
-    id: `guest-${post.id}`,
-    detailHref: `/guest/${post.id}`,
   }));
 
   const memberGuestItems = memberPosts.map((post) => ({
@@ -67,17 +53,7 @@ export default async function PostsPage() {
 
       <PostsSearchContent
         ownerPosts={blogOwnerPosts}
-        guestPosts={[
-          ...memberGuestItems,
-          ...guestPostItems.map((post) => ({
-          id: post.id,
-          title: post.title,
-          content: post.content,
-          authorDisplay: post.authorName || memberNameById.get(post.authorId) || post.authorId,
-          date: post.date,
-          detailHref: post.detailHref,
-          })),
-        ]}
+        memberGuestPosts={memberGuestItems}
         labels={{
           searchPlaceholder: t(locale, "제목, 내용, 작성자 검색", "Search title, content, author"),
           ownerSectionTitle: t(locale, "게시글", "Posts"),
