@@ -28,17 +28,6 @@ export default async function PostsPage() {
       memberNameSet.has(post.author),
   );
 
-  const ownerPosts = posts.filter((post) => !memberPosts.some((memberPost) => memberPost.id === post.id));
-
-  const blogOwnerPosts = ownerPosts.map((post) => ({
-    id: post.id,
-    title: post.title,
-    content: post.content,
-    author: post.author,
-    date: post.date,
-    detailHref: `/posts/${post.id}`,
-  }));
-
   const blogMemberPosts = memberPosts.map((post) => ({
     id: post.id,
     title: post.title,
@@ -66,7 +55,6 @@ export default async function PostsPage() {
       </div>
 
       <PostsSearchContent
-        ownerPosts={blogOwnerPosts}
         memberPosts={blogMemberPosts}
         guestPosts={guestPostItems.map((post) => ({
           id: post.id,
@@ -78,8 +66,7 @@ export default async function PostsPage() {
         }))}
         labels={{
           searchPlaceholder: t(locale, "제목, 내용, 작성자 검색", "Search title, content, author"),
-          ownerSectionTitle: t(locale, "오너 게시글", "Owner Posts"),
-          memberSectionTitle: t(locale, "회원 게시글", "Member Posts"),
+          memberSectionTitle: t(locale, "게시글", "Posts"),
           blogEmpty: t(locale, "검색 결과가 없습니다.", "No matching posts found."),
           guestSectionTitle: t(locale, "게스트 게시글", "Guest Posts"),
           guestEmpty: t(locale, "검색 결과가 없습니다.", "No matching posts found."),
