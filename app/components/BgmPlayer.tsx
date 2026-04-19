@@ -11,10 +11,10 @@ type Track = {
 const tracks: Track[] = [
   { label: "CAMO - Life is Wet (Feat.JMIN)", src: "/bgm-camo-life-is-wet-feat-jmin.mp3" },
   { label: "CAMO - Shawty (Feat.Coogie)", src: "/bgm-camo-shawty-feat-coogie.mp3" },
-  { label: "SYSTEM SEOUL - i miss you", src: "/bgm-system-seoul-i-miss.mp3" },
-  { label: "Royal 44 - KISS KISS KISS (Feat.SUNWOO)", src: "/bgm-kiss-kiss-kiss-feat-sunwoo.mp3" },
-  { label: "RINRIN - Blues (Feat.CAMO)", src: "/bgm-rinrin-blues-feat-camo.mp3" },
-  { label: "HEIZE - Song (Feat. BIG Naughty)", src: "/bgm-heize-feat-big-naughty.mp3" },
+  { label: "SYSTEM SEOUL - i miss ㅠ", src: "/bgm-system-seoul-i-miss.mp3" },
+  { label: "나우아임영 & Royal 44 - KISS KISS KISS (Feat.SUNWOO)", src: "/bgm-kiss-kiss-kiss-feat-sunwoo.mp3" },
+  { label: "린린 - Blues (Feat.CAMO)", src: "/bgm-rinrin-blues-feat-camo.mp3" },
+  { label: "헤이즈 - 잊혀지는 사랑인가요 (Feat. BIG Naughty)", src: "/bgm-heize-feat-big-naughty.mp3" },
 ];
 
 export default function BgmPlayer() {
