@@ -350,7 +350,7 @@ export default function BgmPlayer() {
   };
 
   return (
-    <div className="fixed bottom-24 right-3 z-50 flex w-[min(82vw,280px)] flex-col gap-2 md:bottom-5 md:right-5 md:w-[min(88vw,340px)] md:gap-3">
+    <div className="fixed bottom-24 left-1/2 z-50 flex w-[min(82vw,280px)] -translate-x-1/2 flex-col gap-2 md:bottom-5 md:left-auto md:right-5 md:w-[min(88vw,340px)] md:translate-x-0 md:gap-3">
       {!isMobileViewport || isMobileExpanded ? (
         <LiveClock className="w-full rounded-2xl border border-zinc-400 bg-zinc-300/95 px-3 py-2 text-center text-zinc-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-4px_8px_rgba(0,0,0,0.05),0_5px_12px_rgba(0,0,0,0.09)] md:rounded-3xl md:px-4 md:py-2.5 dark:border-zinc-600 dark:bg-zinc-900/85 dark:text-cyan-100 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07),inset_0_-7px_12px_rgba(0,0,0,0.32),0_6px_14px_rgba(0,0,0,0.28)]" />
       ) : null}

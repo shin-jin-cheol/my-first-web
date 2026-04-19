@@ -122,7 +122,7 @@ export default async function RootLayout({
                   </button>
                 </form>
               )}
-              <div className="ml-auto">
+              <div className="lg:ml-auto">
                 <NavMenuMobile
                   session={session}
                   serverLocale={locale}
