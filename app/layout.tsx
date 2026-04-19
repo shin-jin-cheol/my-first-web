@@ -143,7 +143,7 @@ export default async function RootLayout({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="인스타그램 바로가기"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-500/70 bg-gradient-to-br from-zinc-400 via-zinc-500 to-zinc-600 text-zinc-100 shadow-[0_0_12px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:brightness-105 dark:border-pink-400/40 dark:bg-gradient-to-br dark:from-[#f58529] dark:via-[#dd2a7b] dark:to-[#515bd4] dark:text-white dark:shadow-[0_0_14px_rgba(221,42,123,0.45)]"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-pink-400/40 bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#515bd4] text-white shadow-[0_0_14px_rgba(221,42,123,0.45)] transition hover:-translate-y-0.5 hover:brightness-105"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -160,14 +160,14 @@ export default async function RootLayout({
                 href="https://www.instagram.com/whflwls"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-gradient-to-br from-zinc-600 via-zinc-700 to-zinc-800 bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_8px_rgba(0,0,0,0.16)] transition hover:brightness-105 dark:bg-gradient-to-br dark:from-[#f58529] dark:via-[#dd2a7b] dark:to-[#515bd4] dark:drop-shadow-[0_0_10px_rgba(221,42,123,0.35)] dark:hover:brightness-110"
+                className="bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#515bd4] bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_10px_rgba(221,42,123,0.35)] transition hover:brightness-110"
               >
                 @whflwls
               </a>
               <a
                 href="mailto:sjc5001@hs.ac.kr"
                 aria-label="이메일 보내기"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-500/70 bg-gradient-to-br from-zinc-400 via-zinc-500 to-zinc-600 text-zinc-100 shadow-[0_0_12px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:brightness-105 dark:border-red-400/40 dark:bg-gradient-to-br dark:from-[#ea4335] dark:via-[#fbbc05] dark:to-[#34a853] dark:text-white dark:shadow-[0_0_14px_rgba(234,67,53,0.35)]"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-red-400/40 bg-gradient-to-br from-[#ea4335] via-[#fbbc05] to-[#34a853] text-white shadow-[0_0_14px_rgba(234,67,53,0.35)] transition hover:-translate-y-0.5 hover:brightness-105"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -183,7 +183,7 @@ export default async function RootLayout({
               </a>
               <a
                 href="mailto:sjc5001@hs.ac.kr"
-                className="bg-gradient-to-br from-zinc-600 via-zinc-700 to-zinc-800 bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_8px_rgba(0,0,0,0.16)] transition hover:brightness-105 dark:bg-gradient-to-br dark:from-[#ea4335] dark:via-[#fbbc05] dark:to-[#34a853] dark:drop-shadow-[0_0_10px_rgba(234,67,53,0.3)] dark:hover:brightness-110"
+                className="bg-gradient-to-br from-[#ea4335] via-[#fbbc05] to-[#34a853] bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_10px_rgba(234,67,53,0.3)] transition hover:brightness-110"
               >
                 sjc5001@hs.ac.kr
               </a>
