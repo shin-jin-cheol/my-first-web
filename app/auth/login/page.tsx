@@ -15,12 +15,7 @@ async function loginAction(formData: FormData) {
   }
 
   await setSession(session);
-
-  if (session.role === "owner") {
-    redirect("/admin/members");
-  }
-
-  redirect("/guest");
+  redirect("/");
 }
 
 type LoginPageProps = {

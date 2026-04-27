@@ -549,6 +549,13 @@ async function sendSignupOtpWithSupabase(email: string, id: string, name: string
   if (!result.ok) {
     return {
       ok: false,
+      message: result.message || "인증 코드 전송에 실패했습니다.",
+    };
+  }
+
+  if (!result.ok) {
+    return {
+      ok: false,
       message:
         result.message === "User already registered"
           ? "이미 가입된 이메일입니다."
