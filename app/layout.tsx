@@ -83,43 +83,43 @@ export default async function RootLayout({
               </div>
             </div>
 
-            <div className="hidden flex-wrap items-center gap-x-4 gap-y-2 md:flex">
-              <span className="inline-flex h-9 shrink-0 items-center rounded-full border border-zinc-500 bg-zinc-300/92 px-3 text-base font-extrabold tracking-[0.01em] text-zinc-900 drop-shadow-[0_0_12px_rgba(129,216,208,0.5)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-100 dark:drop-shadow-none dark:shadow-[0_0_14px_rgba(129,216,208,0.35)] md:text-lg">
+            <div className="hidden min-w-0 flex-nowrap items-center gap-3 overflow-x-auto md:flex">
+              <span className="inline-flex h-9 max-w-[15rem] shrink items-center truncate rounded-full border border-zinc-500 bg-zinc-300/92 px-3 text-base font-extrabold tracking-[0.01em] text-zinc-900 drop-shadow-[0_0_12px_rgba(129,216,208,0.5)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-100 dark:drop-shadow-none dark:shadow-[0_0_14px_rgba(129,216,208,0.35)] md:text-lg">
                 공인재 신진철의 생존일기
               </span>
-              <Link href="/" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-zinc-300 dark:hover:text-white dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
+              <Link href="/" className="inline-flex h-9 shrink-0 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-zinc-300 dark:hover:text-white dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
                 {t(locale, "홈", "Home")}
               </Link>
-              <Link href="/posts" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-zinc-300 dark:hover:text-white dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
+              <Link href="/posts" className="inline-flex h-9 shrink-0 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-zinc-300 dark:hover:text-white dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
                 {t(locale, "블로그", "Blog")}
               </Link>
-              <Link href="/guest" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-zinc-300 dark:hover:text-white dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
+              <Link href="/guest" className="inline-flex h-9 shrink-0 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-zinc-300 dark:hover:text-white dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
                 {t(locale, "게스트 게시판", "Guest Board")}
               </Link>
               {session ? (
                 <Link
                   href={writeHref}
-                  className="inline-flex h-9 items-center rounded-full border border-[#74cfc6] bg-[#81d8d0] px-3 text-sm font-semibold text-zinc-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_22px_rgba(129,216,208,0.68)] transition hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_30px_rgba(129,216,208,0.82)]"
+                  className="inline-flex h-9 shrink-0 items-center rounded-full border border-[#74cfc6] bg-[#81d8d0] px-3 text-sm font-semibold text-zinc-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_22px_rgba(129,216,208,0.68)] transition hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_30px_rgba(129,216,208,0.82)]"
                 >
                   {writeLabel}
                 </Link>
               ) : null}
               {session?.role === "owner" ? (
-                <Link href="/admin/members" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
+                <Link href="/admin/members" className="inline-flex h-9 shrink-0 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
                   {t(locale, "회원관리", "Members")}
                 </Link>
               ) : null}
               {session?.role === "member" ? (
-                <Link href="/guest/account" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
+                <Link href="/guest/account" className="inline-flex h-9 shrink-0 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
                   {t(locale, "회원정보", "Account")}
                 </Link>
               ) : null}
               {session ? (
-                <span className="inline-flex h-9 items-center rounded-full border border-cyan-600/45 bg-cyan-500/12 px-3 text-xs font-semibold uppercase tracking-wide text-[#2f8f88] shadow-[0_0_10px_rgba(129,216,208,0.35)] dark:border-cyan-500/40 dark:bg-cyan-500/10 dark:text-cyan-200 dark:shadow-none">
+                <span className="inline-flex h-9 shrink-0 items-center rounded-full border border-cyan-600/45 bg-cyan-500/12 px-3 text-xs font-semibold uppercase tracking-wide text-[#2f8f88] shadow-[0_0_10px_rgba(129,216,208,0.35)] dark:border-cyan-500/40 dark:bg-cyan-500/10 dark:text-cyan-200 dark:shadow-none">
                   {session.role}
                 </span>
               ) : null}
-              <div className="inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap">
+              <div className="ml-auto inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap">
                 {!session ? (
                   <>
                     <Link href="/auth/login" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
