@@ -119,26 +119,26 @@ export default async function RootLayout({
                   {session.role}
                 </span>
               ) : null}
-              {!session ? (
-                <>
-                  <Link href="/auth/login" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
-                    {t(locale, "로그인", "Login")}
-                  </Link>
-                  <Link href="/auth/signup" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
-                    {t(locale, "회원가입", "Sign up")}
-                  </Link>
-                </>
-              ) : (
-                <form action={logoutAction} className="inline-flex h-9 items-center">
-                  <button
-                    type="submit"
-                    className="inline-flex h-9 items-center rounded-full border border-zinc-500 bg-zinc-300/92 px-3 text-sm font-semibold text-zinc-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] transition hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_7px_15px_rgba(0,0,0,0.11)] dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-100 dark:shadow-none dark:hover:bg-zinc-700"
-                  >
-                    {t(locale, "로그아웃", "Logout")}
-                  </button>
-                </form>
-              )}
-              <div className="inline-flex h-9 items-center">
+              <div className="inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap">
+                {!session ? (
+                  <>
+                    <Link href="/auth/login" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
+                      {t(locale, "로그인", "Login")}
+                    </Link>
+                    <Link href="/auth/signup" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
+                      {t(locale, "회원가입", "Sign up")}
+                    </Link>
+                  </>
+                ) : (
+                  <form action={logoutAction} className="inline-flex h-9 items-center">
+                    <button
+                      type="submit"
+                      className="inline-flex h-9 items-center rounded-full border border-zinc-500 bg-zinc-300/92 px-3 text-sm font-semibold text-zinc-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] transition hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_7px_15px_rgba(0,0,0,0.11)] dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-100 dark:shadow-none dark:hover:bg-zinc-700"
+                    >
+                      {t(locale, "로그아웃", "Logout")}
+                    </button>
+                  </form>
+                )}
                 <NavMenuMobile
                   session={session}
                   serverLocale={locale}
