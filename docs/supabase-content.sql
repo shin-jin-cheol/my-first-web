@@ -44,6 +44,11 @@ alter table public.posts
   drop constraint if exists posts_date_not_empty,
   drop constraint if exists posts_category_valid;
 
+update public.posts
+set category = 'study'
+where category is null
+   or category not in ('study', 'daily', 'info', 'notice');
+
 alter table public.posts
   add constraint posts_title_not_empty check (char_length(trim(title)) > 0),
   add constraint posts_content_not_empty check (char_length(trim(content)) > 0),
@@ -58,6 +63,11 @@ alter table public.guest_posts
   drop constraint if exists guest_posts_author_id_not_empty,
   drop constraint if exists guest_posts_date_not_empty,
   drop constraint if exists guest_posts_category_valid;
+
+update public.guest_posts
+set category = 'study'
+where category is null
+   or category not in ('study', 'daily', 'info');
 
 alter table public.guest_posts
   add constraint guest_posts_title_not_empty check (char_length(trim(title)) > 0),
