@@ -24,7 +24,7 @@ async function loginAction(formData: FormData) {
 }
 
 type LoginPageProps = {
-  searchParams: Promise<{ error?: string; withdraw?: string; signup?: string }>;
+  searchParams: Promise<{ error?: string; withdraw?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -32,7 +32,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const showError = params.error === "1";
   const showWithdrawMessage = params.withdraw === "1";
-  const showSignupMessage = params.signup === "1";
 
   return (
     <section className="mx-auto max-w-xl space-y-6 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-7 shadow-[0_0_24px_rgba(129,216,208,0.14)]">
@@ -51,12 +50,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       {showWithdrawMessage ? (
         <p className="rounded-xl border border-cyan-600/40 bg-cyan-500/10 px-4 py-2 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">
           {t(locale, "회원 탈퇴가 완료되었습니다.", "Your account has been deleted.")}
-        </p>
-      ) : null}
-
-      {showSignupMessage ? (
-        <p className="rounded-xl border border-cyan-600/40 bg-cyan-500/10 px-4 py-2 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">
-          {t(locale, "이메일 인증이 완료되었습니다. 로그인해 주세요.", "Email verified. Please log in.")}
         </p>
       ) : null}
 

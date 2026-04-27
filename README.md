@@ -43,23 +43,19 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Supabase Member Migration
 
-Member profiles can be stored in Supabase while email verification and password login are handled by Supabase Auth.
+Member accounts can be stored in Supabase for persistent storage across instance restarts.
 
 1. Create table with [docs/supabase-members.sql](docs/supabase-members.sql).
-2. In the Supabase dashboard, keep `Email` provider enabled and `Confirm email` turned on.
-3. If you want a 6-digit code instead of a link, customize the confirmation email template to include the OTP token.
-4. Set environment variables in Vercel (or local `.env.local`):
+2. Set environment variables in Vercel (or local `.env.local`):
 	- `SUPABASE_URL`
 	- `SUPABASE_SERVICE_ROLE_KEY`
 	- `SUPABASE_MEMBERS_TABLE` (optional, default: `members`)
-	- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-5. Deploy again.
+3. Deploy again.
 
 Behavior:
 
-- When Supabase env vars are set, member profile read/write uses Supabase first.
-- Signup sends an email verification code through Supabase Auth.
-- Login validates the member password through Supabase Auth when the member has a verified email.
+- When Supabase env vars are set, member read/write uses Supabase first.
+- On first access, if Supabase is empty and legacy storage has members, existing members are copied once to Supabase.
 
 ## Supabase Content Migration
 

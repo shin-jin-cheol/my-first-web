@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import BgmPlayer from "./components/BgmPlayer";
 import { clearSession, getSession } from "@/lib/auth";
@@ -7,10 +7,6 @@ import { headers } from "next/headers";
 import { getLocale, t } from "@/lib/i18n";
 import { NavMenuMobile } from "./components/NavMenuMobile";
 import "./globals.css";
-import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: "공인재 신진철의 생존일기",
@@ -48,7 +44,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="ko" className={cn("dark", "font-sans", geist.variable)} suppressHydrationWarning>
+    <html lang="ko" className="dark" suppressHydrationWarning>
       <body className="flex min-h-screen flex-col bg-zinc-300 text-zinc-900 shadow-[inset_0_140px_140px_-120px_rgba(129,216,208,0.2)] dark:bg-zinc-950 dark:text-zinc-100 dark:shadow-[inset_0_120px_120px_-120px_rgba(129,216,208,0.22)] pb-24">
         <nav className="border-b border-zinc-500 bg-zinc-300 text-zinc-900 shadow-[0_0_30px_rgba(129,216,208,0.22)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:shadow-[0_0_24px_rgba(129,216,208,0.18)]">
           <div className="mx-auto w-full max-w-4xl px-4 py-3 md:px-6 md:py-4">
