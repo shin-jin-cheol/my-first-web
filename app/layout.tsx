@@ -20,6 +20,9 @@ export default async function RootLayout({
 }>) {
   const session = await getSession();
   const locale = await getLocale();
+  const writeHref = session?.role === "owner" ? "/posts/new" : "/guest/new";
+  const writeLabel =
+    session?.role === "owner" ? t(locale, "새 글 쓰기", "Write") : t(locale, "게스트 글 쓰기", "Write Guest Post");
 
   async function logoutAction() {
     "use server";
@@ -82,10 +85,10 @@ export default async function RootLayout({
               </Link>
               {session ? (
                 <Link
-                  href="/posts/new"
+                  href={writeHref}
                   className="inline-flex h-9 items-center rounded-full border border-[#74cfc6] bg-[#81d8d0] px-3 text-sm font-semibold text-zinc-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_22px_rgba(129,216,208,0.68)] transition hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_30px_rgba(129,216,208,0.82)]"
                 >
-                  {t(locale, "새 글 쓰기", "Write")}
+                  {writeLabel}
                 </Link>
               ) : null}
               {session?.role === "owner" ? (

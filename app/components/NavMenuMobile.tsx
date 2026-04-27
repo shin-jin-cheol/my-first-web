@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import Link from 'next/link';
+import { Menu } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useEffect, useRef } from 'react';
 import { useLocale } from '@/lib/i18n-client';
@@ -24,6 +25,9 @@ export function NavMenuMobile({
   const locale = clientLocale || serverLocale;
 
   const t = (ko: string, en: string) => (locale === 'en' ? en : ko);
+  const writeHref = session?.role === 'owner' ? '/posts/new' : '/guest/new';
+  const writeLabel =
+    session?.role === 'owner' ? t('새 글 쓰기', 'Write') : t('게스트 글 쓰기', 'Write Guest Post');
 
   useEffect(() => {
     const onPointerDown = (event: MouseEvent | TouchEvent) => {
@@ -67,9 +71,9 @@ export function NavMenuMobile({
   };
 
   return (
-    <details ref={detailsRef} className="group relative inline-flex h-9 shrink-0 items-center">
-      <summary className="inline-flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full border border-zinc-500 bg-zinc-300 text-base leading-none text-zinc-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_8px_rgba(0,0,0,0.08)] transition hover:bg-zinc-400 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_8px_rgba(0,0,0,0.22)] dark:hover:bg-zinc-700">
-        ☰
+    <details ref={detailsRef} className="group relative inline-flex h-9 shrink-0 items-center align-middle">
+      <summary className="inline-flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full border border-zinc-500 bg-zinc-300 p-0 text-zinc-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_8px_rgba(0,0,0,0.08)] transition marker:hidden hover:bg-zinc-400 [&::-webkit-details-marker]:hidden dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_8px_rgba(0,0,0,0.22)] dark:hover:bg-zinc-700">
+        <Menu aria-hidden="true" size={18} strokeWidth={2.2} />
       </summary>
       <div
         onClick={closeMenuOnAction}
@@ -115,10 +119,10 @@ export function NavMenuMobile({
 
         {session ? (
           <Link
-            href="/posts/new"
+            href={writeHref}
             className="block rounded-lg border border-[#a8dfd7] bg-[#81d8d0] px-2 py-1.5 text-center font-semibold text-zinc-900 shadow-[0_0_10px_rgba(129,216,208,0.22)]"
           >
-            {t('새 글 쓰기', 'Write')}
+            {writeLabel}
           </Link>
         ) : null}
 

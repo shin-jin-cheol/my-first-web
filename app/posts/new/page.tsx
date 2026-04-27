@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getMemberProfile, requireSession } from "@/lib/auth";
+import { requireSession } from "@/lib/auth";
 import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
 import { addPost } from "@/lib/posts";
 
@@ -20,18 +20,16 @@ async function createPost(formData: FormData) {
 
   try {
     const session = await requireSession();
+    if (session.role !== "owner") {
+      redirect("/guest/new");
+    }
+
     const title = String(formData.get("title") ?? "").trim();
-    const rawAuthor = String(formData.get("author") ?? "").trim();
+    const author = String(formData.get("author") ?? "").trim();
     const content = String(formData.get("content") ?? "").trim();
     const category = String(formData.get("category") ?? "study").trim();
     const linkUrl = String(formData.get("linkUrl") ?? "").trim();
     const attachmentFile = formData.get("attachment");
-
-    let author = rawAuthor;
-    if (session.role === "member") {
-      const profile = await getMemberProfile(session.userId);
-      author = profile?.name?.trim() || session.userName?.trim() || session.userId;
-    }
 
     if (!title) {
       redirect(`/posts/new?error=${encodeURIComponent("제목을 입력해 주세요.")}`);
@@ -41,14 +39,10 @@ async function createPost(formData: FormData) {
       redirect(`/posts/new?error=${encodeURIComponent("작성자와 내용을 입력해 주세요.")}`);
     }
 
-    if (session.role !== "owner" && category === "notice") {
-      redirect(`/posts/new?error=${encodeURIComponent("공지 카테고리는 오너 계정만 작성할 수 있습니다.")}`);
-    }
-
     await addPost({
       title,
       author,
-      authorId: session.role === "member" ? session.userId : undefined,
+      authorId: undefined,
       content,
       category:
         category === "notice"
@@ -85,15 +79,12 @@ type NewPostPageProps = {
 
 export default async function NewPostPage({ searchParams }: NewPostPageProps) {
   const session = await requireSession();
-  const profile = session.role === "member" ? await getMemberProfile(session.userId) : null;
-  const defaultAuthor =
-    session.role === "member" ? profile?.name?.trim() || session.userName?.trim() || session.userId : "";
+  if (session.role !== "owner") {
+    redirect("/guest/new");
+  }
+
   const params = await searchParams;
   const errorMessage = params.error ? decodeURIComponent(params.error) : "";
-  const categoryOptions =
-    session.role === "owner"
-      ? BLOG_POST_CATEGORIES
-      : BLOG_POST_CATEGORIES.filter((category) => category !== "notice");
 
   return (
     <section className="space-y-8">
@@ -126,17 +117,12 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             defaultValue="study"
             className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition focus:border-[#81d8d0]"
           >
-            {categoryOptions.map((category) => (
+            {BLOG_POST_CATEGORIES.map((category) => (
               <option key={category} value={category}>
                 {getCategoryLabel(category)}
               </option>
             ))}
           </select>
-          {session.role !== "owner" ? (
-            <p className="text-xs text-zinc-500 dark:text-zinc-300">
-              공지 카테고리는 오너 계정만 작성할 수 있습니다.
-            </p>
-          ) : null}
         </div>
 
         <div className="space-y-2">
@@ -162,13 +148,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             type="text"
             required
             placeholder="작성자 이름"
-            defaultValue={defaultAuthor}
-            readOnly={session.role === "member"}
-            className={`w-full rounded-xl border px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition ${
-              session.role === "member"
-                ? "cursor-not-allowed border-zinc-200 dark:border-zinc-700 bg-zinc-100/80 dark:bg-zinc-900/60 text-zinc-500 dark:text-zinc-300"
-                : "border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 focus:border-[#81d8d0]"
-            }`}
+            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
