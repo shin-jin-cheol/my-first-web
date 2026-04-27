@@ -8,6 +8,7 @@ const STORAGE_KEY = "signup-send-code-cooldown-until";
 type SendCodeButtonProps = {
   idleLabel: string;
   cooldownLabel: string;
+  startCooldown: boolean;
 };
 
 function getRemainingSeconds() {
@@ -28,6 +29,7 @@ function getRemainingSeconds() {
 export default function SendCodeButton({
   idleLabel,
   cooldownLabel,
+  startCooldown,
 }: SendCodeButtonProps) {
   const [remainingSeconds, setRemainingSeconds] = useState(getRemainingSeconds);
 
@@ -41,6 +43,28 @@ export default function SendCodeButton({
     };
   }, []);
 
+  useEffect(() => {
+    if (!startCooldown || typeof window === "undefined") {
+      return;
+    }
+
+    const nextUntil = Date.now() + COOLDOWN_MS;
+    const currentUntil = Number(window.localStorage.getItem(STORAGE_KEY) ?? "0");
+
+    if (!Number.isNaN(currentUntil) && currentUntil > Date.now()) {
+      return;
+    }
+
+    window.localStorage.setItem(STORAGE_KEY, String(nextUntil));
+    const syncTimer = window.setTimeout(() => {
+      setRemainingSeconds(Math.ceil(COOLDOWN_MS / 1000));
+    }, 0);
+
+    return () => {
+      window.clearTimeout(syncTimer);
+    };
+  }, [startCooldown]);
+
   const isCoolingDown = remainingSeconds > 0;
 
   return (
@@ -50,14 +74,6 @@ export default function SendCodeButton({
       value="send-code"
       formNoValidate
       disabled={isCoolingDown}
-      onClick={() => {
-        if (isCoolingDown || typeof window === "undefined") {
-          return;
-        }
-
-        window.localStorage.setItem(STORAGE_KEY, String(Date.now() + COOLDOWN_MS));
-        setRemainingSeconds(Math.ceil(COOLDOWN_MS / 1000));
-      }}
       className="shrink-0 rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:border-[#81d8d0] hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-[#81d8d0]"
     >
       {isCoolingDown ? `${cooldownLabel} (${remainingSeconds}s)` : idleLabel}

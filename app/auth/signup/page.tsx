@@ -205,6 +205,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
                 showSentMessage ? "Resend Code" : "Send Code",
               )}
               cooldownLabel={t(locale, "재전송 대기", "Wait")}
+              startCooldown={showSentMessage}
             />
           </div>
         </div>
