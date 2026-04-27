@@ -164,9 +164,9 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
       </form>
 
       <form action={withdrawAction} className="space-y-4 rounded-2xl border border-red-500/40 bg-red-500/10 p-6">
-        <h2 className="text-lg font-bold text-red-200">{t(locale, "회원 탈퇴", "Delete Account")}</h2>
+        <h2 className="text-lg font-bold text-red-700 dark:text-red-200">{t(locale, "회원 탈퇴", "Delete Account")}</h2>
         <div className="space-y-2">
-          <label htmlFor="withdraw-password" className="text-sm text-red-200">{t(locale, "비밀번호 확인", "Confirm Password")}</label>
+          <label htmlFor="withdraw-password" className="text-sm font-medium text-red-700 dark:text-red-200">{t(locale, "비밀번호 확인", "Confirm Password")}</label>
           <input
             id="withdraw-password"
             name="withdrawPassword"
@@ -175,7 +175,10 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
             className="w-full rounded-xl border border-red-400/60 bg-zinc-100 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none"
           />
         </div>
-        <button type="submit" className="rounded-full border border-red-400/70 bg-red-500/30 px-4 py-2 text-sm font-semibold text-red-100">
+        <p className="text-sm text-red-700 dark:text-red-200">
+          {t(locale, "탈퇴 후에는 계정을 복구할 수 없습니다. 신중하게 진행해 주세요.", "Your account cannot be restored after deletion. Please proceed carefully.")}
+        </p>
+        <button type="submit" className="rounded-full border border-red-500/70 bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-500/30 dark:border-red-400/70 dark:bg-red-500/30 dark:text-red-100">
           {t(locale, "회원 탈퇴하기", "Delete Account")}
         </button>
       </form>
