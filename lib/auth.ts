@@ -12,34 +12,88 @@ export type Session = {
   userName?: string;
 };
 
-type Member = {
+type MemberRecord = {
   id: string;
-  name?: string;
-  password: string;
+  name: string;
+  password?: string;
+  email?: string;
+  emailVerified: boolean;
+  authUserId?: string;
   createdAt: string;
 };
 
 type SupabaseMemberRow = {
   id: string;
   name: string | null;
-  password: string;
+  password: string | null;
+  email: string | null;
+  email_verified: boolean | null;
+  auth_user_id: string | null;
   created_at: string;
+};
+
+type SupabaseAuthUser = {
+  id: string;
+  email?: string | null;
+  email_confirmed_at?: string | null;
+  user_metadata?: {
+    member_id?: string;
+    name?: string;
+  } | null;
+};
+
+type SupabaseAuthResponse = {
+  user?: SupabaseAuthUser | null;
+  session?: {
+    access_token?: string;
+  } | null;
+  error_description?: string;
+  msg?: string;
+  message?: string;
+  error?: string;
+};
+
+type AuthResult = {
+  ok: boolean;
+  message?: string;
+};
+
+type OwnerMemberView = {
+  id: string;
+  name: string;
+  password: string;
+  createdAt: string;
 };
 
 const OWNER_ID = "sjc5001";
 const OWNER_PASSWORD = "sjc5001*";
+const OWNER_NAME = "신진철";
 const SESSION_COOKIE = "sjc-session";
-const USERS_FILE_LOCAL = path.join(process.cwd(), "data", "users.json");
+const DATA_DIR = path.join(process.cwd(), "data");
+const USERS_FILE_LOCAL = path.join(DATA_DIR, "users.json");
 const USERS_FILE_TMP = path.join("/tmp", "my-first-web-users.json");
 const USERS_BLOB_KEY = "auth/users.json";
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_AUTH_PUBLIC_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+  process.env.SUPABASE_ANON_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+  "";
 const SUPABASE_MEMBERS_TABLE = process.env.SUPABASE_MEMBERS_TABLE || "members";
 
 let usersBlobUrlCache: string | undefined;
 let hasTriedSupabaseBootstrap = false;
 
-function pickLatestBlobUrl(blobs: Array<{ url: string; uploadedAt?: string | Date; pathname?: string }>): string | undefined {
+export const ownerAccount = Object.freeze({
+  id: OWNER_ID,
+  password: OWNER_PASSWORD,
+  name: OWNER_NAME,
+});
+
+function pickLatestBlobUrl(
+  blobs: Array<{ url: string; uploadedAt?: string | Date; pathname?: string }>,
+) {
   if (blobs.length === 0) {
     return undefined;
   }
@@ -54,10 +108,10 @@ function pickLatestBlobUrl(blobs: Array<{ url: string; uploadedAt?: string | Dat
 }
 
 function resolveUsersFilePath() {
-  // Vercel deployment filesystem is read-only except /tmp.
   if (process.env.VERCEL) {
     return USERS_FILE_TMP;
   }
+
   return USERS_FILE_LOCAL;
 }
 
@@ -69,16 +123,78 @@ function hasSupabaseStorage() {
   return Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
 }
 
+function hasSupabaseAuth() {
+  return Boolean(SUPABASE_URL && SUPABASE_AUTH_PUBLIC_KEY);
+}
+
 function getSupabaseMembersEndpoint(query = "") {
   if (!SUPABASE_URL) {
     return "";
   }
 
-  const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${SUPABASE_MEMBERS_TABLE}`;
-  return `${base}${query}`;
+  return `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${SUPABASE_MEMBERS_TABLE}${query}`;
 }
 
-async function requestSupabase<T>(
+function getSupabaseAuthEndpoint(pathname = "") {
+  if (!SUPABASE_URL) {
+    return "";
+  }
+
+  return `${SUPABASE_URL.replace(/\/$/, "")}/auth/v1${pathname}`;
+}
+
+function parseAuthErrorMessage(data: unknown) {
+  if (!data || typeof data !== "object") {
+    return undefined;
+  }
+
+  const candidate = data as Record<string, unknown>;
+  const message =
+    candidate.error_description ??
+    candidate.msg ??
+    candidate.message ??
+    candidate.error;
+
+  return typeof message === "string" ? message : undefined;
+}
+
+function mapSupabaseRowToMember(row: SupabaseMemberRow): MemberRecord {
+  return {
+    id: row.id,
+    name: row.name ?? "",
+    password: row.password ?? undefined,
+    email: row.email ?? undefined,
+    emailVerified: Boolean(row.email_verified),
+    authUserId: row.auth_user_id ?? undefined,
+    createdAt: row.created_at,
+  };
+}
+
+function mapMemberToSupabaseRow(member: MemberRecord) {
+  return {
+    id: member.id,
+    name: member.name,
+    password: member.password ?? null,
+    email: member.email ?? null,
+    email_verified: member.emailVerified,
+    auth_user_id: member.authUserId ?? null,
+    created_at: member.createdAt,
+  };
+}
+
+function normalizeMemberRecord(input: Partial<MemberRecord> & { id: string }): MemberRecord {
+  return {
+    id: input.id.trim(),
+    name: String(input.name ?? "").trim(),
+    password: input.password?.trim() || undefined,
+    email: input.email?.trim().toLowerCase() || undefined,
+    emailVerified: Boolean(input.emailVerified),
+    authUserId: input.authUserId?.trim() || undefined,
+    createdAt: input.createdAt || new Date().toISOString(),
+  };
+}
+
+async function requestSupabaseMembers<T>(
   method: "GET" | "POST" | "PATCH" | "DELETE",
   query: string,
   body?: unknown,
@@ -117,51 +233,73 @@ async function requestSupabase<T>(
   return { ok: true, status: response.status, data };
 }
 
-function mapSupabaseRowToMember(row: SupabaseMemberRow): Member {
-  return {
-    id: row.id,
-    name: row.name ?? "",
-    password: row.password,
-    createdAt: row.created_at,
-  };
-}
+async function requestSupabaseAuth<T>(
+  method: "GET" | "POST" | "PUT" | "DELETE",
+  pathname: string,
+  body?: unknown,
+  useServiceRole = false,
+): Promise<{ ok: boolean; data: T | null; message?: string }> {
+  const apiKey = useServiceRole ? SUPABASE_SERVICE_ROLE_KEY : SUPABASE_AUTH_PUBLIC_KEY;
 
-async function readMembersFromSupabase(): Promise<Member[]> {
-  const result = await requestSupabase<SupabaseMemberRow[]>("GET", "?select=id,name,password,created_at&order=created_at.asc");
-  if (!result.ok || !Array.isArray(result.data)) {
-    return [];
+  if (!apiKey) {
+    return {
+      ok: false,
+      data: null,
+      message: "Supabase Auth 환경변수가 설정되지 않았습니다.",
+    };
   }
 
-  return result.data.map(mapSupabaseRowToMember);
+  const response = await fetch(getSupabaseAuthEndpoint(pathname), {
+    method,
+    headers: {
+      apikey: apiKey,
+      Authorization: `Bearer ${useServiceRole ? SUPABASE_SERVICE_ROLE_KEY : apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    cache: "no-store",
+  });
+
+  if (response.status === 204) {
+    return { ok: true, data: null };
+  }
+
+  let data: T | null = null;
+
+  try {
+    data = (await response.json()) as T;
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok) {
+    return {
+      ok: false,
+      data,
+      message: parseAuthErrorMessage(data) || "Supabase Auth 요청에 실패했습니다.",
+    };
+  }
+
+  return { ok: true, data };
 }
 
-async function upsertMembersToSupabase(members: Member[]) {
-  const rows = members.map((member) => ({
-    id: member.id,
-    name: member.name ?? "",
-    password: member.password,
-    created_at: member.createdAt,
-  }));
+function decodeSession(value: string): Session | null {
+  try {
+    const json = Buffer.from(value, "base64url").toString("utf-8");
+    const parsed = JSON.parse(json) as Session;
 
-  await requestSupabase(
-    "POST",
-    "?on_conflict=id",
-    rows,
-    "resolution=merge-duplicates,return=minimal",
-  );
-}
+    if (!parsed.userId || (parsed.role !== "owner" && parsed.role !== "member")) {
+      return null;
+    }
 
-async function getMemberByIdFromSupabase(userId: string): Promise<Member | null> {
-  const result = await requestSupabase<SupabaseMemberRow[]>(
-    "GET",
-    `?select=id,name,password,created_at&id=eq.${encodeURIComponent(userId)}&limit=1`,
-  );
-
-  if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+    return parsed;
+  } catch {
     return null;
   }
+}
 
-  return mapSupabaseRowToMember(result.data[0]);
+function encodeSession(session: Session) {
+  return Buffer.from(JSON.stringify(session), "utf-8").toString("base64url");
 }
 
 async function refreshUsersBlobUrlCache() {
@@ -170,7 +308,7 @@ async function refreshUsersBlobUrlCache() {
   usersBlobUrlCache = pickLatestBlobUrl(exactPathBlobs.length > 0 ? exactPathBlobs : existing.blobs);
 }
 
-async function readUsersFromBlob(): Promise<Member[]> {
+async function readUsersFromBlob(): Promise<MemberRecord[]> {
   if (!hasBlobStorage()) {
     return [];
   }
@@ -196,6 +334,7 @@ async function readUsersFromBlob(): Promise<Member[]> {
 
   const fetchUrl = `${usersBlobUrlCache}${usersBlobUrlCache.includes("?") ? "&" : "?"}ts=${Date.now()}`;
   let response = await fetch(fetchUrl, { cache: "no-store" });
+
   if (!response.ok) {
     await refreshUsersBlobUrlCache();
 
@@ -210,11 +349,11 @@ async function readUsersFromBlob(): Promise<Member[]> {
     }
   }
 
-  const data = (await response.json()) as Member[];
-  return Array.isArray(data) ? data : [];
+  const data = (await response.json()) as Array<Partial<MemberRecord> & { id: string }>;
+  return Array.isArray(data) ? data.map(normalizeMemberRecord) : [];
 }
 
-async function writeUsersToBlob(members: Member[]) {
+async function writeUsersToBlob(members: MemberRecord[]) {
   if (!hasBlobStorage()) {
     return;
   }
@@ -225,6 +364,7 @@ async function writeUsersToBlob(members: Member[]) {
     allowOverwrite: true,
     contentType: "application/json",
   });
+
   usersBlobUrlCache = blob.url;
 }
 
@@ -235,6 +375,7 @@ async function ensureUsersFile() {
   }
 
   const usersFilePath = resolveUsersFilePath();
+
   try {
     await fs.access(usersFilePath);
   } catch {
@@ -243,17 +384,21 @@ async function ensureUsersFile() {
   }
 }
 
-async function readMembersFromLegacyStorage(): Promise<Member[]> {
+async function readMembersFromLegacyStorage(): Promise<MemberRecord[]> {
   if (hasBlobStorage()) {
     return readUsersFromBlob();
   }
 
   await ensureUsersFile();
   const raw = await fs.readFile(resolveUsersFilePath(), "utf-8");
-  return JSON.parse(raw) as Member[];
+  const parsed = JSON.parse(raw) as Array<Partial<MemberRecord> & { id: string }>;
+
+  return parsed
+    .map(normalizeMemberRecord)
+    .filter((member) => member.id && member.id !== OWNER_ID);
 }
 
-async function writeMembers(members: Member[]) {
+async function writeMembersToLegacyStorage(members: MemberRecord[]) {
   if (hasBlobStorage()) {
     await writeUsersToBlob(members);
     return;
@@ -262,7 +407,35 @@ async function writeMembers(members: Member[]) {
   await fs.writeFile(resolveUsersFilePath(), JSON.stringify(members, null, 2), "utf-8");
 }
 
-async function readMembers(): Promise<Member[]> {
+async function readMembersFromSupabase() {
+  const result = await requestSupabaseMembers<SupabaseMemberRow[]>(
+    "GET",
+    "?select=id,name,password,email,email_verified,auth_user_id,created_at&order=created_at.asc",
+  );
+
+  if (!result.ok || !Array.isArray(result.data)) {
+    return [];
+  }
+
+  return result.data.map(mapSupabaseRowToMember);
+}
+
+async function upsertMembersToSupabase(members: MemberRecord[]) {
+  const rows = members.map(mapMemberToSupabaseRow);
+
+  if (rows.length === 0) {
+    return;
+  }
+
+  await requestSupabaseMembers(
+    "POST",
+    "?on_conflict=id",
+    rows,
+    "resolution=merge-duplicates,return=minimal",
+  );
+}
+
+async function readMembers() {
   if (!hasSupabaseStorage()) {
     return readMembersFromLegacyStorage();
   }
@@ -274,6 +447,7 @@ async function readMembers(): Promise<Member[]> {
 
   hasTriedSupabaseBootstrap = true;
   const legacyMembers = await readMembersFromLegacyStorage();
+
   if (legacyMembers.length === 0) {
     return [];
   }
@@ -282,29 +456,144 @@ async function readMembers(): Promise<Member[]> {
   return readMembersFromSupabase();
 }
 
-function decodeSession(value: string): Session | null {
-  try {
-    const json = Buffer.from(value, "base64url").toString("utf-8");
-    const parsed = JSON.parse(json) as Session;
-    if (!parsed.userId || (parsed.role !== "owner" && parsed.role !== "member")) {
-      return null;
-    }
-    return parsed;
-  } catch {
-    return null;
-  }
+async function getMemberById(userId: string) {
+  const members = await readMembers();
+  return members.find((member) => member.id === userId.trim());
 }
 
-function encodeSession(session: Session): string {
-  return Buffer.from(JSON.stringify(session), "utf-8").toString("base64url");
+async function getMemberByEmail(email: string) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const members = await readMembers();
+  return members.find((member) => member.email?.toLowerCase() === normalizedEmail);
+}
+
+async function saveMember(member: MemberRecord) {
+  const normalized = normalizeMemberRecord(member);
+
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabaseMembers<SupabaseMemberRow[]>(
+      "POST",
+      "?on_conflict=id&select=id,name,password,email,email_verified,auth_user_id,created_at",
+      [mapMemberToSupabaseRow(normalized)],
+      "resolution=merge-duplicates,return=representation",
+    );
+
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+      return mapSupabaseRowToMember(result.data[0]);
+    }
+  }
+
+  const members = await readMembersFromLegacyStorage();
+  const index = members.findIndex((item) => item.id === normalized.id);
+
+  if (index === -1) {
+    members.push(normalized);
+  } else {
+    members[index] = normalized;
+  }
+
+  await writeMembersToLegacyStorage(members);
+  return normalized;
+}
+
+async function deleteMemberById(userId: string) {
+  if (hasSupabaseStorage()) {
+    await requestSupabaseMembers(
+      "DELETE",
+      `?id=eq.${encodeURIComponent(userId)}&select=id`,
+      undefined,
+      "return=representation",
+    );
+    return;
+  }
+
+  const members = await readMembersFromLegacyStorage();
+  await writeMembersToLegacyStorage(members.filter((member) => member.id !== userId));
+}
+
+async function signInMemberWithSupabase(email: string, password: string) {
+  const result = await requestSupabaseAuth<SupabaseAuthResponse>(
+    "POST",
+    "/token?grant_type=password",
+    { email, password },
+  );
+
+  if (!result.ok) {
+    return null;
+  }
+
+  return result.data;
+}
+
+async function signUpWithSupabase(email: string, password: string, id: string, name: string) {
+  const result = await requestSupabaseAuth<SupabaseAuthResponse>("POST", "/signup", {
+    email,
+    password,
+    data: {
+      member_id: id,
+      name,
+    },
+  });
+
+  if (!result.ok) {
+    return {
+      ok: false,
+      message:
+        result.message === "User already registered"
+          ? "이미 가입된 이메일입니다."
+          : "인증 코드 전송에 실패했습니다.",
+    };
+  }
+
+  return { ok: true };
+}
+
+async function verifySignupOtp(email: string, token: string) {
+  for (const type of ["email", "signup"] as const) {
+    const result = await requestSupabaseAuth<SupabaseAuthResponse>("POST", "/verify", {
+      type,
+      email,
+      token,
+    });
+
+    if (result.ok) {
+      return result.data;
+    }
+  }
+
+  return null;
+}
+
+async function updateSupabaseAuthUserPassword(authUserId: string, password: string) {
+  const result = await requestSupabaseAuth<SupabaseAuthResponse>(
+    "PUT",
+    `/admin/users/${authUserId}`,
+    { password },
+    true,
+  );
+
+  return result.ok;
+}
+
+async function deleteSupabaseAuthUser(authUserId: string) {
+  const result = await requestSupabaseAuth<null>(
+    "DELETE",
+    `/admin/users/${authUserId}`,
+    undefined,
+    true,
+  );
+
+  return result.ok;
 }
 
 export async function getSession(): Promise<Session | null> {
   const store = await cookies();
   const raw = store.get(SESSION_COOKIE)?.value;
+
   if (!raw) {
     return null;
   }
+
   return decodeSession(raw);
 }
 
@@ -315,6 +604,7 @@ export async function setSession(session: Session) {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
+    maxAge: 60 * 60 * 24 * 7,
   });
 }
 
@@ -325,146 +615,244 @@ export async function clearSession() {
 
 export async function requireSession(): Promise<Session> {
   const session = await getSession();
+
   if (!session) {
     redirect("/auth/login");
   }
+
   return session;
 }
 
 export async function requireOwner(): Promise<Session> {
   const session = await requireSession();
+
   if (session.role !== "owner") {
     redirect("/guest");
   }
+
   return session;
 }
 
 export async function login(id: string, password: string): Promise<Session | null> {
-  if (id === OWNER_ID && password === OWNER_PASSWORD) {
-    return { userId: OWNER_ID, role: "owner", userName: "신진철" };
+  const normalizedId = id.trim();
+  const normalizedPassword = password.trim();
+
+  if (!normalizedId || !normalizedPassword) {
+    return null;
   }
 
-  const members = await readMembers();
-  const member = members.find((item) => item.id === id && item.password === password);
+  if (normalizedId === OWNER_ID && normalizedPassword === OWNER_PASSWORD) {
+    return {
+      userId: OWNER_ID,
+      role: "owner",
+      userName: OWNER_NAME,
+    };
+  }
+
+  const member = await getMemberById(normalizedId);
   if (!member) {
+    return null;
+  }
+
+  if (member.email && hasSupabaseAuth()) {
+    const authData = await signInMemberWithSupabase(member.email, normalizedPassword);
+    const authUser = authData?.user;
+
+    if (!authUser?.id) {
+      return null;
+    }
+
+    if (
+      member.authUserId !== authUser.id ||
+      member.emailVerified !== Boolean(authUser.email_confirmed_at)
+    ) {
+      await saveMember({
+        ...member,
+        authUserId: authUser.id,
+        emailVerified: Boolean(authUser.email_confirmed_at),
+      });
+    }
+  } else if (member.password !== normalizedPassword) {
     return null;
   }
 
   return {
     userId: member.id,
     role: "member",
-    userName: member.name?.trim() || member.id,
+    userName: member.name || member.id,
   };
 }
 
-export async function registerMember(id: string, name: string, password: string): Promise<{ ok: boolean; message?: string }> {
+export async function registerMember(id: string, name: string, password: string): Promise<AuthResult> {
   if (!id || !name || !password) {
     return { ok: false, message: "이름, 아이디, 비밀번호를 입력해 주세요." };
   }
 
   if (id === OWNER_ID) {
-    return { ok: false, message: "사용할 수 없는 아이디입니다." };
+    return { ok: false, message: "이미 사용 중인 아이디입니다." };
   }
 
-  const members = await readMembers();
-  if (members.some((member) => member.id === id)) {
-    return { ok: false, message: "이미 존재하는 아이디입니다." };
+  if (await getMemberById(id)) {
+    return { ok: false, message: "이미 사용 중인 아이디입니다." };
   }
 
-  const createdAt = new Date().toISOString();
-
-  if (hasSupabaseStorage()) {
-    const result = await requestSupabase<SupabaseMemberRow[]>(
-      "POST",
-      "",
-      [{ id, name, password, created_at: createdAt }],
-      "return=representation",
-    );
-
-    if (!result.ok) {
-      return { ok: false, message: "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요." };
-    }
-
-    return { ok: true };
-  }
-
-  members.push({
+  await saveMember({
     id,
     name,
     password,
-    createdAt,
+    emailVerified: false,
+    createdAt: new Date().toISOString(),
   });
-  await writeMembers(members);
+
   return { ok: true };
 }
 
-export async function getMembersForOwner(): Promise<Member[]> {
-  await requireOwner();
-  return readMembers();
+export async function sendSignupVerificationCode(
+  id: string,
+  name: string,
+  email: string,
+  password: string,
+): Promise<AuthResult> {
+  const normalizedId = id.trim();
+  const normalizedName = name.trim();
+  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedPassword = password.trim();
+
+  if (!normalizedId || !normalizedName || !normalizedEmail || !normalizedPassword) {
+    return {
+      ok: false,
+      message: "아이디, 이름, 이메일, 비밀번호를 모두 입력해 주세요.",
+    };
+  }
+
+  if (normalizedId === OWNER_ID) {
+    return { ok: false, message: "이미 사용 중인 아이디입니다." };
+  }
+
+  if (!hasSupabaseAuth()) {
+    return { ok: false, message: "Supabase Auth 환경변수가 설정되지 않았습니다." };
+  }
+
+  const existingMember = await getMemberById(normalizedId);
+  if (existingMember) {
+    return { ok: false, message: "이미 사용 중인 아이디입니다." };
+  }
+
+  const existingEmail = await getMemberByEmail(normalizedEmail);
+  if (existingEmail) {
+    return { ok: false, message: "이미 가입된 이메일입니다." };
+  }
+
+  return signUpWithSupabase(normalizedEmail, normalizedPassword, normalizedId, normalizedName);
 }
 
-export async function getMemberSummaries(): Promise<Array<{ id: string; name: string }>> {
+export async function completeSignupWithVerificationCode(
+  id: string,
+  name: string,
+  email: string,
+  password: string,
+  verificationCode: string,
+): Promise<AuthResult> {
+  const normalizedId = id.trim();
+  const normalizedName = name.trim();
+  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedPassword = password.trim();
+  const normalizedCode = verificationCode.trim();
+
+  if (
+    !normalizedId ||
+    !normalizedName ||
+    !normalizedEmail ||
+    !normalizedPassword ||
+    !normalizedCode
+  ) {
+    return { ok: false, message: "회원가입 정보를 모두 입력해 주세요." };
+  }
+
+  if (normalizedId === OWNER_ID) {
+    return { ok: false, message: "이미 사용 중인 아이디입니다." };
+  }
+
+  const verified = await verifySignupOtp(normalizedEmail, normalizedCode);
+  const authUser = verified?.user;
+
+  if (!authUser?.id) {
+    return { ok: false, message: "인증 코드가 올바르지 않거나 만료되었습니다." };
+  }
+
+  const memberId = authUser.user_metadata?.member_id?.trim() || normalizedId;
+  const memberName = authUser.user_metadata?.name?.trim() || normalizedName;
+
+  await saveMember({
+    id: memberId,
+    name: memberName,
+    email: normalizedEmail,
+    emailVerified: true,
+    authUserId: authUser.id,
+    password: undefined,
+    createdAt: new Date().toISOString(),
+  });
+
+  return { ok: true };
+}
+
+export async function getMembersForOwner(): Promise<OwnerMemberView[]> {
+  await requireOwner();
+
   const members = await readMembers();
   return members.map((member) => ({
     id: member.id,
-    name: member.name ?? "",
+    name: member.name,
+    password: member.password ?? "Supabase Auth",
+    createdAt: member.createdAt,
   }));
 }
 
-export async function getMemberProfile(userId: string): Promise<{ id: string; name: string; createdAt: string } | null> {
+export async function getMemberSummaries() {
+  const members = await readMembers();
+  return members.map((member) => ({
+    id: member.id,
+    name: member.name,
+  }));
+}
+
+export async function getMemberProfile(userId: string) {
   if (!userId || userId === OWNER_ID) {
     return null;
   }
 
-  const members = await readMembers();
-  const member = members.find((item) => item.id === userId);
+  const member = await getMemberById(userId);
   if (!member) {
     return null;
   }
 
   return {
     id: member.id,
-    name: member.name ?? "",
+    name: member.name,
+    email: member.email,
     createdAt: member.createdAt,
   };
 }
 
-export async function updateMemberProfile(userId: string, name: string): Promise<{ ok: boolean; message?: string }> {
+export async function updateMemberProfile(userId: string, name: string): Promise<AuthResult> {
   if (!userId || userId === OWNER_ID) {
     return { ok: false, message: "회원 계정만 수정할 수 있습니다." };
   }
 
-  if (!name) {
-    return { ok: false, message: "이름을 입력해 주세요." };
-  }
-
-  if (hasSupabaseStorage()) {
-    const result = await requestSupabase<SupabaseMemberRow[]>(
-      "PATCH",
-      `?id=eq.${encodeURIComponent(userId)}&select=id,name,password,created_at`,
-      { name },
-      "return=representation",
-    );
-
-    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
-      return { ok: false, message: "회원 정보를 찾을 수 없습니다." };
-    }
-
-    return { ok: true };
-  }
-
-  const members = await readMembers();
-  const index = members.findIndex((member) => member.id === userId);
-
-  if (index === -1) {
+  const member = await getMemberById(userId);
+  if (!member) {
     return { ok: false, message: "회원 정보를 찾을 수 없습니다." };
   }
 
-  members[index] = {
-    ...members[index],
-    name,
-  };
-  await writeMembers(members);
+  const nextName = name.trim();
+  if (!nextName) {
+    return { ok: false, message: "이름을 입력해 주세요." };
+  }
+
+  await saveMember({
+    ...member,
+    name: nextName,
+  });
 
   return { ok: true };
 }
@@ -473,90 +861,86 @@ export async function changeMemberPassword(
   userId: string,
   currentPassword: string,
   newPassword: string,
-): Promise<{ ok: boolean; message?: string }> {
+): Promise<AuthResult> {
   if (!userId || userId === OWNER_ID) {
-    return { ok: false, message: "회원 계정만 비밀번호 변경이 가능합니다." };
+    return { ok: false, message: "회원 계정만 비밀번호를 변경할 수 있습니다." };
   }
 
-  if (!currentPassword || !newPassword) {
-    return { ok: false, message: "현재 비밀번호와 새 비밀번호를 입력해 주세요." };
+  const member = await getMemberById(userId);
+  if (!member) {
+    return { ok: false, message: "회원 정보를 찾을 수 없습니다." };
   }
 
-  if (hasSupabaseStorage()) {
-    const member = await getMemberByIdFromSupabase(userId);
-    if (!member || member.password !== currentPassword) {
+  const normalizedCurrentPassword = currentPassword.trim();
+  const normalizedNewPassword = newPassword.trim();
+
+  if (!normalizedCurrentPassword || !normalizedNewPassword) {
+    return {
+      ok: false,
+      message: "현재 비밀번호와 새 비밀번호를 모두 입력해 주세요.",
+    };
+  }
+
+  if (member.email && member.authUserId && hasSupabaseAuth()) {
+    const authData = await signInMemberWithSupabase(member.email, normalizedCurrentPassword);
+
+    if (!authData?.user?.id) {
       return { ok: false, message: "현재 비밀번호가 올바르지 않습니다." };
     }
 
-    const result = await requestSupabase<SupabaseMemberRow[]>(
-      "PATCH",
-      `?id=eq.${encodeURIComponent(userId)}&select=id,name,password,created_at`,
-      { password: newPassword },
-      "return=representation",
-    );
-
-    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
-      return { ok: false, message: "비밀번호 변경에 실패했습니다." };
-    }
-
-    return { ok: true };
+    const updated = await updateSupabaseAuthUserPassword(member.authUserId, normalizedNewPassword);
+    return updated
+      ? { ok: true }
+      : { ok: false, message: "비밀번호 변경에 실패했습니다." };
   }
 
-  const members = await readMembers();
-  const index = members.findIndex((member) => member.id === userId && member.password === currentPassword);
-
-  if (index === -1) {
+  if (member.password !== normalizedCurrentPassword) {
     return { ok: false, message: "현재 비밀번호가 올바르지 않습니다." };
   }
 
-  members[index] = {
-    ...members[index],
-    password: newPassword,
-  };
-  await writeMembers(members);
+  await saveMember({
+    ...member,
+    password: normalizedNewPassword,
+  });
 
   return { ok: true };
 }
 
-export async function deleteMemberAccount(
-  userId: string,
-  password: string,
-): Promise<{ ok: boolean; message?: string }> {
+export async function deleteMemberAccount(userId: string, password: string): Promise<AuthResult> {
   if (!userId || userId === OWNER_ID) {
     return { ok: false, message: "회원 계정만 탈퇴할 수 있습니다." };
   }
 
-  if (!password) {
+  const member = await getMemberById(userId);
+  if (!member) {
+    return { ok: false, message: "회원 정보를 찾을 수 없습니다." };
+  }
+
+  const normalizedPassword = password.trim();
+  if (!normalizedPassword) {
     return { ok: false, message: "비밀번호를 입력해 주세요." };
   }
 
-  if (hasSupabaseStorage()) {
-    const result = await requestSupabase<SupabaseMemberRow[]>(
-      "DELETE",
-      `?id=eq.${encodeURIComponent(userId)}&password=eq.${encodeURIComponent(password)}&select=id,name,password,created_at`,
-      undefined,
-      "return=representation",
-    );
+  if (member.email && member.authUserId && hasSupabaseAuth()) {
+    const authData = await signInMemberWithSupabase(member.email, normalizedPassword);
 
-    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+    if (!authData?.user?.id) {
       return { ok: false, message: "비밀번호가 올바르지 않습니다." };
     }
 
+    const deleted = await deleteSupabaseAuthUser(member.authUserId);
+    if (!deleted) {
+      return { ok: false, message: "회원 탈퇴에 실패했습니다." };
+    }
+
+    await deleteMemberById(member.id);
     return { ok: true };
   }
 
-  const members = await readMembers();
-  const filtered = members.filter((member) => !(member.id === userId && member.password === password));
-
-  if (filtered.length === members.length) {
+  if (member.password !== normalizedPassword) {
     return { ok: false, message: "비밀번호가 올바르지 않습니다." };
   }
 
-  await writeMembers(filtered);
+  await deleteMemberById(member.id);
   return { ok: true };
 }
-
-export const ownerAccount = {
-  id: OWNER_ID,
-  password: OWNER_PASSWORD,
-};
