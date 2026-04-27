@@ -6,6 +6,7 @@ create table if not exists public.posts (
   content text not null,
   author text not null,
   author_id text,
+  category text not null default 'study',
   date text not null,
   link_url text,
   file_url text,
@@ -18,6 +19,7 @@ create table if not exists public.guest_posts (
   content text not null,
   author_id text not null,
   author_name text,
+  category text not null default 'study',
   date text not null,
   link_url text,
   file_url text,
@@ -35,28 +37,34 @@ create table if not exists public.post_comments (
 );
 
 alter table public.posts
+  add column if not exists category text not null default 'study',
   drop constraint if exists posts_title_not_empty,
   drop constraint if exists posts_content_not_empty,
   drop constraint if exists posts_author_not_empty,
-  drop constraint if exists posts_date_not_empty;
+  drop constraint if exists posts_date_not_empty,
+  drop constraint if exists posts_category_valid;
 
 alter table public.posts
   add constraint posts_title_not_empty check (char_length(trim(title)) > 0),
   add constraint posts_content_not_empty check (char_length(trim(content)) > 0),
   add constraint posts_author_not_empty check (char_length(trim(author)) > 0),
-  add constraint posts_date_not_empty check (char_length(trim(date)) > 0);
+  add constraint posts_date_not_empty check (char_length(trim(date)) > 0),
+  add constraint posts_category_valid check (category in ('study', 'daily', 'info', 'notice'));
 
 alter table public.guest_posts
+  add column if not exists category text not null default 'study',
   drop constraint if exists guest_posts_title_not_empty,
   drop constraint if exists guest_posts_content_not_empty,
   drop constraint if exists guest_posts_author_id_not_empty,
-  drop constraint if exists guest_posts_date_not_empty;
+  drop constraint if exists guest_posts_date_not_empty,
+  drop constraint if exists guest_posts_category_valid;
 
 alter table public.guest_posts
   add constraint guest_posts_title_not_empty check (char_length(trim(title)) > 0),
   add constraint guest_posts_content_not_empty check (char_length(trim(content)) > 0),
   add constraint guest_posts_author_id_not_empty check (char_length(trim(author_id)) > 0),
-  add constraint guest_posts_date_not_empty check (char_length(trim(date)) > 0);
+  add constraint guest_posts_date_not_empty check (char_length(trim(date)) > 0),
+  add constraint guest_posts_category_valid check (category in ('study', 'daily', 'info'));
 
 alter table public.post_comments
   drop constraint if exists post_comments_author_id_not_empty,

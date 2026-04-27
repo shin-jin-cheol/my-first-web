@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { del, put } from "@vercel/blob";
+import { BlogPostCategory, normalizeBlogPostCategory } from "@/lib/post-categories";
 
 export type Post = {
   id: number;
@@ -8,6 +9,7 @@ export type Post = {
   content: string;
   author: string;
   authorId?: string;
+  category: BlogPostCategory;
   date: string;
   linkUrl?: string;
   fileUrl?: string;
@@ -28,6 +30,7 @@ type NewPostInput = {
   content: string;
   author: string;
   authorId?: string;
+  category: BlogPostCategory;
   linkUrl?: string;
   attachmentFile?: File | null;
 };
@@ -36,6 +39,7 @@ type UpdatePostInput = {
   title: string;
   content: string;
   author: string;
+  category: BlogPostCategory;
   linkUrl?: string;
   attachmentFile?: File | null;
   removeAttachment?: boolean;
@@ -47,6 +51,7 @@ type SupabasePostRow = {
   content: string;
   author: string;
   author_id: string | null;
+  category: string | null;
   date: string;
   link_url: string | null;
   file_url: string | null;
@@ -79,6 +84,7 @@ const initialPosts: Post[] = [
     content:
       "Next.js 16에서 App Router를 사용하는 방법과 기본 구조에 대해 알아봅니다. 새로운 파일 기반 라우팅 시스템과 Server Component의 장점을 살펴봅시다.",
     author: "신진철",
+    category: "study",
     date: "2026-04-05",
   },
   {
@@ -87,6 +93,7 @@ const initialPosts: Post[] = [
     content:
       "Tailwind CSS 4의 새로운 기능들을 소개합니다. @import 문법과 더욱 강력해진 유틸리티 클래스를 활용하여 빠르고 효율적인 스타일링을 경험해보세요.",
     author: "신진철",
+    category: "study",
     date: "2026-04-03",
   },
   {
@@ -95,6 +102,7 @@ const initialPosts: Post[] = [
     content:
       "TypeScript를 사용하면서 타입 안전성을 최대한 활용하는 팁들을 공유합니다. 제네릭, 유틸리티 타입, 타입 가드 등을 통해 더욱 견고한 코드를 작성할 수 있습니다.",
     author: "신진철",
+    category: "study",
     date: "2026-03-31",
   },
 ];
@@ -240,6 +248,7 @@ function mapSupabaseRowToPost(row: SupabasePostRow): Post {
     content: row.content,
     author: row.author,
     authorId: row.author_id ?? undefined,
+    category: normalizeBlogPostCategory(row.category ?? undefined),
     date: row.date,
     linkUrl: row.link_url ?? undefined,
     fileUrl: row.file_url ?? undefined,
@@ -254,6 +263,7 @@ function mapPostToSupabaseRow(post: Post) {
     content: post.content,
     author: post.author,
     author_id: post.authorId ?? null,
+    category: post.category,
     date: post.date,
     link_url: post.linkUrl ?? null,
     file_url: post.fileUrl ?? null,
@@ -261,10 +271,17 @@ function mapPostToSupabaseRow(post: Post) {
   };
 }
 
+function normalizePostRecord(post: Omit<Post, "category"> & { category?: string }): Post {
+  return {
+    ...post,
+    category: normalizeBlogPostCategory(post.category),
+  };
+}
+
 async function readPostsFromSupabase(): Promise<Post[]> {
   const result = await requestSupabase<SupabasePostRow[]>(
     "GET",
-    "?select=id,title,content,author,author_id,date,link_url,file_url,file_name&order=id.desc",
+    "?select=id,title,content,author,author_id,category,date,link_url,file_url,file_name&order=id.desc",
   );
 
   if (!result.ok || !Array.isArray(result.data)) {
@@ -315,7 +332,9 @@ function resolvePostsFilePath() {
 async function readPostsFromLegacyStorage(): Promise<Post[]> {
   await ensurePostsFile();
   const raw = await fs.readFile(resolvePostsFilePath(), "utf-8");
-  return JSON.parse(raw) as Post[];
+  return (JSON.parse(raw) as Array<Omit<Post, "category"> & { category?: string }>).map(
+    normalizePostRecord,
+  );
 }
 
 async function writePostsToLegacyStorage(posts: Post[]) {
@@ -744,7 +763,7 @@ export async function getPostById(id: number): Promise<Post | undefined> {
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabasePostRow[]>(
       "GET",
-      `?select=id,title,content,author,author_id,date,link_url,file_url,file_name&id=eq.${id}&limit=1`,
+      `?select=id,title,content,author,author_id,category,date,link_url,file_url,file_name&id=eq.${id}&limit=1`,
     );
 
     if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
@@ -771,6 +790,7 @@ export async function addPost(input: NewPostInput): Promise<Post> {
     content: input.content,
     author: input.author,
     authorId: input.authorId,
+    category: normalizeBlogPostCategory(input.category),
     date: getKstDateString(),
     linkUrl: normalizeLinkUrl(input.linkUrl),
     fileUrl: attachment?.fileUrl,
@@ -803,7 +823,7 @@ export async function deletePostById(id: number): Promise<boolean> {
     const targetPost = await getPostById(id);
     const result = await requestSupabase<SupabasePostRow[]>(
       "DELETE",
-      `?id=eq.${id}&select=id,title,content,author,author_id,date,link_url,file_url,file_name`,
+      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,file_url,file_name`,
       undefined,
       "return=representation",
     );
@@ -858,6 +878,7 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
     title: input.title,
     content: input.content,
     author: input.author,
+    category: normalizeBlogPostCategory(input.category),
     linkUrl: normalizeLinkUrl(input.linkUrl),
     fileUrl: nextFileUrl,
     fileName: nextFileName,
@@ -866,7 +887,7 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabasePostRow[]>(
       "PATCH",
-      `?id=eq.${id}&select=id,title,content,author,author_id,date,link_url,file_url,file_name`,
+      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,file_url,file_name`,
       mapPostToSupabaseRow(updatedPost),
       "return=representation",
     );

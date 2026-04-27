@@ -10,6 +10,7 @@ import {
 } from "@/lib/guest-posts";
 import { getLocale, t } from "@/lib/i18n";
 import { requireSession } from "@/lib/auth";
+import { getCategoryLabel } from "@/lib/post-categories";
 
 type GuestPostDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -146,6 +147,9 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
             <strong>{t(locale, "작성자", "Author")}:</strong> {post.authorName || post.authorId}
           </p>
           <p>
+            <strong>{t(locale, "카테고리", "Category")}:</strong> {getCategoryLabel(post.category)}
+          </p>
+          <p>
             <strong>{t(locale, "날짜", "Date")}:</strong> {post.date}
           </p>
         </div>
@@ -185,7 +189,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
             minLength={1}
             maxLength={500}
             rows={4}
-            placeholder={t(locale, "댓글을 입력하세요", "Write a comment")}
+            placeholder={t(locale, "댓글을 입력해 주세요.", "Write a comment")}
             className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-100 outline-none ring-cyan-400/60 placeholder:text-zinc-500 focus:ring"
           />
           <button

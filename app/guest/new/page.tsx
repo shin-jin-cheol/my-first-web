@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { addGuestPost } from "@/lib/guest-posts";
 import { getMemberProfile, requireSession } from "@/lib/auth";
-import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
-import { addPost } from "@/lib/posts";
+import { GUEST_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
 
 function isRedirectError(error: unknown) {
   return (
@@ -15,95 +15,72 @@ function isRedirectError(error: unknown) {
   );
 }
 
-async function createPost(formData: FormData) {
+async function createGuestPost(formData: FormData) {
   "use server";
 
   try {
     const session = await requireSession();
+    if (session.role !== "member") {
+      redirect("/guest");
+    }
 
     const title = String(formData.get("title") ?? "").trim();
-    const rawAuthor = String(formData.get("author") ?? "").trim();
     const content = String(formData.get("content") ?? "").trim();
     const category = String(formData.get("category") ?? "study").trim();
     const linkUrl = String(formData.get("linkUrl") ?? "").trim();
     const attachmentFile = formData.get("attachment");
+    const profile = await getMemberProfile(session.userId);
+    const authorName = profile?.name?.trim() || session.userName?.trim() || session.userId;
 
-    let author = rawAuthor;
-    if (session.role === "member") {
-      const profile = await getMemberProfile(session.userId);
-      author = profile?.name?.trim() || session.userName?.trim() || session.userId;
+    if (!title || !content) {
+      const message = encodeURIComponent("제목과 내용을 입력해 주세요.");
+      redirect(`/guest/new?error=${message}`);
     }
 
-    if (!title) {
-      const message = encodeURIComponent("제목을 입력해 주세요.");
-      redirect(`/posts/new?error=${message}`);
-    }
-
-    if (!author || !content) {
-      const message = encodeURIComponent("작성자와 내용을 입력해 주세요.");
-      redirect(`/posts/new?error=${message}`);
-    }
-
-    if (session.role !== "owner" && category === "notice") {
-      const message = encodeURIComponent("공지 카테고리는 오너 계정만 작성할 수 있습니다.");
-      redirect(`/posts/new?error=${message}`);
-    }
-
-    await addPost({
+    await addGuestPost({
       title,
-      author,
-      authorId: session.role === "member" ? session.userId : undefined,
       content,
-      category:
-        category === "notice"
-          ? "notice"
-          : category === "daily"
-            ? "daily"
-            : category === "info"
-              ? "info"
-              : "study",
+      authorId: session.userId,
+      authorName,
+      category: category === "daily" ? "daily" : category === "info" ? "info" : "study",
       linkUrl,
       attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
     });
 
-    revalidatePath("/");
-    revalidatePath("/posts");
     revalidatePath("/guest");
-    redirect("/posts");
+    revalidatePath("/posts");
+    redirect("/guest");
   } catch (error) {
     if (isRedirectError(error)) {
       throw error;
     }
 
     const message = encodeURIComponent("서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-    redirect(`/posts/new?error=${message}`);
+    redirect(`/guest/new?error=${message}`);
   }
 }
 
-type NewPostPageProps = {
+type NewGuestPostPageProps = {
   searchParams: Promise<{ error?: string }>;
 };
 
-export default async function NewPostPage({ searchParams }: NewPostPageProps) {
+export default async function NewGuestPostPage({ searchParams }: NewGuestPostPageProps) {
   const session = await requireSession();
-  const profile = session.role === "member" ? await getMemberProfile(session.userId) : null;
-  const defaultAuthor =
-    session.role === "member" ? profile?.name?.trim() || session.userName?.trim() || session.userId : "";
+  if (session.role !== "member") {
+    redirect("/guest");
+  }
+
   const params = await searchParams;
   const errorMessage = params.error ? decodeURIComponent(params.error) : "";
-  const categoryOptions =
-    session.role === "owner"
-      ? BLOG_POST_CATEGORIES
-      : BLOG_POST_CATEGORIES.filter((category) => category !== "notice");
 
   return (
     <section className="space-y-8">
       <header className="space-y-2">
         <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-          Write
+          Guest Write
         </p>
         <h1 className="text-4xl font-extrabold text-zinc-700 dark:text-zinc-100 drop-shadow-[0_0_12px_rgba(129,216,208,0.35)]">
-          블로그 글 쓰기
+          게스트 글 쓰기
         </h1>
       </header>
 
@@ -114,7 +91,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
       ) : null}
 
       <form
-        action={createPost}
+        action={createGuestPost}
         className="space-y-5 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-6 shadow-[0_0_28px_rgba(129,216,208,0.16)]"
       >
         <div className="space-y-2">
@@ -127,17 +104,12 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             defaultValue="study"
             className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition focus:border-[#81d8d0]"
           >
-            {categoryOptions.map((category) => (
+            {GUEST_POST_CATEGORIES.map((category) => (
               <option key={category} value={category}>
                 {getCategoryLabel(category)}
               </option>
             ))}
           </select>
-          {session.role !== "owner" ? (
-            <p className="text-xs text-zinc-500 dark:text-zinc-300">
-              공지 카테고리는 오너 계정만 작성할 수 있습니다.
-            </p>
-          ) : null}
         </div>
 
         <div className="space-y-2">
@@ -150,26 +122,6 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             type="text"
             placeholder="제목을 입력해 주세요."
             className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition focus:border-[#81d8d0]"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="author" className="text-sm font-medium text-zinc-600 dark:text-zinc-200">
-            작성자
-          </label>
-          <input
-            id="author"
-            name="author"
-            type="text"
-            required
-            placeholder="작성자 이름"
-            defaultValue={defaultAuthor}
-            readOnly={session.role === "member"}
-            className={`w-full rounded-xl border px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition ${
-              session.role === "member"
-                ? "cursor-not-allowed border-zinc-200 dark:border-zinc-700 bg-zinc-100/80 dark:bg-zinc-900/60 text-zinc-500 dark:text-zinc-300"
-                : "border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 focus:border-[#81d8d0]"
-            }`}
           />
         </div>
 
@@ -222,7 +174,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             게시하기
           </button>
           <Link
-            href="/posts"
+            href="/guest"
             className="rounded-full border border-zinc-300 dark:border-zinc-500 bg-zinc-200 dark:bg-zinc-700 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-100 transition hover:bg-zinc-300 dark:hover:bg-zinc-600"
           >
             취소

@@ -10,6 +10,7 @@ import {
   updatePostCommentById,
 } from "@/lib/posts";
 import { getSession, requireSession } from "@/lib/auth";
+import { getCategoryLabel } from "@/lib/post-categories";
 
 type PostDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -130,7 +131,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     return (
       <div className="space-y-6 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 p-8 shadow-[0_0_22px_rgba(129,216,208,0.12)]">
         <h1 className="text-3xl font-extrabold text-zinc-700 dark:text-zinc-100">게시글 상세</h1>
-        <p className="text-zinc-500 dark:text-zinc-300">게시글을 찾을 수 없습니다</p>
+        <p className="text-zinc-500 dark:text-zinc-300">게시글을 찾을 수 없습니다.</p>
         <Link
           href="/posts"
           className="inline-flex rounded-full border border-zinc-400 dark:border-zinc-500 bg-zinc-200 dark:bg-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-700 dark:text-zinc-100 transition hover:bg-zinc-300 dark:hover:bg-zinc-600"
@@ -149,6 +150,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         <div className="flex flex-wrap gap-4 text-sm text-zinc-500 dark:text-zinc-400">
           <p>
             <strong>작성자:</strong> {post.author}
+          </p>
+          <p>
+            <strong>카테고리:</strong> {getCategoryLabel(post.category)}
           </p>
           <p>
             <strong>날짜:</strong> {post.date}
@@ -178,7 +182,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           className="inline-flex items-center gap-2 rounded-full border border-zinc-400 dark:border-zinc-500/60 bg-zinc-200 dark:bg-white/10 px-4 py-2 text-sm font-semibold text-zinc-700 dark:text-zinc-100 shadow-[0_0_14px_rgba(129,216,208,0.25)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-zinc-300 dark:hover:bg-white/15"
         >
           <span className="inline-block h-2 w-2 rounded-full bg-zinc-600 dark:bg-zinc-200" />
-          파일 열기
+          {post.fileName ?? "파일 열기"}
         </a>
       ) : null}
 
@@ -192,7 +196,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
             minLength={1}
             maxLength={500}
             rows={4}
-            placeholder="댓글을 입력하세요"
+            placeholder="댓글을 입력해 주세요."
             className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-100 outline-none ring-cyan-400/60 placeholder:text-zinc-500 focus:ring"
           />
           <button
@@ -206,8 +210,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         {comments.length > 0 ? (
           <ul className="space-y-3">
             {comments.map((comment) => {
-              const canManageComment =
-                session?.role === "owner" || session?.userId === comment.authorId;
+              const canManageComment = session?.role === "owner" || session?.userId === comment.authorId;
 
               return (
                 <li key={comment.id} className="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-100/90 dark:bg-zinc-800/80 p-3">

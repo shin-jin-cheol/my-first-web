@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { del, list, put } from "@vercel/blob";
+import { GuestPostCategory, normalizeGuestPostCategory } from "@/lib/post-categories";
 
 export type GuestPost = {
   id: number;
@@ -8,6 +9,7 @@ export type GuestPost = {
   content: string;
   authorId: string;
   authorName?: string;
+  category: GuestPostCategory;
   date: string;
   linkUrl?: string;
   fileUrl?: string;
@@ -28,6 +30,7 @@ type NewGuestPostInput = {
   content: string;
   authorId: string;
   authorName?: string;
+  category: GuestPostCategory;
   linkUrl?: string;
   attachmentFile?: File | null;
 };
@@ -38,6 +41,7 @@ type SupabaseGuestPostRow = {
   content: string;
   author_id: string;
   author_name: string | null;
+  category: string | null;
   date: string;
   link_url: string | null;
   file_url: string | null;
@@ -152,6 +156,7 @@ function mapSupabaseRowToGuestPost(row: SupabaseGuestPostRow): GuestPost {
     content: row.content,
     authorId: row.author_id,
     authorName: row.author_name ?? undefined,
+    category: normalizeGuestPostCategory(row.category ?? undefined),
     date: row.date,
     linkUrl: row.link_url ?? undefined,
     fileUrl: row.file_url ?? undefined,
@@ -167,6 +172,7 @@ function mapGuestPostToSupabaseRow(post: GuestPost) {
     content: post.content,
     author_id: post.authorId,
     author_name: post.authorName ?? null,
+    category: post.category,
     date: post.date,
     link_url: post.linkUrl ?? null,
     file_url: post.fileUrl ?? null,
@@ -175,10 +181,19 @@ function mapGuestPostToSupabaseRow(post: GuestPost) {
   };
 }
 
+function normalizeGuestPostRecord(
+  post: Omit<GuestPost, "category"> & { category?: string },
+): GuestPost {
+  return {
+    ...post,
+    category: normalizeGuestPostCategory(post.category),
+  };
+}
+
 async function readGuestPostsFromSupabase(): Promise<GuestPost[]> {
   const result = await requestSupabase<SupabaseGuestPostRow[]>(
     "GET",
-    "?select=id,title,content,author_id,author_name,date,link_url,file_url,file_name,comments&order=id.desc",
+    "?select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name,comments&order=id.desc",
   );
 
   if (!result.ok || !Array.isArray(result.data)) {
@@ -470,8 +485,8 @@ async function readGuestPostsFromBlob(): Promise<GuestPost[]> {
     }
   }
 
-  const data = (await response.json()) as GuestPost[];
-  return Array.isArray(data) ? data : [];
+  const data = (await response.json()) as Array<Omit<GuestPost, "category"> & { category?: string }>;
+  return Array.isArray(data) ? data.map(normalizeGuestPostRecord) : [];
 }
 
 async function writeGuestPostsToBlob(posts: GuestPost[]) {
@@ -512,7 +527,9 @@ async function readGuestPostsFromLegacyStorage(): Promise<GuestPost[]> {
 
   await ensureGuestPostsFile();
   const raw = await fs.readFile(resolveGuestPostsFilePath(), "utf-8");
-  return JSON.parse(raw) as GuestPost[];
+  return (JSON.parse(raw) as Array<Omit<GuestPost, "category"> & { category?: string }>).map(
+    normalizeGuestPostRecord,
+  );
 }
 
 async function writeGuestPostsToLegacyStorage(posts: GuestPost[]) {
@@ -573,6 +590,7 @@ export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost>
     content: input.content,
     authorId: input.authorId,
     authorName: input.authorName,
+    category: normalizeGuestPostCategory(input.category),
     date: getKstDateString(),
     linkUrl: normalizeLinkUrl(input.linkUrl),
     fileUrl: attachment?.fileUrl,
@@ -600,7 +618,7 @@ export async function deleteGuestPostById(id: number): Promise<boolean> {
 
 export async function updateGuestPostById(
   id: number,
-  input: { title: string; content: string },
+  input: { title: string; content: string; category: GuestPostCategory },
 ): Promise<GuestPost | undefined> {
   const posts = await readGuestPosts();
   const index = posts.findIndex((post) => post.id === id);
@@ -613,6 +631,7 @@ export async function updateGuestPostById(
     ...posts[index],
     title: input.title,
     content: input.content,
+    category: normalizeGuestPostCategory(input.category),
   };
 
   posts[index] = updatedPost;
