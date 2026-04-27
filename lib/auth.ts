@@ -84,6 +84,7 @@ const SUPABASE_MEMBERS_TABLE = process.env.SUPABASE_MEMBERS_TABLE || "members";
 
 let usersBlobUrlCache: string | undefined;
 let hasTriedSupabaseBootstrap = false;
+const PASSWORD_POLICY = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
 
 export const ownerAccount = Object.freeze({
   id: OWNER_ID,
@@ -467,6 +468,16 @@ async function getMemberByEmail(email: string) {
   return members.find((member) => member.email?.toLowerCase() === normalizedEmail);
 }
 
+async function getMemberByName(name: string) {
+  const normalizedName = name.trim();
+  const members = await readMembers();
+  return members.find((member) => member.name === normalizedName);
+}
+
+function isValidSignupPassword(password: string) {
+  return PASSWORD_POLICY.test(password);
+}
+
 async function saveMember(member: MemberRecord) {
   const normalized = normalizeMemberRecord(member);
 
@@ -525,10 +536,10 @@ async function signInMemberWithSupabase(email: string, password: string) {
   return result.data;
 }
 
-async function signUpWithSupabase(email: string, password: string, id: string, name: string) {
-  const result = await requestSupabaseAuth<SupabaseAuthResponse>("POST", "/signup", {
+async function sendSignupOtpWithSupabase(email: string, id: string, name: string) {
+  const result = await requestSupabaseAuth<SupabaseAuthResponse>("POST", "/otp", {
     email,
-    password,
+    create_user: true,
     data: {
       member_id: id,
       name,
@@ -696,6 +707,17 @@ export async function registerMember(id: string, name: string, password: string)
     return { ok: false, message: "이미 사용 중인 아이디입니다." };
   }
 
+  if (await getMemberByName(name)) {
+    return { ok: false, message: "이미 사용 중인 이름입니다." };
+  }
+
+  if (!isValidSignupPassword(password.trim())) {
+    return {
+      ok: false,
+      message: "비밀번호는 영문, 숫자, 특수문자를 모두 포함해 8자 이상이어야 합니다.",
+    };
+  }
+
   await saveMember({
     id,
     name,
@@ -711,17 +733,15 @@ export async function sendSignupVerificationCode(
   id: string,
   name: string,
   email: string,
-  password: string,
 ): Promise<AuthResult> {
   const normalizedId = id.trim();
   const normalizedName = name.trim();
   const normalizedEmail = email.trim().toLowerCase();
-  const normalizedPassword = password.trim();
 
-  if (!normalizedId || !normalizedName || !normalizedEmail || !normalizedPassword) {
+  if (!normalizedId || !normalizedName || !normalizedEmail) {
     return {
       ok: false,
-      message: "아이디, 이름, 이메일, 비밀번호를 모두 입력해 주세요.",
+      message: "아이디, 이름, 이메일을 모두 입력해 주세요.",
     };
   }
 
@@ -738,12 +758,17 @@ export async function sendSignupVerificationCode(
     return { ok: false, message: "이미 사용 중인 아이디입니다." };
   }
 
+  const existingName = await getMemberByName(normalizedName);
+  if (existingName) {
+    return { ok: false, message: "이미 사용 중인 이름입니다." };
+  }
+
   const existingEmail = await getMemberByEmail(normalizedEmail);
   if (existingEmail) {
     return { ok: false, message: "이미 가입된 이메일입니다." };
   }
 
-  return signUpWithSupabase(normalizedEmail, normalizedPassword, normalizedId, normalizedName);
+  return sendSignupOtpWithSupabase(normalizedEmail, normalizedId, normalizedName);
 }
 
 export async function completeSignupWithVerificationCode(
@@ -773,6 +798,27 @@ export async function completeSignupWithVerificationCode(
     return { ok: false, message: "이미 사용 중인 아이디입니다." };
   }
 
+  if (!normalizedPassword) {
+    return { ok: false, message: "비밀번호를 입력해 주세요." };
+  }
+
+  if (!isValidSignupPassword(normalizedPassword)) {
+    return {
+      ok: false,
+      message: "비밀번호는 영문, 숫자, 특수문자를 모두 포함해 8자 이상이어야 합니다.",
+    };
+  }
+
+  const existingMember = await getMemberById(normalizedId);
+  if (existingMember) {
+    return { ok: false, message: "이미 사용 중인 아이디입니다." };
+  }
+
+  const existingName = await getMemberByName(normalizedName);
+  if (existingName) {
+    return { ok: false, message: "이미 사용 중인 이름입니다." };
+  }
+
   const verified = await verifySignupOtp(normalizedEmail, normalizedCode);
   const authUser = verified?.user;
 
@@ -782,6 +828,11 @@ export async function completeSignupWithVerificationCode(
 
   const memberId = authUser.user_metadata?.member_id?.trim() || normalizedId;
   const memberName = authUser.user_metadata?.name?.trim() || normalizedName;
+
+  const passwordUpdated = await updateSupabaseAuthUserPassword(authUser.id, normalizedPassword);
+  if (!passwordUpdated) {
+    return { ok: false, message: "비밀번호 설정에 실패했습니다." };
+  }
 
   await saveMember({
     id: memberId,

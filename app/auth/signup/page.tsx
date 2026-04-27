@@ -35,9 +35,8 @@ async function sendCodeAction(formData: FormData) {
     const id = String(formData.get("id") ?? "").trim();
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
-    const password = String(formData.get("password") ?? "").trim();
 
-    const result = await sendSignupVerificationCode(id, name, email, password);
+    const result = await sendSignupVerificationCode(id, name, email);
     if (!result.ok) {
       redirect(
         buildSignupQuery({
@@ -92,6 +91,7 @@ async function signupAction(formData: FormData) {
       redirect(
         buildSignupQuery({
           error: result.message ?? "회원가입에 실패했습니다.",
+          sent: "1",
           id,
           name,
           email,
@@ -108,6 +108,7 @@ async function signupAction(formData: FormData) {
     redirect(
       buildSignupQuery({
         error: "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+        sent: "1",
       }),
     );
   }
@@ -139,11 +140,17 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
           {t(locale, "회원가입", "Sign up")}
         </h1>
         <p className="text-zinc-500 dark:text-zinc-300">
-          {t(
-            locale,
-            "이메일 인증 코드를 확인한 뒤 회원가입을 완료해 주세요.",
-            "Send a verification code to your email, then finish signing up.",
-          )}
+          {showSentMessage
+            ? t(
+                locale,
+                "이메일로 받은 인증 코드를 입력하고 비밀번호를 정한 뒤 회원가입을 완료해 주세요.",
+                "Enter the code from your email, choose a password, and finish signing up.",
+              )
+            : t(
+                locale,
+                "이름, 아이디, 이메일을 먼저 입력한 뒤 인증 코드를 받아 주세요.",
+                "Enter your name, ID, and email first, then request a verification code.",
+              )}
         </p>
       </header>
 
@@ -157,8 +164,8 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
         <p className="rounded-xl border border-cyan-600/40 bg-cyan-500/10 px-4 py-2 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">
           {t(
             locale,
-            "인증 코드를 이메일로 전송했습니다. 코드를 입력한 뒤 회원가입을 완료해 주세요.",
-            "Verification code sent. Enter it below to finish signing up.",
+            "인증 코드를 이메일로 전송했습니다. 코드와 비밀번호를 입력하면 회원가입이 완료됩니다.",
+            "Verification code sent. Enter the code and a password to finish signing up.",
           )}
         </p>
       ) : null}
@@ -172,8 +179,9 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             id="name"
             name="name"
             required
+            readOnly={showSentMessage}
             defaultValue={params.name ?? ""}
-            className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+            className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] read-only:bg-zinc-200 read-only:text-zinc-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:read-only:bg-zinc-800 dark:read-only:text-zinc-300"
           />
         </div>
 
@@ -185,8 +193,9 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             id="id"
             name="id"
             required
+            readOnly={showSentMessage}
             defaultValue={params.id ?? ""}
-            className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+            className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] read-only:bg-zinc-200 read-only:text-zinc-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:read-only:bg-zinc-800 dark:read-only:text-zinc-300"
           />
         </div>
 
@@ -200,8 +209,9 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
               name="email"
               type="email"
               required
+              readOnly={showSentMessage}
               defaultValue={params.email ?? ""}
-              className="min-w-0 flex-1 rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+              className="min-w-0 flex-1 rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] read-only:bg-zinc-200 read-only:text-zinc-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:read-only:bg-zinc-800 dark:read-only:text-zinc-300"
             />
             <button
               type="submit"
@@ -209,43 +219,64 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
               formNoValidate
               className="shrink-0 rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:border-[#81d8d0] hover:text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-[#81d8d0]"
             >
-              {t(locale, "코드 전송", "Send Code")}
+              {t(locale, showSentMessage ? "코드 재전송" : "코드 전송", showSentMessage ? "Resend Code" : "Send Code")}
             </button>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label htmlFor="verificationCode" className="text-sm text-zinc-600 dark:text-zinc-200">
-            {t(locale, "인증 코드", "Verification Code")}
-          </label>
-          <input
-            id="verificationCode"
-            name="verificationCode"
-            inputMode="numeric"
-            required
-            className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
-          />
-        </div>
+        {showSentMessage ? (
+          <>
+            <div className="space-y-2">
+              <label
+                htmlFor="verificationCode"
+                className="text-sm text-zinc-600 dark:text-zinc-200"
+              >
+                {t(locale, "인증 코드", "Verification Code")}
+              </label>
+              <input
+                id="verificationCode"
+                name="verificationCode"
+                inputMode="numeric"
+                required
+                className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+            </div>
 
-        <div className="space-y-2">
-          <label htmlFor="password" className="text-sm text-zinc-600 dark:text-zinc-200">
-            {t(locale, "비밀번호", "Password")}
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
-          />
-        </div>
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm text-zinc-600 dark:text-zinc-200">
+                {t(locale, "비밀번호", "Password")}
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                minLength={8}
+                pattern="^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$"
+                title={t(
+                  locale,
+                  "비밀번호는 영문, 숫자, 특수문자를 모두 포함해 8자 이상이어야 합니다.",
+                  "Password must be at least 8 characters and include letters, numbers, and special characters.",
+                )}
+                required
+                className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+              <p className="text-xs text-zinc-500 dark:text-zinc-300">
+                {t(
+                  locale,
+                  "영문, 숫자, 특수문자를 모두 포함해 8자 이상으로 만들어 주세요.",
+                  "Use at least 8 characters with letters, numbers, and special characters.",
+                )}
+              </p>
+            </div>
 
-        <button
-          type="submit"
-          className="rounded-full border border-[#74cfc6] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.62)] hover:shadow-[0_0_24px_rgba(129,216,208,0.72)]"
-        >
-          {t(locale, "회원가입 완료", "Complete Sign up")}
-        </button>
+            <button
+              type="submit"
+              className="rounded-full border border-[#74cfc6] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.62)] hover:shadow-[0_0_24px_rgba(129,216,208,0.72)]"
+            >
+              {t(locale, "회원가입 완료", "Complete Sign up")}
+            </button>
+          </>
+        ) : null}
       </form>
 
       <p className="text-sm text-zinc-500 dark:text-zinc-300">
