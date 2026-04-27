@@ -58,6 +58,10 @@ type SupabasePostRow = {
   file_name: string | null;
 };
 
+type SupabaseLegacyPostRow = Omit<SupabasePostRow, "category"> & {
+  category?: string | null;
+};
+
 type SupabasePostCommentRow = {
   id: number;
   post_id: number;
@@ -241,7 +245,7 @@ function getKstDateTimeString() {
     .replace(",", "");
 }
 
-function mapSupabaseRowToPost(row: SupabasePostRow): Post {
+function mapSupabaseRowToPost(row: SupabasePostRow | SupabaseLegacyPostRow): Post {
   return {
     id: row.id,
     title: row.title,
@@ -271,6 +275,20 @@ function mapPostToSupabaseRow(post: Post) {
   };
 }
 
+function mapPostToSupabaseLegacyRow(post: Post) {
+  return {
+    id: post.id,
+    title: post.title,
+    content: post.content,
+    author: post.author,
+    author_id: post.authorId ?? null,
+    date: post.date,
+    link_url: post.linkUrl ?? null,
+    file_url: post.fileUrl ?? null,
+    file_name: post.fileName ?? null,
+  };
+}
+
 function normalizePostRecord(post: Omit<Post, "category"> & { category?: string }): Post {
   return {
     ...post,
@@ -284,21 +302,39 @@ async function readPostsFromSupabase(): Promise<Post[]> {
     "?select=id,title,content,author,author_id,category,date,link_url,file_url,file_name&order=id.desc",
   );
 
-  if (!result.ok || !Array.isArray(result.data)) {
+  if (result.ok && Array.isArray(result.data)) {
+    return result.data.map(mapSupabaseRowToPost);
+  }
+
+  const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
+    "GET",
+    "?select=id,title,content,author,author_id,date,link_url,file_url,file_name&order=id.desc",
+  );
+
+  if (!legacyResult.ok || !Array.isArray(legacyResult.data)) {
     return [];
   }
 
-  return result.data.map(mapSupabaseRowToPost);
+  return legacyResult.data.map(mapSupabaseRowToPost);
 }
 
 async function upsertPostsToSupabase(posts: Post[]) {
   const rows = posts.map(mapPostToSupabaseRow);
-  await requestSupabase(
+  const result = await requestSupabase(
     "POST",
     "?on_conflict=id",
     rows,
     "resolution=merge-duplicates,return=minimal",
   );
+
+  if (!result.ok) {
+    await requestSupabase(
+      "POST",
+      "?on_conflict=id",
+      posts.map(mapPostToSupabaseLegacyRow),
+      "resolution=merge-duplicates,return=minimal",
+    );
+  }
 }
 
 async function getNextSupabasePostId() {
@@ -766,11 +802,20 @@ export async function getPostById(id: number): Promise<Post | undefined> {
       `?select=id,title,content,author,author_id,category,date,link_url,file_url,file_name&id=eq.${id}&limit=1`,
     );
 
-    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+      return mapSupabaseRowToPost(result.data[0]);
+    }
+
+    const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
+      "GET",
+      `?select=id,title,content,author,author_id,date,link_url,file_url,file_name&id=eq.${id}&limit=1`,
+    );
+
+    if (!legacyResult.ok || !Array.isArray(legacyResult.data) || legacyResult.data.length === 0) {
       return undefined;
     }
 
-    return mapSupabaseRowToPost(result.data[0]);
+    return mapSupabaseRowToPost(legacyResult.data[0]);
   }
 
   const posts = await readPosts();
@@ -805,11 +850,22 @@ export async function addPost(input: NewPostInput): Promise<Post> {
       "return=representation",
     );
 
-    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
-      return post;
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+      return mapSupabaseRowToPost(result.data[0]);
     }
 
-    return mapSupabaseRowToPost(result.data[0]);
+    const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
+      "POST",
+      "",
+      [mapPostToSupabaseLegacyRow(post)],
+      "return=representation",
+    );
+
+    if (!legacyResult.ok || !Array.isArray(legacyResult.data) || legacyResult.data.length === 0) {
+      throw new Error("Failed to create post in Supabase.");
+    }
+
+    return mapSupabaseRowToPost(legacyResult.data[0]);
   }
 
   const posts = await readPosts();
@@ -829,7 +885,19 @@ export async function deletePostById(id: number): Promise<boolean> {
     );
 
     if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
-      return false;
+      const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
+        "DELETE",
+        `?id=eq.${id}&select=id,title,content,author,author_id,date,link_url,file_url,file_name`,
+        undefined,
+        "return=representation",
+      );
+
+      if (!legacyResult.ok || !Array.isArray(legacyResult.data) || legacyResult.data.length === 0) {
+        return false;
+      }
+
+      await removeAttachment(targetPost?.fileUrl);
+      return true;
     }
 
     await removeAttachment(targetPost?.fileUrl);
@@ -892,11 +960,22 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
       "return=representation",
     );
 
-    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+      return mapSupabaseRowToPost(result.data[0]);
+    }
+
+    const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
+      "PATCH",
+      `?id=eq.${id}&select=id,title,content,author,author_id,date,link_url,file_url,file_name`,
+      mapPostToSupabaseLegacyRow(updatedPost),
+      "return=representation",
+    );
+
+    if (!legacyResult.ok || !Array.isArray(legacyResult.data) || legacyResult.data.length === 0) {
       return undefined;
     }
 
-    return mapSupabaseRowToPost(result.data[0]);
+    return mapSupabaseRowToPost(legacyResult.data[0]);
   }
 
   const posts = await readPosts();

@@ -61,7 +61,7 @@ export default async function PostsPage() {
       detailHref: `/guest/${post.id}`,
       category,
       categoryLabel: getCategoryLabel(category),
-      sourceLabel: t(locale, "게스트 글", "Guest Post"),
+      sourceLabel: t(locale, "게스트 게시글", "Guest Post"),
     };
   });
 
@@ -74,13 +74,6 @@ export default async function PostsPage() {
         <h1 className="text-4xl font-extrabold text-zinc-700 dark:text-zinc-100 drop-shadow-[0_0_14px_rgba(129,216,208,0.45)]">
           {t(locale, "블로그 게시글", "Blog Posts")}
         </h1>
-        <p className="text-zinc-500 dark:text-zinc-300">
-          {t(
-            locale,
-            "오너가 작성한 글과 게스트/회원 글을 분리해서 볼 수 있습니다.",
-            "Owner posts and guest/member posts are shown in separate sections.",
-          )}
-        </p>
       </div>
 
       <PostsSearchContent
@@ -95,14 +88,10 @@ export default async function PostsPage() {
         ]}
         labels={{
           searchPlaceholder: t(locale, "제목, 내용, 작성자 검색", "Search title, content, author"),
-          ownerSectionTitle: t(locale, "오너 글", "Owner Posts"),
-          ownerEmpty: t(locale, "해당 카테고리에 오너 글이 없습니다.", "No owner posts found in this category."),
-          communitySectionTitle: t(locale, "게스트/회원 글", "Guest and Member Posts"),
-          communityEmpty: t(
-            locale,
-            "해당 카테고리에 게스트/회원 글이 없습니다.",
-            "No guest or member posts found in this category.",
-          ),
+          ownerSectionTitle: t(locale, "게시글", "Posts"),
+          ownerEmpty: t(locale, "해당 카테고리에 게시글이 없습니다.", "No posts found in this category."),
+          communitySectionTitle: t(locale, "게스트 게시글", "Guest Posts"),
+          communityEmpty: t(locale, "해당 카테고리에 게스트 게시글이 없습니다.", "No guest posts found in this category."),
           author: t(locale, "작성자", "Author"),
           date: t(locale, "날짜", "Date"),
           category: t(locale, "카테고리", "Category"),

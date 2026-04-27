@@ -49,6 +49,10 @@ type SupabaseGuestPostRow = {
   comments: GuestComment[] | null;
 };
 
+type SupabaseLegacyGuestPostRow = Omit<SupabaseGuestPostRow, "category"> & {
+  category?: string | null;
+};
+
 const DATA_DIR = path.join(process.cwd(), "data");
 const GUEST_POSTS_FILE_LOCAL = path.join(DATA_DIR, "guest-posts.json");
 const GUEST_POSTS_FILE_TMP = path.join("/tmp", "my-first-web-guest-posts.json");
@@ -149,7 +153,7 @@ async function requestSupabase<T>(
   return { ok: true, status: response.status, data };
 }
 
-function mapSupabaseRowToGuestPost(row: SupabaseGuestPostRow): GuestPost {
+function mapSupabaseRowToGuestPost(row: SupabaseGuestPostRow | SupabaseLegacyGuestPostRow): GuestPost {
   return {
     id: row.id,
     title: row.title,
@@ -181,6 +185,21 @@ function mapGuestPostToSupabaseRow(post: GuestPost) {
   };
 }
 
+function mapGuestPostToSupabaseLegacyRow(post: GuestPost) {
+  return {
+    id: post.id,
+    title: post.title,
+    content: post.content,
+    author_id: post.authorId,
+    author_name: post.authorName ?? null,
+    date: post.date,
+    link_url: post.linkUrl ?? null,
+    file_url: post.fileUrl ?? null,
+    file_name: post.fileName ?? null,
+    comments: post.comments ?? [],
+  };
+}
+
 function normalizeGuestPostRecord(
   post: Omit<GuestPost, "category"> & { category?: string },
 ): GuestPost {
@@ -196,28 +215,54 @@ async function readGuestPostsFromSupabase(): Promise<GuestPost[]> {
     "?select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name,comments&order=id.desc",
   );
 
-  if (!result.ok || !Array.isArray(result.data)) {
+  if (result.ok && Array.isArray(result.data)) {
+    return result.data.map(mapSupabaseRowToGuestPost);
+  }
+
+  const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
+    "GET",
+    "?select=id,title,content,author_id,author_name,date,link_url,file_url,file_name,comments&order=id.desc",
+  );
+
+  if (!legacyResult.ok || !Array.isArray(legacyResult.data)) {
     return [];
   }
 
-  return result.data.map(mapSupabaseRowToGuestPost);
+  return legacyResult.data.map(mapSupabaseRowToGuestPost);
 }
 
 async function syncGuestPostsToSupabase(posts: GuestPost[]) {
   const rows = posts.map(mapGuestPostToSupabaseRow);
 
+  let didSync = false;
   if (rows.length > 0) {
-    await requestSupabase(
+    const result = await requestSupabase(
       "POST",
       "?on_conflict=id",
       rows,
       "resolution=merge-duplicates,return=minimal",
     );
+
+    if (result.ok) {
+      didSync = true;
+    } else {
+      const legacyResult = await requestSupabase(
+        "POST",
+        "?on_conflict=id",
+        posts.map(mapGuestPostToSupabaseLegacyRow),
+        "resolution=merge-duplicates,return=minimal",
+      );
+      didSync = legacyResult.ok;
+    }
   }
 
   if (rows.length === 0) {
     await requestSupabase("DELETE", "?id=gt.0");
     return;
+  }
+
+  if (!didSync) {
+    throw new Error("Failed to sync guest posts to Supabase.");
   }
 
   const keepIds = rows.map((row) => row.id).join(",");

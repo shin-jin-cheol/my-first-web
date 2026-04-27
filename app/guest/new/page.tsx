@@ -33,8 +33,7 @@ async function createGuestPost(formData: FormData) {
     const authorName = profile?.name?.trim() || session.userName?.trim() || session.userId;
 
     if (!title || !content) {
-      const message = encodeURIComponent("제목과 내용을 입력해 주세요.");
-      redirect(`/guest/new?error=${message}`);
+      redirect(`/guest/new?error=${encodeURIComponent("제목과 내용을 입력해 주세요.")}`);
     }
 
     await addGuestPost({
@@ -55,8 +54,7 @@ async function createGuestPost(formData: FormData) {
       throw error;
     }
 
-    const message = encodeURIComponent("서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-    redirect(`/guest/new?error=${message}`);
+    redirect(`/guest/new?error=${encodeURIComponent("게스트 게시글 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.")}`);
   }
 }
 

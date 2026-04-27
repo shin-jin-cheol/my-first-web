@@ -20,7 +20,6 @@ async function createPost(formData: FormData) {
 
   try {
     const session = await requireSession();
-
     const title = String(formData.get("title") ?? "").trim();
     const rawAuthor = String(formData.get("author") ?? "").trim();
     const content = String(formData.get("content") ?? "").trim();
@@ -35,18 +34,15 @@ async function createPost(formData: FormData) {
     }
 
     if (!title) {
-      const message = encodeURIComponent("제목을 입력해 주세요.");
-      redirect(`/posts/new?error=${message}`);
+      redirect(`/posts/new?error=${encodeURIComponent("제목을 입력해 주세요.")}`);
     }
 
     if (!author || !content) {
-      const message = encodeURIComponent("작성자와 내용을 입력해 주세요.");
-      redirect(`/posts/new?error=${message}`);
+      redirect(`/posts/new?error=${encodeURIComponent("작성자와 내용을 입력해 주세요.")}`);
     }
 
     if (session.role !== "owner" && category === "notice") {
-      const message = encodeURIComponent("공지 카테고리는 오너 계정만 작성할 수 있습니다.");
-      redirect(`/posts/new?error=${message}`);
+      redirect(`/posts/new?error=${encodeURIComponent("공지 카테고리는 오너 계정만 작성할 수 있습니다.")}`);
     }
 
     await addPost({
@@ -75,8 +71,7 @@ async function createPost(formData: FormData) {
       throw error;
     }
 
-    const message = encodeURIComponent("서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-    redirect(`/posts/new?error=${message}`);
+    redirect(`/posts/new?error=${encodeURIComponent("게시글 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.")}`);
   }
 }
 

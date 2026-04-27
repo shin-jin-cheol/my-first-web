@@ -69,13 +69,6 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
         <h1 className="text-4xl font-extrabold text-zinc-700 dark:text-zinc-100 drop-shadow-[0_0_12px_rgba(129,216,208,0.3)]">
           {t(locale, "게스트 게시판", "Guest Board")}
         </h1>
-        <p className="text-zinc-500 dark:text-zinc-300">
-          {t(
-            locale,
-            "게스트 게시판에 쓴 글은 블로그 탭에도 연동되지만, 오너 글과는 분리되어 보입니다.",
-            "Posts written here also appear in the blog tab, but remain separate from owner posts.",
-          )}
-        </p>
         {session.role === "member" ? (
           <div>
             <Link
