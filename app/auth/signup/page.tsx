@@ -29,19 +29,31 @@ function buildSignupQuery(params: Record<string, string | undefined>) {
   return `/auth/signup?${search.toString()}`;
 }
 
-async function sendCodeAction(formData: FormData) {
+async function signupAction(formData: FormData) {
   "use server";
 
   try {
+    const intent = String(formData.get("intent") ?? "").trim();
     const id = String(formData.get("id") ?? "").trim();
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
 
-    const result = await sendSignupVerificationCode(id, name, email);
-    if (!result.ok) {
+    if (intent === "send-code") {
+      const result = await sendSignupVerificationCode(id, name, email);
+      if (!result.ok) {
+        redirect(
+          buildSignupQuery({
+            error: result.message ?? "인증 코드 전송에 실패했습니다.",
+            id,
+            name,
+            email,
+          }),
+        );
+      }
+
       redirect(
         buildSignupQuery({
-          error: result.message ?? "인증 코드 전송에 실패했습니다.",
+          sent: "1",
           id,
           name,
           email,
@@ -49,34 +61,6 @@ async function sendCodeAction(formData: FormData) {
       );
     }
 
-    redirect(
-      buildSignupQuery({
-        sent: "1",
-        id,
-        name,
-        email,
-      }),
-    );
-  } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
-
-    redirect(
-      buildSignupQuery({
-        error: "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-      }),
-    );
-  }
-}
-
-async function signupAction(formData: FormData) {
-  "use server";
-
-  try {
-    const id = String(formData.get("id") ?? "").trim();
-    const name = String(formData.get("name") ?? "").trim();
-    const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "").trim();
     const verificationCode = String(formData.get("verificationCode") ?? "").trim();
 
@@ -215,7 +199,6 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
               className="min-w-0 flex-1 rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] read-only:bg-zinc-200 read-only:text-zinc-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:read-only:bg-zinc-800 dark:read-only:text-zinc-300"
             />
             <SendCodeButton
-              formAction={sendCodeAction}
               idleLabel={t(
                 locale,
                 showSentMessage ? "코드 재전송" : "코드 전송",

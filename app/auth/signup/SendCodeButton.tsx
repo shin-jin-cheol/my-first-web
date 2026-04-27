@@ -6,7 +6,6 @@ const COOLDOWN_MS = 60_000;
 const STORAGE_KEY = "signup-send-code-cooldown-until";
 
 type SendCodeButtonProps = {
-  formAction: (formData: FormData) => void | Promise<void>;
   idleLabel: string;
   cooldownLabel: string;
 };
@@ -27,7 +26,6 @@ function getRemainingSeconds() {
 }
 
 export default function SendCodeButton({
-  formAction,
   idleLabel,
   cooldownLabel,
 }: SendCodeButtonProps) {
@@ -48,7 +46,8 @@ export default function SendCodeButton({
   return (
     <button
       type="submit"
-      formAction={formAction}
+      name="intent"
+      value="send-code"
       formNoValidate
       disabled={isCoolingDown}
       onClick={() => {
