@@ -52,20 +52,33 @@ export default async function RootLayout({
         <nav className="border-b border-zinc-500 bg-zinc-300 text-zinc-900 shadow-[0_0_30px_rgba(129,216,208,0.22)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:shadow-[0_0_24px_rgba(129,216,208,0.18)]">
           <div className="mx-auto w-full max-w-4xl px-4 py-3 md:px-6 md:py-4">
             <div className="flex items-center justify-between gap-3 md:hidden">
-              <span className="inline-flex h-9 max-w-[68vw] items-center truncate rounded-full border border-zinc-500 bg-zinc-300/92 px-3 text-sm font-extrabold tracking-[0.01em] text-zinc-900 drop-shadow-[0_0_10px_rgba(129,216,208,0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-100 dark:drop-shadow-none dark:shadow-[0_0_14px_rgba(129,216,208,0.35)]">
+              <span className="inline-flex h-9 min-w-0 flex-1 items-center truncate rounded-full border border-zinc-500 bg-zinc-300/92 px-3 text-sm font-extrabold tracking-[0.01em] text-zinc-900 drop-shadow-[0_0_10px_rgba(129,216,208,0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-100 dark:drop-shadow-none dark:shadow-[0_0_14px_rgba(129,216,208,0.35)]">
                 공인재 신진철의 생존일기
               </span>
-              <div className="flex h-9 items-center gap-2">
+              <div className="flex h-9 shrink-0 items-center gap-2">
                 {session ? (
                   <span className="inline-flex h-9 items-center rounded-full border border-cyan-600/45 bg-cyan-500/12 px-2.5 text-[10px] font-semibold uppercase tracking-wide text-[#2f8f88] shadow-[0_0_10px_rgba(129,216,208,0.35)] dark:border-cyan-500/40 dark:bg-cyan-500/10 dark:text-cyan-200 dark:shadow-none">
                     {session.role}
                   </span>
                 ) : null}
+                {!session ? (
+                  <Link href="/auth/login" className="inline-flex h-9 items-center rounded-full border border-zinc-500 bg-zinc-300/92 px-3 text-xs font-semibold text-zinc-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] transition hover:brightness-105 dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-100 dark:shadow-none dark:hover:bg-zinc-700">
+                    {t(locale, "로그인", "Login")}
+                  </Link>
+                ) : (
+                  <form action={logoutAction} className="inline-flex h-9 items-center">
+                    <button
+                      type="submit"
+                      className="inline-flex h-9 items-center rounded-full border border-zinc-500 bg-zinc-300/92 px-3 text-xs font-semibold text-zinc-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] transition hover:brightness-105 dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-100 dark:shadow-none dark:hover:bg-zinc-700"
+                    >
+                      {t(locale, "로그아웃", "Logout")}
+                    </button>
+                  </form>
+                )}
                 <NavMenuMobile
                   session={session}
                   serverLocale={locale}
                   setLanguageAction={setLanguageAction}
-                  logoutAction={logoutAction}
                 />
               </div>
             </div>
@@ -130,7 +143,6 @@ export default async function RootLayout({
                   session={session}
                   serverLocale={locale}
                   setLanguageAction={setLanguageAction}
-                  logoutAction={logoutAction}
                 />
               </div>
             </div>

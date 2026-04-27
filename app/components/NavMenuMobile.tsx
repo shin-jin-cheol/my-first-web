@@ -11,14 +11,12 @@ interface NavMenuMobileProps {
   session: Session | null;
   serverLocale: 'ko' | 'en';
   setLanguageAction: (formData: FormData) => Promise<void>;
-  logoutAction: () => Promise<void>;
 }
 
 export function NavMenuMobile({
   session,
   serverLocale,
   setLanguageAction,
-  logoutAction,
 }: NavMenuMobileProps) {
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const clientLocale = useLocale();
@@ -141,17 +139,6 @@ export function NavMenuMobile({
           >
             {t('회원정보', 'Account')}
           </Link>
-        ) : null}
-
-        {session ? (
-          <form action={logoutAction}>
-            <button
-              type="submit"
-              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-500 bg-zinc-200 dark:bg-zinc-700 px-2 py-1.5 font-semibold text-zinc-700 dark:text-zinc-100 transition hover:bg-zinc-300 dark:hover:bg-zinc-600"
-            >
-              {t('로그아웃', 'Logout')}
-            </button>
-          </form>
         ) : null}
 
         <form action={setLanguageAction} className="inline-flex items-center gap-1 rounded-full border border-zinc-400 bg-zinc-200 p-1 text-xs dark:border-zinc-600 dark:bg-zinc-800/80">
