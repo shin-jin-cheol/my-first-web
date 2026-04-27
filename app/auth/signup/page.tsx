@@ -5,6 +5,7 @@ import {
   sendSignupVerificationCode,
 } from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
+import SendCodeButton from "./SendCodeButton";
 
 function isRedirectError(error: unknown) {
   return (
@@ -213,14 +214,15 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
               defaultValue={params.email ?? ""}
               className="min-w-0 flex-1 rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] read-only:bg-zinc-200 read-only:text-zinc-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:read-only:bg-zinc-800 dark:read-only:text-zinc-300"
             />
-            <button
-              type="submit"
+            <SendCodeButton
               formAction={sendCodeAction}
-              formNoValidate
-              className="shrink-0 rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:border-[#81d8d0] hover:text-zinc-900 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-[#81d8d0]"
-            >
-              {t(locale, showSentMessage ? "코드 재전송" : "코드 전송", showSentMessage ? "Resend Code" : "Send Code")}
-            </button>
+              idleLabel={t(
+                locale,
+                showSentMessage ? "코드 재전송" : "코드 전송",
+                showSentMessage ? "Resend Code" : "Send Code",
+              )}
+              cooldownLabel={t(locale, "재전송 대기", "Wait")}
+            />
           </div>
         </div>
 
