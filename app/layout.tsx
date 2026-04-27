@@ -138,7 +138,7 @@ export default async function RootLayout({
                   </button>
                 </form>
               )}
-              <div className="inline-flex h-9 items-center lg:ml-auto">
+              <div className="inline-flex h-9 items-center">
                 <NavMenuMobile
                   session={session}
                   serverLocale={locale}

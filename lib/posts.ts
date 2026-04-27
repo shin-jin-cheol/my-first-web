@@ -189,7 +189,8 @@ async function requestSupabase<T>(
     return { ok: true, status: response.status, data: null };
   }
 
-  const data = (await response.json()) as T;
+  const raw = await response.text();
+  const data = raw.trim() ? (JSON.parse(raw) as T) : null;
   return { ok: true, status: response.status, data };
 }
 
@@ -228,7 +229,8 @@ async function requestSupabasePostComments<T>(
     return { ok: true, status: response.status, data: null };
   }
 
-  const data = (await response.json()) as T;
+  const raw = await response.text();
+  const data = raw.trim() ? (JSON.parse(raw) as T) : null;
   return { ok: true, status: response.status, data };
 }
 
