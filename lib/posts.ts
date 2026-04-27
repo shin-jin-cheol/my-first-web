@@ -80,6 +80,8 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SUPABASE_POSTS_TABLE = process.env.SUPABASE_POSTS_TABLE || "posts";
 const SUPABASE_POST_COMMENTS_TABLE = process.env.SUPABASE_POST_COMMENTS_TABLE || "post_comments";
 const SUPABASE_UPLOADS_BUCKET = process.env.SUPABASE_UPLOADS_BUCKET || "uploads";
+const CATEGORY_SCHEMA_MESSAGE =
+  "선택한 카테고리를 저장하려면 Supabase SQL Editor에서 docs/supabase-content.sql을 먼저 실행해야 합니다.";
 
 const initialPosts: Post[] = [
   {
@@ -854,6 +856,10 @@ export async function addPost(input: NewPostInput): Promise<Post> {
       return mapSupabaseRowToPost(result.data[0]);
     }
 
+    if (post.category !== "study") {
+      throw new Error(CATEGORY_SCHEMA_MESSAGE);
+    }
+
     const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
       "POST",
       "",
@@ -962,6 +968,10 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
 
     if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
       return mapSupabaseRowToPost(result.data[0]);
+    }
+
+    if (updatedPost.category !== "study") {
+      throw new Error(CATEGORY_SCHEMA_MESSAGE);
     }
 
     const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(

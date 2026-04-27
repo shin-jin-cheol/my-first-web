@@ -67,8 +67,8 @@ export function NavMenuMobile({
   };
 
   return (
-    <details ref={detailsRef} className="group relative">
-      <summary className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full border border-zinc-500 bg-zinc-300 text-zinc-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_8px_rgba(0,0,0,0.08)] transition hover:bg-zinc-400 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_8px_rgba(0,0,0,0.22)] dark:hover:bg-zinc-700">
+    <details ref={detailsRef} className="group relative inline-flex h-9 shrink-0 items-center">
+      <summary className="inline-flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full border border-zinc-500 bg-zinc-300 text-base leading-none text-zinc-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_8px_rgba(0,0,0,0.08)] transition hover:bg-zinc-400 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_8px_rgba(0,0,0,0.22)] dark:hover:bg-zinc-700">
         ☰
       </summary>
       <div

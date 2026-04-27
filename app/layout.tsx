@@ -49,12 +49,12 @@ export default async function RootLayout({
         <nav className="border-b border-zinc-500 bg-zinc-300 text-zinc-900 shadow-[0_0_30px_rgba(129,216,208,0.22)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:shadow-[0_0_24px_rgba(129,216,208,0.18)]">
           <div className="mx-auto w-full max-w-4xl px-4 py-3 md:px-6 md:py-4">
             <div className="flex items-center justify-between gap-3 md:hidden">
-              <span className="max-w-[68vw] truncate rounded-full border border-zinc-500 bg-zinc-300/92 px-3 py-1 text-sm font-extrabold tracking-[0.01em] text-zinc-900 drop-shadow-[0_0_10px_rgba(129,216,208,0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-100 dark:drop-shadow-none dark:shadow-[0_0_14px_rgba(129,216,208,0.35)]">
+              <span className="inline-flex h-9 max-w-[68vw] items-center truncate rounded-full border border-zinc-500 bg-zinc-300/92 px-3 text-sm font-extrabold tracking-[0.01em] text-zinc-900 drop-shadow-[0_0_10px_rgba(129,216,208,0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-100 dark:drop-shadow-none dark:shadow-[0_0_14px_rgba(129,216,208,0.35)]">
                 공인재 신진철의 생존일기
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex h-9 items-center gap-2">
                 {session ? (
-                  <span className="rounded-full border border-cyan-600/45 bg-cyan-500/12 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#2f8f88] shadow-[0_0_10px_rgba(129,216,208,0.35)] dark:border-cyan-500/40 dark:bg-cyan-500/10 dark:text-cyan-200 dark:shadow-none">
+                  <span className="inline-flex h-9 items-center rounded-full border border-cyan-600/45 bg-cyan-500/12 px-2.5 text-[10px] font-semibold uppercase tracking-wide text-[#2f8f88] shadow-[0_0_10px_rgba(129,216,208,0.35)] dark:border-cyan-500/40 dark:bg-cyan-500/10 dark:text-cyan-200 dark:shadow-none">
                     {session.role}
                   </span>
                 ) : null}
@@ -68,61 +68,61 @@ export default async function RootLayout({
             </div>
 
             <div className="hidden flex-wrap items-center gap-x-4 gap-y-2 md:flex">
-              <span className="shrink-0 rounded-full border border-zinc-500 bg-zinc-300/92 px-3 py-1 text-base font-extrabold tracking-[0.01em] text-zinc-900 drop-shadow-[0_0_12px_rgba(129,216,208,0.5)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-100 dark:drop-shadow-none dark:shadow-[0_0_14px_rgba(129,216,208,0.35)] md:text-lg">
+              <span className="inline-flex h-9 shrink-0 items-center rounded-full border border-zinc-500 bg-zinc-300/92 px-3 text-base font-extrabold tracking-[0.01em] text-zinc-900 drop-shadow-[0_0_12px_rgba(129,216,208,0.5)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-zinc-600 dark:bg-zinc-900/70 dark:text-zinc-100 dark:drop-shadow-none dark:shadow-[0_0_14px_rgba(129,216,208,0.35)] md:text-lg">
                 공인재 신진철의 생존일기
               </span>
-              <Link href="/" className="text-sm font-medium text-zinc-700 transition hover:text-zinc-900 hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-zinc-300 dark:hover:text-white dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
+              <Link href="/" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-zinc-300 dark:hover:text-white dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
                 {t(locale, "홈", "Home")}
               </Link>
-              <Link href="/posts" className="text-sm font-medium text-zinc-700 transition hover:text-zinc-900 hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-zinc-300 dark:hover:text-white dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
+              <Link href="/posts" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-zinc-300 dark:hover:text-white dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
                 {t(locale, "블로그", "Blog")}
               </Link>
-              <Link href="/guest" className="text-sm font-medium text-zinc-700 transition hover:text-zinc-900 hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-zinc-300 dark:hover:text-white dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
+              <Link href="/guest" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-zinc-300 dark:hover:text-white dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)]">
                 {t(locale, "게스트 게시판", "Guest Board")}
               </Link>
               {session ? (
                 <Link
                   href="/posts/new"
-                  className="rounded-full border border-[#74cfc6] bg-[#81d8d0] px-3 py-1.5 text-sm font-semibold text-zinc-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_22px_rgba(129,216,208,0.68)] transition hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_30px_rgba(129,216,208,0.82)]"
+                  className="inline-flex h-9 items-center rounded-full border border-[#74cfc6] bg-[#81d8d0] px-3 text-sm font-semibold text-zinc-900 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_22px_rgba(129,216,208,0.68)] transition hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_30px_rgba(129,216,208,0.82)]"
                 >
                   {t(locale, "새 글 쓰기", "Write")}
                 </Link>
               ) : null}
               {session?.role === "owner" ? (
-                <Link href="/admin/members" className="text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
+                <Link href="/admin/members" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
                   {t(locale, "회원관리", "Members")}
                 </Link>
               ) : null}
               {session?.role === "member" ? (
-                <Link href="/guest/account" className="text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
+                <Link href="/guest/account" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
                   {t(locale, "회원정보", "Account")}
                 </Link>
               ) : null}
               {session ? (
-                <span className="rounded-full border border-cyan-600/45 bg-cyan-500/12 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#2f8f88] shadow-[0_0_10px_rgba(129,216,208,0.35)] dark:border-cyan-500/40 dark:bg-cyan-500/10 dark:text-cyan-200 dark:shadow-none">
+                <span className="inline-flex h-9 items-center rounded-full border border-cyan-600/45 bg-cyan-500/12 px-3 text-xs font-semibold uppercase tracking-wide text-[#2f8f88] shadow-[0_0_10px_rgba(129,216,208,0.35)] dark:border-cyan-500/40 dark:bg-cyan-500/10 dark:text-cyan-200 dark:shadow-none">
                   {session.role}
                 </span>
               ) : null}
               {!session ? (
                 <>
-                  <Link href="/auth/login" className="text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
+                  <Link href="/auth/login" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
                     {t(locale, "로그인", "Login")}
                   </Link>
-                  <Link href="/auth/signup" className="text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
+                  <Link href="/auth/signup" className="inline-flex h-9 items-center text-sm font-medium text-zinc-700 transition hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white">
                     {t(locale, "회원가입", "Sign up")}
                   </Link>
                 </>
               ) : (
-                <form action={logoutAction}>
+                <form action={logoutAction} className="inline-flex h-9 items-center">
                   <button
                     type="submit"
-                    className="rounded-full border border-zinc-500 bg-zinc-300/92 px-3 py-1.5 text-sm font-semibold text-zinc-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] transition hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_7px_15px_rgba(0,0,0,0.11)] dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-100 dark:shadow-none dark:hover:bg-zinc-700"
+                    className="inline-flex h-9 items-center rounded-full border border-zinc-500 bg-zinc-300/92 px-3 text-sm font-semibold text-zinc-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] transition hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_7px_15px_rgba(0,0,0,0.11)] dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-100 dark:shadow-none dark:hover:bg-zinc-700"
                   >
                     {t(locale, "로그아웃", "Logout")}
                   </button>
                 </form>
               )}
-              <div className="lg:ml-auto">
+              <div className="inline-flex h-9 items-center lg:ml-auto">
                 <NavMenuMobile
                   session={session}
                   serverLocale={locale}

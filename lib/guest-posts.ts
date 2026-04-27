@@ -62,6 +62,8 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SUPABASE_GUEST_POSTS_TABLE = process.env.SUPABASE_GUEST_POSTS_TABLE || "guest_posts";
 const SUPABASE_UPLOADS_BUCKET = process.env.SUPABASE_UPLOADS_BUCKET || "uploads";
+const CATEGORY_SCHEMA_MESSAGE =
+  "선택한 카테고리를 저장하려면 Supabase SQL Editor에서 docs/supabase-content.sql을 먼저 실행해야 합니다.";
 
 let guestPostsBlobUrlCache: string | undefined;
 let hasTriedSupabaseGuestBootstrap = false;
@@ -246,6 +248,11 @@ async function syncGuestPostsToSupabase(posts: GuestPost[]) {
     if (result.ok) {
       didSync = true;
     } else {
+      const hasNonStudyCategory = posts.some((post) => post.category !== "study");
+      if (hasNonStudyCategory) {
+        throw new Error(CATEGORY_SCHEMA_MESSAGE);
+      }
+
       const legacyResult = await requestSupabase(
         "POST",
         "?on_conflict=id",

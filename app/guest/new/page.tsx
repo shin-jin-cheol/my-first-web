@@ -54,7 +54,11 @@ async function createGuestPost(formData: FormData) {
       throw error;
     }
 
-    redirect(`/guest/new?error=${encodeURIComponent("게스트 게시글 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.")}`);
+    const message =
+      error instanceof Error
+        ? error.message
+        : "게스트 게시글 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+    redirect(`/guest/new?error=${encodeURIComponent(message)}`);
   }
 }
 

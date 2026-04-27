@@ -71,7 +71,11 @@ async function createPost(formData: FormData) {
       throw error;
     }
 
-    redirect(`/posts/new?error=${encodeURIComponent("게시글 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.")}`);
+    const message =
+      error instanceof Error
+        ? error.message
+        : "게시글 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+    redirect(`/posts/new?error=${encodeURIComponent(message)}`);
   }
 }
 
