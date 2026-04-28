@@ -129,8 +129,8 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
           {showSentMessage
             ? t(
                 locale,
-                "메일로 받은 6자리 인증 코드를 입력하고 비밀번호를 정하면 회원가입이 완료됩니다.",
-                "Enter the 6-digit code from your email and choose a password to finish signing up.",
+                "메일로 받은 인증 코드를 입력하고 비밀번호를 정하면 회원가입이 완료됩니다.",
+                "Enter the verification code from your email and choose a password to finish signing up.",
               )
             : t(
                 locale,
@@ -243,17 +243,17 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
                 name="verificationCode"
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                maxLength={6}
-                pattern="\d{6}"
-                placeholder={t(locale, "6자리 숫자", "6-digit code")}
+                maxLength={8}
+                pattern="\d{6,8}"
+                placeholder={t(locale, "인증 코드 숫자", "Verification code")}
                 required
                 className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
               />
               <p className="text-xs text-zinc-500 dark:text-zinc-300">
                 {t(
                   locale,
-                  "메일로 받은 6자리 숫자를 그대로 입력해 주세요.",
-                  "Enter the 6-digit code exactly as shown in the email.",
+                  "메일로 받은 인증 코드 숫자를 그대로 입력해 주세요.",
+                  "Enter the numeric verification code exactly as shown in the email.",
                 )}
               </p>
             </div>
