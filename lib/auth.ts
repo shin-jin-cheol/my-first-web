@@ -566,12 +566,15 @@ async function sendSignupOtpWithSupabase(email: string, id: string, name: string
   return { ok: true };
 }
 
-async function verifySignupOtp(email: string, token: string) {
-  for (const type of ["email", "signup"] as const) {
+async function verifySignupOtp(email: string, token: string, password: string) {
+  const normalizedToken = token.replace(/\D/g, "");
+
+  for (const type of ["email", "magiclink", "signup"] as const) {
     const result = await requestSupabaseAuth<SupabaseAuthResponse>("POST", "/verify", {
       type,
       email,
-      token,
+      token: normalizedToken,
+      ...(type === "signup" ? { password } : {}),
     });
 
     if (result.ok) {
@@ -789,7 +792,7 @@ export async function completeSignupWithVerificationCode(
   const normalizedName = name.trim();
   const normalizedEmail = email.trim().toLowerCase();
   const normalizedPassword = password.trim();
-  const normalizedCode = verificationCode.trim();
+  const normalizedCode = verificationCode.replace(/\D/g, "");
 
   if (
     !normalizedId ||
@@ -826,7 +829,7 @@ export async function completeSignupWithVerificationCode(
     return { ok: false, message: "이미 사용 중인 이름입니다." };
   }
 
-  const verified = await verifySignupOtp(normalizedEmail, normalizedCode);
+  const verified = await verifySignupOtp(normalizedEmail, normalizedCode, normalizedPassword);
   const authUser = verified?.user;
 
   if (!authUser?.id) {
