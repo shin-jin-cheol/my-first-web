@@ -150,6 +150,7 @@ export function NavMenuMobile({
             type="submit"
             name="lang"
             value="ko"
+            aria-label={t('한국어 선택', 'Select Korean')}
             className={`rounded-full px-2 py-1 transition ${locale === 'ko' ? 'bg-zinc-200 text-zinc-700 dark:bg-zinc-200 dark:text-zinc-900' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100'}`}
           >
             KO
@@ -158,6 +159,7 @@ export function NavMenuMobile({
             type="submit"
             name="lang"
             value="en"
+            aria-label={t('영어 선택', 'Select English')}
             className={`rounded-full px-2 py-1 transition ${locale === 'en' ? 'bg-zinc-200 text-zinc-700 dark:bg-zinc-200 dark:text-zinc-900' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100'}`}
           >
             EN

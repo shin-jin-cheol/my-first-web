@@ -66,6 +66,7 @@ export function ThemeToggle() {
             key={option.value}
             type="button"
             onClick={() => setTheme(option.value)}
+            aria-label={locale === 'ko' ? `${option.label} 테마 선택` : `Select ${option.label} theme`}
             className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
               theme === option.value
                 ? 'bg-zinc-100 text-zinc-500 ring-1 ring-zinc-300 dark:bg-zinc-700 dark:text-zinc-300 dark:ring-zinc-500'
