@@ -5,6 +5,7 @@ import { clearSession, getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { getLocale, t } from "@/lib/i18n";
+import { ClientLayout } from "./components/ClientLayout";
 import { NavMenuMobile } from "./components/NavMenuMobile";
 import "./globals.css";
 import { Geist } from "next/font/google";
@@ -53,6 +54,7 @@ export default async function RootLayout({
   return (
     <html lang="ko" className={cn("dark", "font-sans", geist.variable)} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col bg-zinc-300 text-zinc-900 shadow-[inset_0_140px_140px_-120px_rgba(129,216,208,0.2)] dark:bg-zinc-950 dark:text-zinc-100 dark:shadow-[inset_0_120px_120px_-120px_rgba(129,216,208,0.22)] pb-24">
+        <ClientLayout>
         <nav className="border-b border-zinc-500 bg-zinc-300 text-zinc-900 shadow-[0_0_30px_rgba(129,216,208,0.22)] dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100 dark:shadow-[0_0_24px_rgba(129,216,208,0.18)]">
           <div className="mx-auto w-full max-w-4xl px-4 py-3 md:px-6 md:py-4">
             <div className="flex items-center justify-between gap-3 md:hidden">
@@ -211,6 +213,7 @@ export default async function RootLayout({
         </footer>
         <div className="h-24" />
         <BgmPlayer />
+        </ClientLayout>
       </body>
     </html>
   );

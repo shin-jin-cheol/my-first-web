@@ -27,8 +27,9 @@ export async function POST(req: NextRequest) {
       status: resp.status,
       headers: { 'Content-Type': resp.headers.get('content-type') || 'application/json' },
     })
-  } catch (err: any) {
-    return new Response(JSON.stringify({ error: err?.message ?? String(err) }), {
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     })

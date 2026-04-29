@@ -7,7 +7,7 @@ interface MobileMenuContentProps {
   children: React.ReactNode;
 }
 
-export function MobileMenuContent({ locale, children }: MobileMenuContentProps) {
+export function MobileMenuContent({ children }: MobileMenuContentProps) {
   return (
     <>
       {children}

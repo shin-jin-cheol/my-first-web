@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { GuestPostCategory } from "@/lib/post-categories";
 import SearchBar from "./SearchBar";
+import { includesQuery } from "@/lib/search";
 
 type GuestPostItem = {
   id: number | string;
@@ -41,10 +42,6 @@ type GuestPostsSearchListProps = {
   labels: Labels;
   deleteAction: (formData: FormData) => void;
 };
-
-function includesQuery(value: string, query: string) {
-  return value.toLowerCase().includes(query.toLowerCase());
-}
 
 export default function GuestPostsSearchList({
   posts,

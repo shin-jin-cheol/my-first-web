@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { BlogPostCategory } from "@/lib/post-categories";
 import SearchBar from "./SearchBar";
+import { includesQuery } from "@/lib/search";
 
 type OwnerPostItem = {
   id: number;
@@ -48,10 +49,6 @@ type PostsSearchContentProps = {
     category: string;
   };
 };
-
-function includesQuery(value: string, query: string) {
-  return value.toLowerCase().includes(query.toLowerCase());
-}
 
 export default function PostsSearchContent({
   ownerPosts,

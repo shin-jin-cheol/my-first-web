@@ -2,34 +2,38 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useTheme } from "./ThemeProvider";
 
 export default function HeroImage() {
-  const [theme, setTheme] = useState<"light" | "dark">("dark");
+  const { theme } = useTheme();
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // 초기 테마 감지
-    const isDark = document.documentElement.classList.contains("dark");
-    setTheme(isDark ? "dark" : "light");
-
-    // 테마 변경 감지
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "class") {
-          const isDark = document.documentElement.classList.contains("dark");
-          setTheme(isDark ? "dark" : "light");
-        }
-      });
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (theme === "light") {
+      setResolvedTheme("light");
+      return;
+    }
+
+    if (theme === "dark") {
+      setResolvedTheme("dark");
+      return;
+    }
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const syncTheme = () => {
+      setResolvedTheme(mediaQuery.matches ? "dark" : "light");
+    };
+
+    syncTheme();
+    mediaQuery.addEventListener("change", syncTheme);
+
+    return () => mediaQuery.removeEventListener("change", syncTheme);
+  }, [theme]);
 
   // 초기 로드 시에는 서버에서의 기본값(다크)을 표시
   if (!mounted) {
@@ -45,7 +49,7 @@ export default function HeroImage() {
     );
   }
 
-  const imageSrc = theme === "dark" ? "/dark.svg" : "/light.svg";
+  const imageSrc = resolvedTheme === "dark" ? "/dark.svg" : "/light.svg";
 
   return (
     <Image
