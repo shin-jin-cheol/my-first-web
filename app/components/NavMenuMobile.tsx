@@ -70,8 +70,12 @@ export function NavMenuMobile({
 
   return (
     <details ref={detailsRef} className="group relative inline-flex h-9 shrink-0 items-center align-middle">
-      <summary className="inline-flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full border border-zinc-500 bg-zinc-300 p-0 text-zinc-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_8px_rgba(0,0,0,0.08)] transition marker:hidden hover:bg-zinc-400 [&::-webkit-details-marker]:hidden dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_8px_rgba(0,0,0,0.22)] dark:hover:bg-zinc-700">
+      <summary
+        aria-label={t('메뉴 열기', 'Open menu')}
+        className="inline-flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full border border-zinc-500 bg-zinc-300 p-0 text-zinc-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_8px_rgba(0,0,0,0.08)] transition marker:hidden hover:bg-zinc-400 [&::-webkit-details-marker]:hidden dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_8px_rgba(0,0,0,0.22)] dark:hover:bg-zinc-700"
+      >
         <Menu aria-hidden="true" size={18} strokeWidth={2.2} />
+        <span className="sr-only">{t('메뉴 열기', 'Open menu')}</span>
       </summary>
       <div
         onClick={closeMenuOnAction}

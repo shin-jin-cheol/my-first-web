@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import LiveClock from "./LiveClock";
+import { Button } from "@/components/ui/button";
 
 type Track = {
   label: string;
@@ -357,23 +358,25 @@ export default function BgmPlayer() {
 
       {isMobileViewport ? (
         <div className="flex items-center gap-2 rounded-full border border-zinc-400 bg-zinc-300/95 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-4px_8px_rgba(0,0,0,0.05),0_5px_12px_rgba(0,0,0,0.11)] backdrop-blur dark:border-zinc-600 dark:bg-zinc-950/90 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-7px_10px_rgba(0,0,0,0.34),0_5px_12px_rgba(0,0,0,0.28)]">
-          <button
-            type="button"
+          <Button
             onClick={togglePlayback}
-            className="rounded-full border border-zinc-500 bg-zinc-300 px-3 py-1.5 text-xs text-zinc-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.28),0_0_10px_rgba(129,216,208,0.32)] dark:border-zinc-500 dark:bg-zinc-800 dark:text-cyan-100 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_0_10px_rgba(129,216,208,0.24)]"
+            className="h-8 w-8 rounded-full px-0 py-0 text-xs"
+            aria-label={isPlaying ? "Pause music" : "Play music"}
             title={isPlaying ? "Pause" : "Play"}
+            variant="secondary"
           >
             {isPlaying ? "||" : "▶"}
-          </button>
+          </Button>
           <p className="min-w-0 flex-1 truncate text-xs text-zinc-700 dark:text-zinc-200">{tracks[selectedIndex].label}</p>
-          <button
-            type="button"
+          <Button
             onClick={() => setIsMobileExpanded((prev) => !prev)}
-            className="rounded-full border border-zinc-400 bg-zinc-200 px-2 py-1 text-xs text-zinc-700 dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-200"
+            className="h-8 w-8 rounded-full px-0 py-0 text-xs"
+            aria-label={isMobileExpanded ? "Collapse player" : "Expand player"}
             title={isMobileExpanded ? "Close" : "Open"}
+            variant="ghost"
           >
             {isMobileExpanded ? "▴" : "▾"}
-          </button>
+          </Button>
         </div>
       ) : null}
 
@@ -414,30 +417,33 @@ export default function BgmPlayer() {
         </div>
 
         <div className="flex items-center justify-center gap-3 md:gap-6">
-          <button
-            type="button"
+          <Button
             onClick={playPreviousTrack}
-            className="rounded-full border border-zinc-500 bg-zinc-300 px-3 py-2 text-sm text-zinc-700 transition hover:bg-zinc-400 dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 md:px-3.5 md:py-2.5 md:text-base"
+            className="rounded-full px-3 py-2 text-sm md:px-3.5 md:py-2.5 md:text-base"
+            aria-label="Play previous track"
             title="Previous"
+            variant="secondary"
           >
             ◀
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             onClick={togglePlayback}
-            className="rounded-full border border-zinc-500 bg-zinc-300 px-4.5 py-2 text-base text-zinc-800 transition backdrop-blur shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_14px_rgba(129,216,208,0.5)] hover:border-zinc-600 hover:bg-zinc-400 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.34),0_0_18px_rgba(129,216,208,0.62)] dark:border-zinc-500 dark:bg-zinc-800 dark:text-cyan-100 dark:hover:border-zinc-400 dark:hover:bg-zinc-700 dark:hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_0_14px_rgba(129,216,208,0.36)] md:px-5.5 md:py-2.5 md:text-lg"
+            className="rounded-full px-4.5 py-2 text-base md:px-5.5 md:py-2.5 md:text-lg"
+            aria-label={isPlaying ? "Pause music" : "Play music"}
             title={isPlaying ? "Pause" : "Play"}
+            variant="default"
           >
             {isPlaying ? "||" : "▶"}
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
             onClick={playNextTrack}
-            className="rounded-full border border-zinc-500 bg-zinc-300 px-3 py-2 text-sm text-zinc-700 transition hover:bg-zinc-400 dark:border-zinc-500 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 md:px-3.5 md:py-2.5 md:text-base"
+            className="rounded-full px-3 py-2 text-sm md:px-3.5 md:py-2.5 md:text-base"
+            aria-label="Play next track"
             title="Next"
+            variant="secondary"
           >
             ▶
-          </button>
+          </Button>
         </div>
       </div>
     </div>

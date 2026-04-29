@@ -15,7 +15,7 @@ export default async function Home() {
               isEnglish ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl"
             }`}
           >
-            {t(locale, "Welecome to jincheol.zip-", "real survival story of jincheol.exe")}
+            {t(locale, "Welcome to jincheol.zip-", "real survival story of jincheol.exe")}
           </h1>
           <p className={`max-w-2xl text-zinc-700 dark:text-zinc-200 ${isEnglish ? "text-sm" : "text-base"}`}>
             {t(locale, " Real survival story of Jincheol.exe [at Hanshin University]", "Real survival story of Jincheol.exe [at Hanshin University]")}

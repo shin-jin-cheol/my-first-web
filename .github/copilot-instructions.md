@@ -1,62 +1,159 @@
 Tech Stack: 확인된 버전
 
-- Next.js: 16.2.1 (App Router ONLY)
-- Tailwind CSS: ^4
+-# Copilot Instructions
 
-Coding Conventions
+이 문서는 AI (GitHub Copilot / Agent)가 이 프로젝트에서 일관된 코드와 UI를 생성하도록 하기 위한 기준이다.
 
-- 기본 컴포넌트 타입: Server Component를 기본으로 사용합니다.
-- 스타일링: Tailwind CSS만 사용합니다. 다른 CSS-in-JS나 전역 CSS 프레임워크 사용 금지.
-
-App 구조
-
-- App Router 전용 프로젝트입니다. `app/` 디렉토리 기반 라우팅을 사용하세요.
-- Pages Router(`pages/`) 사용 금지.
-
-Known AI Mistakes (주의사항)
-
-- `next/router` 사용 금지 — 라우팅/네비게이션 관련 작업은 `next/navigation`을 사용하세요.
-- Pages Router 관련 API/패턴 사용 금지(예: `getServerSideProps`, `getStaticProps`, `next/router` 등).
-- `params` 값을 처리할 때는 반드시 `await`를 사용하세요 (예: 서버 컴포넌트에서 비동기 데이터/params 처리 시 `await` 누락 주의).
-
-추가 지침
-
-- 명시적이지 않은 경우에도 Server Component를 우선으로 설계하고, 클라이언트 상호작용이 필요할 때만 'use client'를 선언해 Client Component로 전환하세요.
-- 라우팅, 링크, 네비게이션 관련 구현은 `next/navigation`의 `useRouter`, `redirect`, `usePathname` 등 App Router 전용 API를 사용하세요.
-
-이 파일은 팀 공통 코파일럿/에이전트 지침입니다 — 로컬 스타일이나 예외가 필요하면 별도 합의를 통해 문서화하세요.
+---
 
 ## Tech Stack
 
-- Next.js 16.2.1 (App Router only)
-- React 19.2.4
-- Tailwind CSS 4
-- shadcn/ui (components/ui/ 경로에 설치됨)
+* Next.js 16.2.1 (App Router ONLY)
+* React 19.2.4
+* Tailwind CSS 4
+* shadcn/ui (components/ui/)
+
+---
+
+## App Structure
+
+* App Router 기반 (`app/` 디렉토리)
+* Pages Router 사용 금지 (`pages/`)
+* Route segment 기반 구조 유지
+
+---
 
 ## Coding Conventions
-- Default to Server Components unless a Client Component is required.
-- Use Tailwind CSS for styling.
-- Keep components simple and easy to verify.
-- Prefer files inside `app/` for routes.
+
+* 기본은 **Server Component**
+* 필요한 경우에만 `"use client"` 사용
+* async/await 기반 데이터 처리
+* 컴포넌트는 단순하고 검증 가능하게 유지
+
+---
 
 ## Design Tokens
 
-- Primary color: shadcn/ui --primary
-- Background: --background
-- Card: shadcn/ui Card 컴포넌트 사용 (rounded-lg shadow-sm)
-- Spacing: 컨텐츠 간격 space-y-6, 카드 내부 p-6
-- Max width: max-w-4xl mx-auto (메인 컨텐츠)
-- 반응형: md 이상 2열 그리드, 모바일 1열
+### Colors (CSS Variables 기준)
+
+* Primary: `--primary`
+* Background: `--background`
+* Foreground: `--foreground`
+* Muted: `--muted`
+* Border: `--border`
+
+Tailwind 기본 색상 직접 사용 금지 (예: `bg-blue-500 금지`)
+
+---
+
+### Layout
+
+* Main container: `max-w-4xl mx-auto px-4`
+* Section spacing: `space-y-6`
+* Card padding: `p-6`
+* Grid:
+
+  * 모바일: 1열
+  * md 이상: `grid-cols-2`
+
+---
+
+### Components Style
+
+* Card: `rounded-lg shadow-sm`
+* Button: shadcn/ui Button 사용
+* Input: shadcn/ui Input 사용
+* Dialog: shadcn/ui Dialog 사용
+
+---
 
 ## Component Rules
 
-- UI 컴포넌트는 shadcn/ui 사용 (components/ui/)
-- Button, Card, Input, Dialog 등 shadcn/ui 컴포넌트 우선
-- 커스텀 컴포넌트는 components/ 루트에 배치
-- Tailwind 기본 컬러 직접 사용 금지 → CSS 변수(디자인 토큰) 사용
+* UI 컴포넌트는 **shadcn/ui 우선 사용**
+* 커스텀 컴포넌트는 `components/` 폴더에 위치
+* 재사용 가능하게 설계
+* props는 명확하게 정의
+* 상태(state)는 최소화
 
-## Known AI Mistakes
+---
 
-- Do not use `next/router`; use `next/navigation` when navigation is needed.
-- Do not create `pages/` router files; this project uses the App Router.
-- Do not add `"use client"` unless interactivity or browser APIs are actually needed.
+## Data Fetching Rules
+
+* Server Component에서 fetch 우선
+* Client Component에서는 최소한의 fetch만 수행
+* 데이터는 props로 전달
+
+---
+
+## State Management Rules
+
+* 가능한 한 Server Component 사용
+* Client state는 UI 상태에만 사용 (modal, input 등)
+* 전역 상태 사용 최소화
+
+---
+
+## Routing Rules
+
+* `next/navigation`만 사용
+* 사용 가능한 API:
+
+  * `useRouter`
+  * `redirect`
+  * `usePathname`
+
+---
+
+## Known AI Mistakes (주의)
+
+*  `next/router` 사용 금지
+*  Pages Router API 사용 금지 (`getServerSideProps`, etc)
+*  불필요한 `"use client"` 추가 금지
+*  Tailwind 기본 색상 사용 금지
+*  컴포넌트 내부에 과도한 로직 작성 금지
+
+---
+
+## Params Handling
+
+* 서버 컴포넌트에서 params는 async 처리
+* 필요한 경우 반드시 `await` 사용
+
+---
+
+## UI Consistency Rules
+
+* 버튼 스타일 통일
+* spacing 일관성 유지
+* typography 계층 유지
+* 모바일 대응 필수
+
+---
+
+## File Structure
+
+* `app/` → 페이지
+* `components/` → UI 컴포넌트
+* `components/ui/` → shadcn/ui
+* `lib/` → 유틸 함수
+* `types/` → 타입 정의
+
+---
+
+## Output Expectation (AI에게 요구)
+
+AI는 다음을 만족해야 한다:
+
+* 코드가 간결할 것
+* 디자인 일관성 유지
+* 불필요한 상태/로직 없음
+* App Router 규칙 준수
+* 재사용 가능한 구조
+
+---
+
+## Principle
+
+* 단순하게 시작하고 점진적으로 확장
+* 서버 중심 구조 유지
+* UI는 일관성을 최우선으로 한다
