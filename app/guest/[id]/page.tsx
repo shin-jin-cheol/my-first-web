@@ -11,6 +11,7 @@ import {
 import { getLocale, t } from "@/lib/i18n";
 import { requireSession } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/post-categories";
+import { canManagePost, canManageComment } from "@/lib/permissions";
 
 type GuestPostDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -34,16 +35,14 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
     ? `${post.fileUrl}${post.fileUrl.includes("?") ? "&" : "?"}download=${encodeURIComponent(post.fileName ?? "attachment")}`
     : undefined;
 
-  const canManage = session.role === "owner" || (session.role === "member" && post.authorId === session.userId);
+  const canManage = canManagePost(session, post);
 
   async function deleteGuestPostAction() {
     "use server";
 
     const currentSession = await requireSession();
     const currentPost = await getGuestPostById(postId);
-    const canDelete =
-      currentSession.role === "owner" ||
-      (currentSession.role === "member" && currentPost?.authorId === currentSession.userId);
+    const canDelete = canManagePost(currentSession, currentPost ?? { authorId: undefined });
 
     if (!canDelete) {
       redirect(`/guest/${postId}`);
@@ -97,10 +96,9 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
 
     const currentPost = await getGuestPostById(postId);
     const targetComment = currentPost?.comments?.find((comment) => comment.id === commentId);
-    const canManageComment =
-      currentSession.role === "owner" || targetComment?.authorId === currentSession.userId;
+    const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
 
-    if (!canManageComment) {
+    if (!canManageCommentResult) {
       redirect(`/guest/${postId}`);
     }
 
@@ -123,10 +121,9 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
 
     const currentPost = await getGuestPostById(postId);
     const targetComment = currentPost?.comments?.find((comment) => comment.id === commentId);
-    const canManageComment =
-      currentSession.role === "owner" || targetComment?.authorId === currentSession.userId;
+    const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
 
-    if (!canManageComment) {
+    if (!canManageCommentResult) {
       redirect(`/guest/${postId}`);
     }
 

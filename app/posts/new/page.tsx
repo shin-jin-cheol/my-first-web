@@ -4,16 +4,10 @@ import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
 import { addPost } from "@/lib/posts";
+import { isRedirectError } from "@/lib/redirect-error";
+import { normalizeCategory, normalizeAttachment } from "@/lib/utils";
 
-function isRedirectError(error: unknown) {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "digest" in error &&
-    typeof (error as { digest?: unknown }).digest === "string" &&
-    (error as { digest: string }).digest.includes("NEXT_REDIRECT")
-  );
-}
+
 
 async function createPost(formData: FormData) {
   "use server";
@@ -44,16 +38,9 @@ async function createPost(formData: FormData) {
       author,
       authorId: undefined,
       content,
-      category:
-        category === "notice"
-          ? "notice"
-          : category === "daily"
-            ? "daily"
-            : category === "info"
-              ? "info"
-              : "study",
+      category: normalizeCategory(category, 'blog'),
       linkUrl,
-      attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
+      attachmentFile: normalizeAttachment(attachmentFile),
     });
 
     revalidatePath("/");

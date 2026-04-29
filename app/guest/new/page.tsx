@@ -4,16 +4,10 @@ import { redirect } from "next/navigation";
 import { addGuestPost } from "@/lib/guest-posts";
 import { getMemberProfile, requireSession } from "@/lib/auth";
 import { GUEST_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
+import { isRedirectError } from "@/lib/redirect-error";
+import { normalizeCategory, normalizeAttachment } from "@/lib/utils";
 
-function isRedirectError(error: unknown) {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "digest" in error &&
-    typeof (error as { digest?: unknown }).digest === "string" &&
-    (error as { digest: string }).digest.includes("NEXT_REDIRECT")
-  );
-}
+
 
 async function createGuestPost(formData: FormData) {
   "use server";
@@ -41,9 +35,9 @@ async function createGuestPost(formData: FormData) {
       content,
       authorId: session.userId,
       authorName,
-      category: category === "daily" ? "daily" : category === "info" ? "info" : "study",
+      category: normalizeCategory(category, 'guest'),
       linkUrl,
-      attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
+      attachmentFile: normalizeAttachment(attachmentFile),
     });
 
     revalidatePath("/guest");

@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
 import { getPostById, updatePostById } from "@/lib/posts";
+import { canManagePost } from "@/lib/permissions";
+import { normalizeCategory, normalizeAttachment } from "@/lib/utils";
 
 type EditPostPageProps = {
   params: Promise<{ id: string }>;
@@ -23,8 +25,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     redirect("/posts");
   }
 
-  const canEdit =
-    session.role === "owner" || (session.role === "member" && post.authorId === session.userId);
+  const canEdit = canManagePost(session, post);
   if (!canEdit) {
     redirect(`/posts/${postId}`);
   }
@@ -34,9 +35,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
 
     const currentSession = await requireSession();
     const currentPost = await getPostById(postId);
-    const canUpdate =
-      currentSession.role === "owner" ||
-      (currentSession.role === "member" && currentPost?.authorId === currentSession.userId);
+    const canUpdate = canManagePost(currentSession, currentPost ?? { authorId: undefined });
 
     if (!canUpdate) {
       redirect(`/posts/${postId}`);
@@ -62,16 +61,9 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       title,
       author,
       content,
-      category:
-        category === "notice"
-          ? "notice"
-          : category === "daily"
-            ? "daily"
-            : category === "info"
-              ? "info"
-              : "study",
+      category: normalizeCategory(category, 'blog'),
       linkUrl,
-      attachmentFile: attachmentFile instanceof File ? attachmentFile : null,
+      attachmentFile: normalizeAttachment(attachmentFile),
       removeAttachment,
     });
 

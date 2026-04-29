@@ -3,6 +3,8 @@ import path from "node:path";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { list, put } from "@vercel/blob";
+import { safeJsonParse } from "@/lib/safe-json";
+import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_AUTH_PUBLIC_KEY, SUPABASE_MEMBERS_TABLE, BLOB_READ_WRITE_TOKEN } from "@/lib/env";
 
 export type UserRole = "owner" | "member";
 
@@ -73,14 +75,7 @@ const DATA_DIR = path.join(process.cwd(), "data");
 const USERS_FILE_LOCAL = path.join(DATA_DIR, "users.json");
 const USERS_FILE_TMP = path.join("/tmp", "my-first-web-users.json");
 const USERS_BLOB_KEY = "auth/users.json";
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SUPABASE_AUTH_PUBLIC_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
-  process.env.SUPABASE_ANON_KEY ??
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-  "";
-const SUPABASE_MEMBERS_TABLE = process.env.SUPABASE_MEMBERS_TABLE || "members";
+// SUPABASE_* and blob token are centralized in lib/env.ts
 
 let usersBlobUrlCache: string | undefined;
 let hasTriedSupabaseBootstrap = false;
@@ -202,6 +197,7 @@ async function requestSupabaseMembers<T>(
   prefer?: string,
 ): Promise<{ ok: boolean; status: number; data: T | null }> {
   if (!SUPABASE_SERVICE_ROLE_KEY) {
+    console.error("requestSupabaseMembers: SUPABASE_SERVICE_ROLE_KEY is not set");
     return { ok: false, status: 500, data: null };
   }
 
@@ -223,6 +219,7 @@ async function requestSupabaseMembers<T>(
   });
 
   if (!response.ok) {
+    console.error(`requestSupabaseMembers(${query}): response not ok ${response.status} ${response.statusText}`);
     return { ok: false, status: response.status, data: null };
   }
 
@@ -287,7 +284,9 @@ async function requestSupabaseAuth<T>(
 function decodeSession(value: string): Session | null {
   try {
     const json = Buffer.from(value, "base64url").toString("utf-8");
-    const parsed = JSON.parse(json) as Session;
+    const parsed = safeJsonParse<Session>(json, null);
+
+    if (!parsed) return null;
 
     if (!parsed.userId || (parsed.role !== "owner" && parsed.role !== "member")) {
       return null;
@@ -340,12 +339,14 @@ async function readUsersFromBlob(): Promise<MemberRecord[]> {
     await refreshUsersBlobUrlCache();
 
     if (!usersBlobUrlCache) {
+      console.error(`readUsersFromBlob: no usersBlobUrlCache after refresh, initial status=${response.status} ${response.statusText}`);
       return [];
     }
 
     const retryUrl = `${usersBlobUrlCache}${usersBlobUrlCache.includes("?") ? "&" : "?"}ts=${Date.now()}`;
     response = await fetch(retryUrl, { cache: "no-store" });
     if (!response.ok) {
+      console.error(`readUsersFromBlob: retry fetch failed status=${response.status} ${response.statusText}`);
       return [];
     }
   }
@@ -392,7 +393,7 @@ async function readMembersFromLegacyStorage(): Promise<MemberRecord[]> {
 
   await ensureUsersFile();
   const raw = await fs.readFile(resolveUsersFilePath(), "utf-8");
-  const parsed = JSON.parse(raw) as Array<Partial<MemberRecord> & { id: string }>;
+  const parsed = safeJsonParse<Array<Partial<MemberRecord> & { id: string }>>(raw, []) ?? [];
 
   return parsed
     .map(normalizeMemberRecord)

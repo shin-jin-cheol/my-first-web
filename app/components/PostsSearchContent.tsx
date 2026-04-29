@@ -2,42 +2,15 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { BlogPostCategory } from "@/lib/post-categories";
 import SearchBar from "./SearchBar";
+import type { BlogPostCategory } from "@/lib/post-categories";
 import { includesQuery } from "@/lib/search";
-
-type OwnerPostItem = {
-  id: number;
-  title: string;
-  content: string;
-  author: string;
-  date: string;
-  category: BlogPostCategory;
-  categoryLabel: string;
-  detailHref: string;
-};
-
-type CommunityPostItem = {
-  id: string;
-  title: string;
-  content: string;
-  authorDisplay: string;
-  date: string;
-  detailHref: string;
-  category: BlogPostCategory;
-  categoryLabel: string;
-  sourceLabel: string;
-};
-
-type CategoryOption = {
-  value: "all" | BlogPostCategory;
-  label: string;
-};
+import type { OwnerPostItem, CommunityPostItem, CategoryOption } from "@/types/posts";
 
 type PostsSearchContentProps = {
   ownerPosts: OwnerPostItem[];
   communityPosts: CommunityPostItem[];
-  categoryOptions: CategoryOption[];
+  categoryOptions: CategoryOption<import("@/lib/post-categories").BlogPostCategory>[];
   labels: {
     searchPlaceholder: string;
     ownerSectionTitle: string;

@@ -5,6 +5,8 @@ import { getGuestPostById, updateGuestPostById } from "@/lib/guest-posts";
 import { requireSession } from "@/lib/auth";
 import { getCategoryLabel, GUEST_POST_CATEGORIES } from "@/lib/post-categories";
 import { getLocale, t } from "@/lib/i18n";
+import { canManagePost } from "@/lib/permissions";
+import { normalizeCategory } from "@/lib/utils";
 
 type EditGuestPostPageProps = {
   params: Promise<{ id: string }>;
@@ -28,8 +30,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
     redirect("/guest");
   }
 
-  const canEdit =
-    session.role === "owner" || (session.role === "member" && post.authorId === session.userId);
+  const canEdit = canManagePost(session, post);
   if (!canEdit) {
     redirect("/guest");
   }
@@ -39,9 +40,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
 
     const currentSession = await requireSession();
     const currentPost = await getGuestPostById(postId);
-    const canUpdate =
-      currentSession.role === "owner" ||
-      (currentSession.role === "member" && currentPost?.authorId === currentSession.userId);
+    const canUpdate = canManagePost(currentSession, currentPost ?? { authorId: undefined });
 
     if (!canUpdate) {
       redirect("/guest");
@@ -64,7 +63,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
     await updateGuestPostById(postId, {
       title,
       content,
-      category: category === "daily" ? "daily" : category === "info" ? "info" : "study",
+      category: normalizeCategory(category, 'guest'),
     });
 
     revalidatePath("/guest", "page");

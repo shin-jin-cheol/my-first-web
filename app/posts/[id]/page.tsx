@@ -11,6 +11,7 @@ import {
 } from "@/lib/posts";
 import { getSession, requireSession } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/post-categories";
+import { canManagePost, canManageComment } from "@/lib/permissions";
 
 type PostDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -22,8 +23,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const post = await getPostById(postId);
   const session = await getSession();
   const comments = await getPostCommentsByPostId(postId);
-  const canManagePost =
-    session?.role === "owner" || (session?.role === "member" && post?.authorId === session.userId);
+  const canManagePostResult = canManagePost(session ?? null, post ?? { authorId: undefined });
   const fileDownloadUrl = post?.fileUrl
     ? `${post.fileUrl}${post.fileUrl.includes("?") ? "&" : "?"}download=${encodeURIComponent(post.fileName ?? "attachment")}`
     : undefined;
@@ -34,11 +34,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     const currentSession = await getSession();
     const currentPost = await getPostById(postId);
 
-    const canDelete =
-      currentSession?.role === "owner" ||
-      (currentSession?.role === "member" && currentPost?.authorId === currentSession.userId);
+    const canDeletePost = canManagePost(currentSession ?? null, currentPost ?? { authorId: undefined });
 
-    if (!canDelete) {
+    if (!canDeletePost) {
       redirect(`/posts/${postId}`);
     }
 
@@ -89,10 +87,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
     const currentComments = await getPostCommentsByPostId(postId);
     const targetComment = currentComments.find((comment) => comment.id === commentId);
-    const canManageComment =
-      currentSession.role === "owner" || targetComment?.authorId === currentSession.userId;
+    const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
 
-    if (!canManageComment) {
+    if (!canManageCommentResult) {
       redirect(`/posts/${postId}`);
     }
 
@@ -114,10 +111,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
     const currentComments = await getPostCommentsByPostId(postId);
     const targetComment = currentComments.find((comment) => comment.id === commentId);
-    const canManageComment =
-      currentSession.role === "owner" || targetComment?.authorId === currentSession.userId;
+    const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
 
-    if (!canManageComment) {
+    if (!canManageCommentResult) {
       redirect(`/posts/${postId}`);
     }
 
@@ -268,7 +264,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         >
           목록으로 돌아가기
         </Link>
-        {canManagePost ? (
+        {canManagePostResult ? (
           <Link
             href={`/posts/${post.id}/edit`}
             className="inline-flex rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.5)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
@@ -276,7 +272,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
             수정하기
           </Link>
         ) : null}
-        {canManagePost ? (
+        {canManagePostResult ? (
           <form action={deletePostAction}>
             <button
               type="submit"

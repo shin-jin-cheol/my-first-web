@@ -2,6 +2,8 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { del, list, put } from "@vercel/blob";
 import { GuestPostCategory, normalizeGuestPostCategory } from "@/lib/post-categories";
+import { safeJsonParse } from "@/lib/safe-json";
+import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_GUEST_POSTS_TABLE, SUPABASE_UPLOADS_BUCKET } from "@/lib/env";
 
 export type GuestPost = {
   id: number;
@@ -58,10 +60,7 @@ const GUEST_POSTS_FILE_LOCAL = path.join(DATA_DIR, "guest-posts.json");
 const GUEST_POSTS_FILE_TMP = path.join("/tmp", "my-first-web-guest-posts.json");
 const GUEST_POSTS_BLOB_KEY = "guest/guest-posts.json";
 const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const SUPABASE_GUEST_POSTS_TABLE = process.env.SUPABASE_GUEST_POSTS_TABLE || "guest_posts";
-const SUPABASE_UPLOADS_BUCKET = process.env.SUPABASE_UPLOADS_BUCKET || "uploads";
+// SUPABASE_* constants are centralized in lib/env.ts
 const CATEGORY_SCHEMA_MESSAGE =
   "선택한 카테고리를 저장하려면 Supabase SQL Editor에서 docs/supabase-content.sql을 먼저 실행해야 합니다.";
 
@@ -123,6 +122,7 @@ async function requestSupabase<T>(
   prefer?: string,
 ): Promise<{ ok: boolean; status: number; data: T | null }> {
   if (!SUPABASE_SERVICE_ROLE_KEY) {
+    console.error("requestSupabase: SUPABASE_SERVICE_ROLE_KEY is not set");
     return { ok: false, status: 500, data: null };
   }
 
@@ -144,6 +144,7 @@ async function requestSupabase<T>(
   });
 
   if (!response.ok) {
+    console.error(`requestSupabase(${query}): response not ok ${response.status} ${response.statusText}`);
     return { ok: false, status: response.status, data: null };
   }
 
@@ -152,7 +153,7 @@ async function requestSupabase<T>(
   }
 
   const raw = await response.text();
-  const data = raw.trim() ? (JSON.parse(raw) as T) : null;
+  const data = raw.trim() ? safeJsonParse<T>(raw, null) : null;
   return { ok: true, status: response.status, data };
 }
 

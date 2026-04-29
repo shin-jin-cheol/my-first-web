@@ -7,16 +7,7 @@ import {
 import { getLocale, t } from "@/lib/i18n";
 import SendCodeButton from "./SendCodeButton";
 import SignupPasswordField from "./SignupPasswordField";
-
-function isRedirectError(error: unknown) {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "digest" in error &&
-    typeof (error as { digest?: unknown }).digest === "string" &&
-    (error as { digest: string }).digest.includes("NEXT_REDIRECT")
-  );
-}
+import { isRedirectError } from "@/lib/redirect-error";
 
 function buildSignupQuery(params: Record<string, string | undefined>) {
   const search = new URLSearchParams();

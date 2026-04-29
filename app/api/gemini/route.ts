@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
       headers: { 'Content-Type': resp.headers.get('content-type') || 'application/json' },
     })
   } catch (err: unknown) {
+    console.error('api/gemini error:', err);
     const errorMessage = err instanceof Error ? err.message : String(err);
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,

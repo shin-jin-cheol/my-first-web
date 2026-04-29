@@ -2,29 +2,10 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { GuestPostCategory } from "@/lib/post-categories";
 import SearchBar from "./SearchBar";
+import type { GuestPostCategory } from "@/lib/post-categories";
 import { includesQuery } from "@/lib/search";
-
-type GuestPostItem = {
-  id: number | string;
-  title: string;
-  content: string;
-  authorId: string;
-  authorDisplay: string;
-  date: string;
-  detailHref: string;
-  canManage: boolean;
-  category: GuestPostCategory;
-  categoryLabel: string;
-  editHref?: string;
-  postId?: number;
-};
-
-type CategoryOption = {
-  value: "all" | GuestPostCategory;
-  label: string;
-};
+import type { GuestPostItem, CategoryOption } from "@/types/posts";
 
 type Labels = {
   searchPlaceholder: string;
@@ -38,7 +19,7 @@ type Labels = {
 
 type GuestPostsSearchListProps = {
   posts: GuestPostItem[];
-  categoryOptions: CategoryOption[];
+  categoryOptions: CategoryOption<import("@/lib/post-categories").GuestPostCategory>[];
   labels: Labels;
   deleteAction: (formData: FormData) => void;
 };
