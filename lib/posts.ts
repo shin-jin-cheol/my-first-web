@@ -9,6 +9,7 @@ import {
   SUPABASE_POSTS_TABLE,
   SUPABASE_POST_COMMENTS_TABLE,
   SUPABASE_UPLOADS_BUCKET,
+  BLOB_READ_WRITE_TOKEN,
 } from "@/lib/env";
 
 export type Post = {
@@ -379,9 +380,8 @@ function resolvePostsFilePath() {
 async function readPostsFromLegacyStorage(): Promise<Post[]> {
   await ensurePostsFile();
   const raw = await fs.readFile(resolvePostsFilePath(), "utf-8");
-  return (JSON.parse(raw) as Array<Omit<Post, "category"> & { category?: string }>).map(
-    normalizePostRecord,
-  );
+  const parsed = safeJsonParse<Array<Omit<Post, "category"> & { category?: string }>>(raw, []);
+  return (parsed ?? []).map(normalizePostRecord);
 }
 
 async function writePostsToLegacyStorage(posts: Post[]) {
@@ -528,7 +528,7 @@ async function saveAttachmentFile(file?: File | null): Promise<{ fileUrl: string
   }
 
   // In production (or when token is configured), upload to Vercel Blob for persistent storage.
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  if (BLOB_READ_WRITE_TOKEN) {
     const blob = await put(`uploads/${uniqueName}`, file, {
       access: "public",
       addRandomSuffix: false,
@@ -580,7 +580,7 @@ async function removeAttachment(fileUrl?: string) {
     return;
   }
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  if (BLOB_READ_WRITE_TOKEN) {
     try {
       await del(fileUrl);
     } catch {

@@ -27,9 +27,8 @@ JSON.parse(jsonString)  // 런타임 에러 가능
 **해결책**:
 ```typescript
 // lib/safe-json.ts
-export function safeJsonParse<T>(json: unknown, fallback: T | null = null): T | null {
+export function safeJsonParse<T>(json: string, fallback: T | null): T | null {
   try {
-    if (typeof json !== 'string') return fallback;
     return JSON.parse(json) as T;
   } catch {
     return fallback;
@@ -90,9 +89,10 @@ const token = process.env.SUPABASE_API_KEY!;
 **해결책**:
 ```typescript
 // lib/env.ts
-export const SUPABASE_URL = process.env.SUPABASE_URL || '';
-export const SUPABASE_API_KEY = process.env.SUPABASE_API_KEY || '';
-export const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN || '';
+export const SUPABASE_URL = process.env.SUPABASE_URL;
+export const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+export const SUPABASE_AUTH_PUBLIC_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.SUPABASE_ANON_KEY ?? '';
+export const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 ```
 
 **적용 위치**:

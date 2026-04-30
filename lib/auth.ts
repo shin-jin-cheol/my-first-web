@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { list, put } from "@vercel/blob";
 import { safeJsonParse } from "@/lib/safe-json";
-import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_AUTH_PUBLIC_KEY, SUPABASE_MEMBERS_TABLE } from "@/lib/env";
+import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_AUTH_PUBLIC_KEY, SUPABASE_MEMBERS_TABLE, BLOB_READ_WRITE_TOKEN } from "@/lib/env";
 
 export type UserRole = "owner" | "member";
 
@@ -112,7 +112,7 @@ function resolveUsersFilePath() {
 }
 
 function hasBlobStorage() {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  return Boolean(BLOB_READ_WRITE_TOKEN);
 }
 
 function hasSupabaseStorage() {

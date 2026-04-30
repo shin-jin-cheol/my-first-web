@@ -207,7 +207,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
                 </div>
                 <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-600 dark:text-zinc-300">{comment.content}</p>
 
-                {session.role === "owner" || session.userId === comment.authorId ? (
+                {canManageComment(session, comment) ? (
                   <div className="mt-3 space-y-2">
                     <form action={updateCommentAction} className="space-y-2">
                       <input type="hidden" name="commentId" value={comment.id} />

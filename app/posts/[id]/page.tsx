@@ -206,7 +206,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         {comments.length > 0 ? (
           <ul className="space-y-3">
             {comments.map((comment) => {
-              const canManageComment = session?.role === "owner" || session?.userId === comment.authorId;
+              const isCommentManageable = canManageComment(session ?? null, comment);
 
               return (
                 <li key={comment.id} className="rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-100/90 dark:bg-zinc-800/80 p-3">
@@ -216,7 +216,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
                   </div>
                   <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-600 dark:text-zinc-300">{comment.content}</p>
 
-                  {canManageComment ? (
+                  {isCommentManageable ? (
                     <div className="mt-3 space-y-2">
                       <form action={updateCommentAction} className="space-y-2">
                         <input type="hidden" name="commentId" value={comment.id} />

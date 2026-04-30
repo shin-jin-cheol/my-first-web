@@ -14,16 +14,6 @@ const ThemeContext = createContext<ThemeContextType | null>(null);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
   const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-    
-    // localStorage에서 사용자 선택 복원, 없으면 'dark' 기본값
-    const storedTheme = (localStorage.getItem('theme') as Theme) || 'dark';
-    setTheme(storedTheme);
-    applyTheme(storedTheme);
-  }, []);
-
   function applyTheme(selectedTheme: Theme) {
     const html = document.documentElement;
     const isDark =
@@ -37,6 +27,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       html.classList.remove('dark');
     }
   }
+
+  useEffect(() => {
+    setIsMounted(true);
+
+    // localStorage에서 사용자 선택 복원, 없으면 'dark' 기본값
+    const storedTheme = (localStorage.getItem('theme') as Theme) || 'dark';
+    setTheme(storedTheme);
+    applyTheme(storedTheme);
+  }, []);
 
   useEffect(() => {
     if (!isMounted) return;

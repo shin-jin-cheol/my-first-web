@@ -4,14 +4,26 @@
     "title": "test",
     "content": "test",
     "author": "신진철",
-    "date": "2026-04-20"
+    "date": "2026-04-20",
+    "category": "study",
+    "comments": [
+      {
+        "id": 1,
+        "postId": 6,
+        "authorId": "sjc5001",
+        "authorName": "신진철",
+        "content": "test",
+        "dateTime": "2026-04-30 12:02:08"
+      }
+    ]
   },
   {
     "id": 5,
     "title": "블로그 100퍼센트 즐기는 방법",
     "content": "접속시 자동으로 BGM이 나오지 않으면 우측 하단 BGM켜기 버튼을 눌러주세요! 볼륨도 켜주세요!",
     "author": "신진철",
-    "date": "2026-04-11"
+    "date": "2026-04-11",
+    "category": "study"
   },
   {
     "id": 4,
@@ -20,13 +32,15 @@
     "author": "신진철",
     "date": "2026-04-11",
     "fileUrl": "/uploads/1775919291063-quiz.html",
-    "fileName": "quiz.html"
+    "fileName": "quiz.html",
+    "category": "study"
   },
   {
     "id": 2,
     "title": "Tailwind CSS 로 스타일링하기",
     "content": "Tailwind CSS 의 새로운 기능들을 소개합니다. @import 문법과 더욱 강력해진 유틸리티 클래스를 활용하여 빠르고 효율적인 스타일링을 경험해보세요.",
     "author": "신진철",
-    "date": "2026-04-03"
+    "date": "2026-04-03",
+    "category": "study"
   }
 ]

@@ -99,7 +99,7 @@ npm run lint
 - ✅ 카테고리 정규화 (`normalizeCategory`)
 - ✅ 첨부파일 정규화 (`normalizeAttachment`)
 
-**결과**: 🎯 기능/UI 변경 없이 안정성 19% 향상
+**결과**: 🎯 기능/UI 변경 없이 안정성 및 유지보수성 향상
 
 [전체 상세 내용 → docs/refactoring-summary.md](docs/refactoring-summary.md)
 
@@ -144,10 +144,12 @@ my-first-web/
 
 1. SQL 스크립트 실행: [docs/supabase-members.sql](docs/supabase-members.sql)
 2. 환경변수 설정 (`.env.local` 또는 Vercel):
-   ```
-   SUPABASE_URL=https://xxx.supabase.co
-   SUPABASE_API_KEY=xxx
-   ```
+	```
+	SUPABASE_URL=https://xxx.supabase.co
+	SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+	# 또는 브라우저용 키가 필요한 경우
+	NEXT_PUBLIC_SUPABASE_ANON_KEY=<publishable-key>
+	```
 3. 블로그 콘텐츠: [docs/supabase-content.sql](docs/supabase-content.sql)
 4. 게시판 데이터: [docs/supabase-board-stability.sql](docs/supabase-board-stability.sql)
 
@@ -221,10 +223,11 @@ Behavior:
 Posts and guest posts can also be stored in Supabase for persistent storage.
 
 1. Create tables with [docs/supabase-content.sql](docs/supabase-content.sql).
-2. Set environment variables:
+2. Set environment variables (examples):
 	- `SUPABASE_POSTS_TABLE` (optional, default: `posts`)
 	- `SUPABASE_GUEST_POSTS_TABLE` (optional, default: `guest_posts`)
 	- `SUPABASE_POST_COMMENTS_TABLE` (optional, default: `post_comments`)
+	- `SUPABASE_SERVICE_ROLE_KEY` (server-only write key)
 3. Deploy again.
 
 Behavior:

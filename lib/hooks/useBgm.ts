@@ -6,6 +6,11 @@ type Track = {
 };
 
 export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null>, tracks: Track[]) {
+  // Stabilize tracks reference to avoid stale-closure issues in effects
+  const tracksRef = useRef<Track[] | null>(tracks ?? null);
+  useEffect(() => {
+    tracksRef.current = tracks ?? null;
+  }, [tracks]);
   const isPlayingRef = useRef(false);
   const hasInitializedRef = useRef(false);
   const autoplayRetryCountRef = useRef(0);
@@ -15,9 +20,15 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  const getSrcAt = (i: number) => (tracks && tracks[i] ? tracks[i].src : undefined);
+  const getSrcAt = (i: number) => {
+    const t = tracksRef.current;
+    return t && t[i] ? t[i].src : undefined;
+  };
 
-  const isValidIndex = (i: number) => Boolean(tracks && tracks.length > 0 && i >= 0 && i < tracks.length);
+  const isValidIndex = (i: number) => {
+    const t = tracksRef.current;
+    return Boolean(t && t.length > 0 && i >= 0 && i < t.length);
+  };
 
   // Ensure selectedIndex is valid before deriving selectedSrc. If invalid, we will fallback to 0 index when possible.
   const validSelectedIndex = isValidIndex(selectedIndex) ? selectedIndex : isValidIndex(0) ? 0 : -1;
@@ -83,10 +94,11 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
       return;
     }
 
+    const currentTracks = tracksRef.current;
     const savedTrack = window.localStorage.getItem("bgm-track");
-    const savedIndex = tracks && tracks.length > 0 ? tracks.findIndex((track) => track.src === savedTrack) : -1;
+    const savedIndex = currentTracks && currentTracks.length > 0 ? currentTracks.findIndex((track) => track.src === savedTrack) : -1;
 
-    if (tracks && tracks.length > 0) {
+    if (currentTracks && currentTracks.length > 0) {
       if (savedIndex >= 0) {
         setSelectedIndex(savedIndex);
       } else {
@@ -222,8 +234,9 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
     };
 
     const onEnded = () => {
-      if (!tracks || tracks.length === 0) return;
-      setSelectedIndex((prev) => (prev + 1) % tracks.length);
+      const currentTracks = tracksRef.current;
+      if (!currentTracks || currentTracks.length === 0) return;
+      setSelectedIndex((prev) => (prev + 1) % currentTracks.length);
       isPlayingRef.current = true;
       setIsPlaying(true);
     };

@@ -3,7 +3,7 @@ import path from "node:path";
 import { del, list, put } from "@vercel/blob";
 import { GuestPostCategory, normalizeGuestPostCategory } from "@/lib/post-categories";
 import { safeJsonParse } from "@/lib/safe-json";
-import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_GUEST_POSTS_TABLE, SUPABASE_UPLOADS_BUCKET } from "@/lib/env";
+import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_GUEST_POSTS_TABLE, SUPABASE_UPLOADS_BUCKET, BLOB_READ_WRITE_TOKEN } from "@/lib/env";
 
 export type GuestPost = {
   id: number;
@@ -82,7 +82,7 @@ function pickLatestBlobUrl(blobs: Array<{ url: string; uploadedAt?: string | Dat
 }
 
 function hasBlobStorage() {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+  return Boolean(BLOB_READ_WRITE_TOKEN);
 }
 
 function hasSupabaseStorage() {
@@ -440,7 +440,7 @@ async function saveAttachmentFile(file?: File | null): Promise<{ fileUrl: string
     }
   }
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  if (BLOB_READ_WRITE_TOKEN) {
     const blob = await put(`uploads/${uniqueName}`, file, {
       access: "public",
       addRandomSuffix: false,
@@ -490,7 +490,7 @@ async function removeAttachment(fileUrl?: string) {
     return;
   }
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  if (BLOB_READ_WRITE_TOKEN) {
     try {
       await del(fileUrl);
     } catch {
@@ -581,9 +581,8 @@ async function readGuestPostsFromLegacyStorage(): Promise<GuestPost[]> {
 
   await ensureGuestPostsFile();
   const raw = await fs.readFile(resolveGuestPostsFilePath(), "utf-8");
-  return (JSON.parse(raw) as Array<Omit<GuestPost, "category"> & { category?: string }>).map(
-    normalizeGuestPostRecord,
-  );
+  const parsed = safeJsonParse<Array<Omit<GuestPost, "category"> & { category?: string }>>(raw, []);
+  return (parsed ?? []).map(normalizeGuestPostRecord);
 }
 
 async function writeGuestPostsToLegacyStorage(posts: GuestPost[]) {

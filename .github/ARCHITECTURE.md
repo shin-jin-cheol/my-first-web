@@ -10,13 +10,22 @@
 
 ---
 
-## Pages
+## Routes (App Router)
 
-* `/` : 메인 (게시글 목록)
-* `/post/[id]` : 게시글 상세
-* `/write` : 글 작성
-* `/profile` : 사용자 프로필
-* `/chat` : 실시간 채팅
+이 저장소는 Next.js App Router 구조를 따릅니다. 주요 라우트는 다음과 같습니다:
+
+- `/` : 홈 / 최신 글 목록
+- `/posts` : 블로그 목록
+- `/posts/[id]` : 블로그 상세
+- `/posts/new` : 블로그 작성 (Server Action)
+- `/posts/[id]/edit` : 블로그 수정 (Server Action)
+- `/guest` : 게스트 포스트 목록
+- `/guest/[id]` : 게스트 포스트 상세
+- `/guest/new` : 게스트 글 작성 (Server Action)
+- `/guest/[id]/edit` : 게스트 글 수정 (Server Action)
+- `/auth/login` and `/auth/signup` : 인증 플로우
+- `/admin/members` : 관리자 멤버 목록 (owner 전용)
+- `/api/gemini` : 서버사이드 API 프록시
 
 ---
 
@@ -24,9 +33,7 @@
 
 ### Layout
 
-* Navbar
-* Sidebar
-* Footer
+루트 레이아웃은 Server Component로 작성되며 클라이언트 전용 UI는 `app/components/ClientLayout.tsx` 등의 client 래퍼로 감쌉니다. 전역 스타일은 `app/globals.css`에 정의되어 있습니다.
 
 ### Post
 
@@ -40,11 +47,14 @@
 * CommentItem
 * CommentForm
 
-### Chat
+### Comments & Storage
 
-* ChatRoom
-* ChatMessage
-* ChatInput
+댓글과 게시글 저장은 다음 전략을 혼합 사용합니다:
+- Supabase: 선택적(환경변수에 따라 활성화)
+- 로컬 JSON 파일: 레거시/개발용
+- Vercel Blob: 파일 업로드/첨부
+
+저장소 추상화는 `lib/posts.ts` 및 `lib/guest-posts.ts`에서 관리됩니다. 서버 동작은 Server Actions를 통해 수행됩니다.
 
 ---
 
