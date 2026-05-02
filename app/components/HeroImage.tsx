@@ -6,6 +6,7 @@ import { useTheme } from "./ThemeProvider";
 
 export default function HeroImage() {
   const { theme } = useTheme();
+
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("dark");
   const [mounted, setMounted] = useState(false);
 
