@@ -102,8 +102,8 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
       if (savedIndex >= 0) {
         setSelectedIndex(savedIndex);
       } else {
-        // ensure selectedIndex is within bounds (defensive for external mutations)
-        setSelectedIndex((prev) => (prev >= 0 && prev < tracks.length ? prev : 0));
+        // Use tracksRef for consistency with effect lifecycle; tracksRef.current is always in sync with tracks param
+        setSelectedIndex((prev) => (prev >= 0 && prev < (tracksRef.current?.length ?? 0) ? prev : 0));
       }
     }
 
@@ -119,8 +119,10 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
   }, []);
 
   // Keep selectedIndex within bounds when `tracks` changes or when selectedIndex becomes invalid.
+  // Uses tracksRef to maintain consistent dependency tracking without triggering unnecessary re-renders
   useEffect(() => {
-    if (!tracks || tracks.length === 0) {
+    const currentTracks = tracksRef.current;
+    if (!currentTracks || currentTracks.length === 0) {
       // When there are no tracks, normalize selectedIndex to 0 but otherwise do nothing (no-op allowed per requirements).
       if (selectedIndex !== 0) {
         setSelectedIndex(0);
@@ -128,10 +130,10 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
       return;
     }
 
-    if (selectedIndex < 0 || selectedIndex >= tracks.length) {
+    if (selectedIndex < 0 || selectedIndex >= currentTracks.length) {
       setSelectedIndex(0);
     }
-  }, [tracks.length, selectedIndex]);
+  }, [selectedIndex]);
 
   useEffect(() => {
     if (!hasInitializedRef.current) {
