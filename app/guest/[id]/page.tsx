@@ -8,6 +8,8 @@ import {
   getGuestPostById,
   updateGuestCommentById,
 } from "@/lib/guest-posts";
+import { buildDownloadUrl } from "@/lib/download-url";
+import { findCommentById } from "@/lib/comment-utils";
 import { getLocale, t } from "@/lib/i18n";
 import { requireSession } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/post-categories";
@@ -31,9 +33,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   if (!post) {
     redirect("/guest");
   }
-  const fileDownloadUrl = post.fileUrl
-    ? `${post.fileUrl}${post.fileUrl.includes("?") ? "&" : "?"}download=${encodeURIComponent(post.fileName ?? "attachment")}`
-    : undefined;
+  const fileDownloadUrl = post.fileUrl ? buildDownloadUrl(post.fileUrl, post.fileName) : undefined;
 
   const canManage = canManagePost(session, post);
 
@@ -95,7 +95,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
     }
 
     const currentPost = await getGuestPostById(postId);
-    const targetComment = currentPost?.comments?.find((comment) => comment.id === commentId);
+    const targetComment = findCommentById(currentPost?.comments, commentId);
     const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
 
     if (!canManageCommentResult) {
@@ -120,7 +120,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
     }
 
     const currentPost = await getGuestPostById(postId);
-    const targetComment = currentPost?.comments?.find((comment) => comment.id === commentId);
+    const targetComment = findCommentById(currentPost?.comments, commentId);
     const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
 
     if (!canManageCommentResult) {

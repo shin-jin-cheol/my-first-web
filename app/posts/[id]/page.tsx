@@ -9,6 +9,8 @@ import {
   getPostCommentsByPostId,
   updatePostCommentById,
 } from "@/lib/posts";
+import { buildDownloadUrl } from "@/lib/download-url";
+import { findCommentById } from "@/lib/comment-utils";
 import { getSession, requireSession } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/post-categories";
 import { canManagePost, canManageComment } from "@/lib/permissions";
@@ -24,9 +26,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const session = await getSession();
   const comments = await getPostCommentsByPostId(postId);
   const canManagePostResult = canManagePost(session ?? null, post ?? { authorId: undefined });
-  const fileDownloadUrl = post?.fileUrl
-    ? `${post.fileUrl}${post.fileUrl.includes("?") ? "&" : "?"}download=${encodeURIComponent(post.fileName ?? "attachment")}`
-    : undefined;
+  const fileDownloadUrl = post?.fileUrl ? buildDownloadUrl(post.fileUrl, post.fileName) : undefined;
 
   async function deletePostAction() {
     "use server";
@@ -86,7 +86,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     }
 
     const currentComments = await getPostCommentsByPostId(postId);
-    const targetComment = currentComments.find((comment) => comment.id === commentId);
+    const targetComment = findCommentById(currentComments, commentId);
     const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
 
     if (!canManageCommentResult) {
@@ -110,7 +110,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     }
 
     const currentComments = await getPostCommentsByPostId(postId);
-    const targetComment = currentComments.find((comment) => comment.id === commentId);
+    const targetComment = findCommentById(currentComments, commentId);
     const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
 
     if (!canManageCommentResult) {
