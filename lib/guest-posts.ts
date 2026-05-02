@@ -4,6 +4,8 @@ import { del, list, put } from "@vercel/blob";
 import { GuestPostCategory, normalizeGuestPostCategory } from "@/lib/post-categories";
 import { safeJsonParse } from "@/lib/safe-json";
 import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_GUEST_POSTS_TABLE, SUPABASE_UPLOADS_BUCKET, BLOB_READ_WRITE_TOKEN } from "@/lib/env";
+import { getKstDateString, getKstDateTimeString } from "@/lib/date";
+import { requestSupabaseHttp } from "@/lib/supabase/http";
 
 export type GuestPost = {
   id: number;
@@ -121,40 +123,13 @@ async function requestSupabase<T>(
   body?: unknown,
   prefer?: string,
 ): Promise<{ ok: boolean; status: number; data: T | null }> {
-  if (!SUPABASE_SERVICE_ROLE_KEY) {
-    console.error("requestSupabase: SUPABASE_SERVICE_ROLE_KEY is not set");
-    return { ok: false, status: 500, data: null };
-  }
-
-  const headers: Record<string, string> = {
-    apikey: SUPABASE_SERVICE_ROLE_KEY,
-    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-    "Content-Type": "application/json",
-  };
-
-  if (prefer) {
-    headers.Prefer = prefer;
-  }
-
-  const response = await fetch(getSupabaseGuestPostsEndpoint(query), {
+  // Use common HTTP wrapper with parseMode=text for safeJsonParse
+  return requestSupabaseHttp<T>(getSupabaseGuestPostsEndpoint(query), {
     method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-    cache: "no-store",
+    body,
+    prefer,
+    parseMode: "text",
   });
-
-  if (!response.ok) {
-    console.error(`requestSupabase(${query}): response not ok ${response.status} ${response.statusText}`);
-    return { ok: false, status: response.status, data: null };
-  }
-
-  if (response.status === 204) {
-    return { ok: true, status: response.status, data: null };
-  }
-
-  const raw = await response.text();
-  const data = raw.trim() ? safeJsonParse<T>(raw, null) : null;
-  return { ok: true, status: response.status, data };
 }
 
 function mapSupabaseRowToGuestPost(row: SupabaseGuestPostRow | SupabaseLegacyGuestPostRow): GuestPost {
@@ -292,26 +267,6 @@ function resolveGuestPostsFilePath() {
   return GUEST_POSTS_FILE_LOCAL;
 }
 
-function getKstDateString() {
-  return new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "Asia/Seoul",
-  }).format(new Date());
-}
-
-function getKstDateTimeString() {
-  return new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  })
-    .format(new Date())
-    .replace(",", "");
-}
 
 function sanitizeFileName(fileName: string) {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, "-");

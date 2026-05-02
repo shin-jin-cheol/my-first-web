@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { list, put } from "@vercel/blob";
 import { safeJsonParse } from "@/lib/safe-json";
 import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_AUTH_PUBLIC_KEY, SUPABASE_MEMBERS_TABLE, BLOB_READ_WRITE_TOKEN } from "@/lib/env";
+import { requestSupabaseHttp } from "@/lib/supabase/http";
 
 export type UserRole = "owner" | "member";
 
@@ -190,45 +191,20 @@ function normalizeMemberRecord(input: Partial<MemberRecord> & { id: string }): M
   };
 }
 
+// requestSupabaseMembers: centralized to lib/supabase/http.ts
 async function requestSupabaseMembers<T>(
   method: "GET" | "POST" | "PATCH" | "DELETE",
   query: string,
   body?: unknown,
   prefer?: string,
 ): Promise<{ ok: boolean; status: number; data: T | null }> {
-  if (!SUPABASE_SERVICE_ROLE_KEY) {
-    console.error("requestSupabaseMembers: SUPABASE_SERVICE_ROLE_KEY is not set");
-    return { ok: false, status: 500, data: null };
-  }
-
-  const headers: Record<string, string> = {
-    apikey: SUPABASE_SERVICE_ROLE_KEY,
-    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-    "Content-Type": "application/json",
-  };
-
-  if (prefer) {
-    headers.Prefer = prefer;
-  }
-
-  const response = await fetch(getSupabaseMembersEndpoint(query), {
+  // Use common HTTP wrapper with parseMode="json" for backward compatibility
+  return requestSupabaseHttp<T>(getSupabaseMembersEndpoint(query), {
     method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-    cache: "no-store",
+    body,
+    prefer,
+    parseMode: "json",
   });
-
-  if (!response.ok) {
-    console.error(`requestSupabaseMembers(${query}): response not ok ${response.status} ${response.statusText}`);
-    return { ok: false, status: response.status, data: null };
-  }
-
-  if (response.status === 204) {
-    return { ok: true, status: response.status, data: null };
-  }
-
-  const data = (await response.json()) as T;
-  return { ok: true, status: response.status, data };
 }
 
 async function requestSupabaseAuth<T>(

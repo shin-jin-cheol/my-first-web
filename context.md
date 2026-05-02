@@ -18,3 +18,4 @@
 
 - 일부 문서(예: .github/ARCHITECTURE.md)는 이전 Pages Router 기반의 설명이 포함되어 있었으나 현재 App Router 구조로 갱신되었습니다.
 - 런타임 동작은 변경하지 않았으나, 로컬/레거시 경로에는 아직 직접적인 JSON.parse나 env 접근이 남아 있어 안전 처리 및 중앙화가 일부 파일에 적용되었습니다.
+또한 `app/api/gemini/route.ts`의 LLM API 관련 환경변수(`PA_LM_API_URL`, `PA_LM_API_KEY`)를 `lib/env.ts`로 중앙화했습니다.

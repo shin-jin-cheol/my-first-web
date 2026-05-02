@@ -11,6 +11,8 @@ import {
   SUPABASE_UPLOADS_BUCKET,
   BLOB_READ_WRITE_TOKEN,
 } from "@/lib/env";
+import { getKstDateString, getKstDateTimeString } from "@/lib/date";
+import { requestSupabaseHttp } from "@/lib/supabase/http";
 
 export type Post = {
   id: number;
@@ -165,40 +167,13 @@ async function requestSupabase<T>(
   body?: unknown,
   prefer?: string,
 ): Promise<{ ok: boolean; status: number; data: T | null }> {
-  if (!SUPABASE_SERVICE_ROLE_KEY) {
-    console.error("requestSupabase: SUPABASE_SERVICE_ROLE_KEY is not set");
-    return { ok: false, status: 500, data: null };
-  }
-
-  const headers: Record<string, string> = {
-    apikey: SUPABASE_SERVICE_ROLE_KEY,
-    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-    "Content-Type": "application/json",
-  };
-
-  if (prefer) {
-    headers.Prefer = prefer;
-  }
-
-  const response = await fetch(getSupabasePostsEndpoint(query), {
+  // Use common HTTP wrapper with parseMode=text for safeJsonParse
+  return requestSupabaseHttp<T>(getSupabasePostsEndpoint(query), {
     method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-    cache: "no-store",
+    body,
+    prefer,
+    parseMode: "text",
   });
-
-  if (!response.ok) {
-    console.error(`requestSupabase(${query}): response not ok ${response.status} ${response.statusText}`);
-    return { ok: false, status: response.status, data: null };
-  }
-
-  if (response.status === 204) {
-    return { ok: true, status: response.status, data: null };
-  }
-
-  const raw = await response.text();
-  const data = raw.trim() ? safeJsonParse<T>(raw, null) : null;
-  return { ok: true, status: response.status, data };
 }
 
 async function requestSupabasePostComments<T>(
@@ -207,55 +182,15 @@ async function requestSupabasePostComments<T>(
   body?: unknown,
   prefer?: string,
 ): Promise<{ ok: boolean; status: number; data: T | null }> {
-  if (!SUPABASE_SERVICE_ROLE_KEY) {
-    return { ok: false, status: 500, data: null };
-  }
-
-  const headers: Record<string, string> = {
-    apikey: SUPABASE_SERVICE_ROLE_KEY,
-    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-    "Content-Type": "application/json",
-  };
-
-  if (prefer) {
-    headers.Prefer = prefer;
-  }
-
-  const response = await fetch(getSupabasePostCommentsEndpoint(query), {
+  // Use common HTTP wrapper with parseMode=text for safeJsonParse
+  return requestSupabaseHttp<T>(getSupabasePostCommentsEndpoint(query), {
     method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-    cache: "no-store",
+    body,
+    prefer,
+    parseMode: "text",
   });
-
-  if (!response.ok) {
-    console.error(`requestSupabasePostComments(${query}): response not ok ${response.status} ${response.statusText}`);
-    return { ok: false, status: response.status, data: null };
-  }
-
-  if (response.status === 204) {
-    return { ok: true, status: response.status, data: null };
-  }
-
-  const raw = await response.text();
-  const data = raw.trim() ? safeJsonParse<T>(raw, null) : null;
-  return { ok: true, status: response.status, data };
 }
 
-function getKstDateTimeString() {
-  return new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "Asia/Seoul",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  })
-    .format(new Date())
-    .replace(",", "");
-}
 
 function mapSupabaseRowToPost(row: SupabasePostRow | SupabaseLegacyPostRow): Post {
   return {
@@ -606,11 +541,7 @@ function normalizeLinkUrl(input?: string): string | undefined {
   return `https://${trimmed}`;
 }
 
-function getKstDateString() {
-  return new Intl.DateTimeFormat("sv-SE", {
-    timeZone: "Asia/Seoul",
-  }).format(new Date());
-}
+// date formatting is centralized in lib/date.ts
 
 function mapSupabaseRowToPostComment(row: SupabasePostCommentRow): PostComment {
   return {

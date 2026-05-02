@@ -1,10 +1,11 @@
 import { NextRequest } from 'next/server'
+import { PA_LM_API_URL, PA_LM_API_KEY } from '@/lib/env'
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const apiUrl = process.env.PA_LM_API_URL
-    const apiKey = process.env.PA_LM_API_KEY
+    const apiUrl = PA_LM_API_URL
+    const apiKey = PA_LM_API_KEY
 
     if (!apiUrl || !apiKey) {
       return new Response(JSON.stringify({ error: 'Missing PA_LM_API_URL or PA_LM_API_KEY env vars' }), {

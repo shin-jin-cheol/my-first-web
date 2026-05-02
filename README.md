@@ -151,6 +151,15 @@ my-first-web/
 	# 또는 브라우저용 키가 필요한 경우
 	NEXT_PUBLIC_SUPABASE_ANON_KEY=<publishable-key>
 	```
+
+### 선택사항: LLM API 프록시 (app/api/gemini)
+
+이 프로젝트는 내부 서버사이드 프록시로 LLM 호출을 수행합니다. 다음 환경변수를 설정하면 외부 LLM 엔드포인트로 요청을 포워딩합니다 (선택사항):
+
+```
+PA_LM_API_URL=https://api.example.com/v1/generate
+PA_LM_API_KEY=<your-lm-api-key>
+```
 3. 블로그 콘텐츠: [docs/supabase-content.sql](docs/supabase-content.sql)
 4. 게시판 데이터: [docs/supabase-board-stability.sql](docs/supabase-board-stability.sql)
 

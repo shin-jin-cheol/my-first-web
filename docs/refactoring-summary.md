@@ -99,6 +99,7 @@ export const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 - `lib/auth.ts`
 - `lib/posts.ts`
 - `lib/guest-posts.ts`
+ - `app/api/gemini/route.ts` (PA_LM_API_URL, PA_LM_API_KEY 중앙화)
 
 **영향**: 🟢 기능 동일 (변수명/기본값 보존)
 
