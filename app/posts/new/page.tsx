@@ -2,6 +2,7 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
+import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
 import { addPost } from "@/lib/posts";
 import { isRedirectError } from "@/lib/redirect-error";
@@ -71,7 +72,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
   }
 
   const params = await searchParams;
-  const errorMessage = params.error ? decodeURIComponent(params.error) : "";
+  const errorMessage = params.error ? safeDecodeURIComponent(params.error) : "";
 
   return (
     <section className="space-y-8">

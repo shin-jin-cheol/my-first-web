@@ -48,7 +48,11 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
       redirect(`/guest/${postId}`);
     }
 
-    await deleteGuestPostById(postId);
+    const deleted = await deleteGuestPostById(postId);
+    if (!deleted) {
+      redirect(`/guest/${postId}?error=${encodeURIComponent("방명록 삭제에 실패했습니다.")}`);
+    }
+
     revalidatePath("/guest", "page");
     revalidatePath("/posts", "page");
     redirect(`/guest?deleted=${Date.now()}`);

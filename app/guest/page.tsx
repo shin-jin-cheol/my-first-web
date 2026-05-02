@@ -5,6 +5,7 @@ import { deleteGuestPostById, getGuestPosts } from "@/lib/guest-posts";
 import { getMemberSummaries, requireSession } from "@/lib/auth";
 import { getCategoryLabel, GUEST_POST_CATEGORIES } from "@/lib/post-categories";
 import { getLocale, t } from "@/lib/i18n";
+import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import GuestPostsSearchList from "@/app/components/GuestPostsSearchList";
 
 type GuestBoardPageProps = {
@@ -17,7 +18,7 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
   const guestBoardPosts = await getGuestPosts();
   const members = await getMemberSummaries();
   const params = await searchParams;
-  const errorMessage = params.error ? decodeURIComponent(params.error) : "";
+  const errorMessage = params.error ? safeDecodeURIComponent(params.error) : "";
   const memberNameById = new Map(members.map((member) => [member.id, member.name.trim()]));
 
   const posts = guestBoardPosts.map((post) => ({

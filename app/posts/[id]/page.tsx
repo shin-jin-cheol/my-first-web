@@ -40,7 +40,11 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
       redirect(`/posts/${postId}`);
     }
 
-    await deletePostById(postId);
+    const deleted = await deletePostById(postId);
+    if (!deleted) {
+      redirect(`/posts/${postId}?error=${encodeURIComponent("게시글 삭제에 실패했습니다.")}`);
+    }
+
     revalidatePath("/", "page");
     revalidatePath("/posts", "page");
     redirect(`/posts?deleted=${Date.now()}`);

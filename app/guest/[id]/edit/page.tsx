@@ -6,6 +6,7 @@ import { requireSession } from "@/lib/auth";
 import { getCategoryLabel, GUEST_POST_CATEGORIES } from "@/lib/post-categories";
 import { getLocale, t } from "@/lib/i18n";
 import { canManagePost } from "@/lib/permissions";
+import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import { normalizeCategory } from "@/lib/utils";
 
 type EditGuestPostPageProps = {
@@ -18,7 +19,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
   const session = await requireSession();
   const { id } = await params;
   const query = await searchParams;
-  const errorMessage = query.error ? decodeURIComponent(query.error) : "";
+  const errorMessage = query.error ? safeDecodeURIComponent(query.error) : "";
   const postId = Number(id);
 
   if (!Number.isFinite(postId) || postId <= 0) {

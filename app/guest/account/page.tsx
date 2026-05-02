@@ -9,6 +9,7 @@ import {
   updateMemberProfile,
 } from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
+import { safeDecodeURIComponent } from "@/lib/safe-decode";
 
 type GuestAccountPageProps = {
   searchParams: Promise<{ error?: string; success?: string }>;
@@ -23,7 +24,7 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
   }
 
   const params = await searchParams;
-  const errorMessage = params.error ? decodeURIComponent(params.error) : "";
+  const errorMessage = params.error ? safeDecodeURIComponent(params.error) : "";
   const successMessage =
     params.success === "profile"
       ? t(locale, "회원정보가 수정되었습니다.", "Member profile updated successfully.")

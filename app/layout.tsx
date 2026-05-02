@@ -13,6 +13,28 @@ import { cn } from "@/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
+function getSafeRedirectPath(referer: string | null, requestHeaders: Headers) {
+  if (!referer) {
+    return "/";
+  }
+
+  const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host");
+  if (!host) {
+    return "/";
+  }
+
+  const protocol = requestHeaders.get("x-forwarded-proto") ?? "https";
+
+  try {
+    const refererUrl = new URL(referer);
+    const currentOrigin = `${protocol}://${host}`;
+
+    return refererUrl.origin === currentOrigin ? referer : "/";
+  } catch {
+    return "/";
+  }
+}
+
 export const metadata: Metadata = {
   title: "공인재 신진철의 생존일기",
   description: "공인재 신진철의 생존일기 소개 페이지",
@@ -40,6 +62,7 @@ export default async function RootLayout({
     "use server";
 
     const nextLang = String(formData.get("lang") ?? "ko");
+    const requestHeaders = await headers();
     const store = await (await import("next/headers")).cookies();
     store.set("lang", nextLang === "en" ? "en" : "ko", {
       path: "/",
@@ -47,8 +70,8 @@ export default async function RootLayout({
       secure: process.env.NODE_ENV === "production",
     });
 
-    const referer = (await headers()).get("referer") ?? "/";
-    redirect(referer);
+    const referer = requestHeaders.get("referer");
+    redirect(getSafeRedirectPath(referer, requestHeaders));
   }
 
   return (

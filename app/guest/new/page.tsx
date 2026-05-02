@@ -5,6 +5,7 @@ import { addGuestPost } from "@/lib/guest-posts";
 import { getMemberProfile, requireSession } from "@/lib/auth";
 import { GUEST_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
 import { isRedirectError } from "@/lib/redirect-error";
+import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import { normalizeCategory, normalizeAttachment } from "@/lib/utils";
 
 
@@ -67,7 +68,7 @@ export default async function NewGuestPostPage({ searchParams }: NewGuestPostPag
   }
 
   const params = await searchParams;
-  const errorMessage = params.error ? decodeURIComponent(params.error) : "";
+  const errorMessage = params.error ? safeDecodeURIComponent(params.error) : "";
 
   return (
     <section className="space-y-8">
