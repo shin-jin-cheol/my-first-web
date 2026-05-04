@@ -101,7 +101,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
             id="category"
             name="category"
             defaultValue={post.category}
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
           >
             {GUEST_POST_CATEGORIES.map((category) => (
               <option key={category} value={category}>
@@ -120,7 +120,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
             name="title"
             type="text"
             defaultValue={post.title}
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
           />
         </div>
 
@@ -134,7 +134,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
             required
             rows={10}
             defaultValue={post.content}
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-sub px-4 py-3 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-3 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
           />
         </div>
 
@@ -147,7 +147,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
           </button>
           <Link
             href="/guest"
-            className="rounded-full border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-strong px-4 py-2 text-sm font-medium text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-muted"
+            className="rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-medium text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
           >
             {t(locale, "취소", "Cancel")}
           </Link>

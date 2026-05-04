@@ -163,7 +163,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
           href={post.linkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-accent-border bg-gradient-to-r from-surface-sub via-surface-strong to-surface-muted dark:from-surface dark:via-surface-sub dark:to-[#2b6661] px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base"
+          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-accent-border bg-gradient-to-r from-surface-sub via-surface-muted to-surface-strong dark:from-surface dark:via-surface-sub dark:to-[#2b6661] px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base"
         >
           {t(locale, "링크 열기", "Open Link")}
         </a>
@@ -180,7 +180,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
         </a>
       ) : null}
 
-      <section className="space-y-4 rounded-2xl border border-border-base dark:border-border-base/80 bg-surface-strong/70 dark:bg-surface-sub/40 p-5">
+      <section className="space-y-4 rounded-2xl border border-border-base dark:border-border-sub/80 bg-surface-strong/70 dark:bg-surface/40 p-5">
         <h2 className="text-lg font-bold text-text-sub dark:text-text-base">{t(locale, "댓글", "Comments")}</h2>
 
         <form action={addCommentAction} className="space-y-3">
@@ -191,7 +191,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
             maxLength={500}
             rows={4}
             placeholder={t(locale, "댓글을 입력해 주세요.", "Write a comment")}
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border placeholder:text-text-muted focus:ring"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border placeholder:text-text-muted focus:ring"
           />
           <button
             type="submit"
@@ -204,12 +204,12 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
         {post.comments && post.comments.length > 0 ? (
           <ul className="space-y-3">
             {post.comments.map((comment) => (
-              <li key={comment.id} className="rounded-xl border border-border-base dark:border-border-base bg-surface-sub/90 dark:bg-surface-strong/80 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-text-muted dark:text-text-subtle">
-                  <p className="font-semibold text-text-sub dark:text-text-sub">{comment.authorName}</p>
+                <li key={comment.id} className="rounded-xl border border-border-base dark:border-border-base bg-surface-sub/90 dark:bg-surface-strong/80 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-text-muted dark:text-text-subtle">
+                    <p className="font-semibold text-text-sub dark:text-text-sub">{comment.authorName}</p>
                   <p>{comment.dateTime}</p>
                 </div>
-                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-text-sub dark:text-text-muted">{comment.content}</p>
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-text-sub dark:text-text-muted">{comment.content}</p>
 
                 {canManageComment(session, comment) ? (
                   <div className="mt-3 space-y-2">
@@ -222,7 +222,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
                         minLength={1}
                         maxLength={500}
                         rows={3}
-                        className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border focus:ring"
+                        className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border focus:ring"
                       />
                       <button
                         type="submit"
@@ -254,7 +254,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
       <div className="flex items-center gap-3">
         <Link
           href="/guest"
-          className="inline-flex rounded-full border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-strong px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-muted"
+          className="inline-flex rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
         >
           {t(locale, "목록으로 돌아가기", "Back to List")}
         </Link>
@@ -270,7 +270,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
           <form action={deleteGuestPostAction}>
             <button
               type="submit"
-                  className="inline-flex rounded-full border border-danger-border bg-danger-soft px-4 py-2 text-sm font-semibold text-danger-sub"
+              className="inline-flex rounded-full border border-danger-border bg-danger-soft px-4 py-2 text-sm font-semibold text-danger-sub"
             >
               {t(locale, "삭제하기", "Delete")}
             </button>

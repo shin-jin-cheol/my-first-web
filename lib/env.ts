@@ -12,11 +12,6 @@ export const SUPABASE_GUEST_POSTS_TABLE = process.env.SUPABASE_GUEST_POSTS_TABLE
 export const SUPABASE_POST_COMMENTS_TABLE = process.env.SUPABASE_POST_COMMENTS_TABLE || "post_comments";
 export const SUPABASE_UPLOADS_BUCKET = process.env.SUPABASE_UPLOADS_BUCKET || "uploads";
 
-export const OWNER_ID = process.env.OWNER_ID || "sjc5001";
-export const OWNER_PASSWORD = process.env.OWNER_PASSWORD || "sjc5001*";
-export const OWNER_NAME = process.env.OWNER_NAME || "신진철";
-export const SESSION_SECRET = process.env.SESSION_SECRET || "";
-
 export const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 export const PA_LM_API_URL = process.env.PA_LM_API_URL;
 export const PA_LM_API_KEY = process.env.PA_LM_API_KEY;

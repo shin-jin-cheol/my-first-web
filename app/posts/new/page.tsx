@@ -103,7 +103,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             id="category"
             name="category"
             defaultValue="study"
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           >
             {BLOG_POST_CATEGORIES.map((category) => (
               <option key={category} value={category}>
@@ -122,7 +122,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             name="title"
             type="text"
             placeholder="제목을 입력해 주세요."
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
@@ -136,7 +136,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             type="text"
             required
             placeholder="작성자 이름"
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
@@ -150,7 +150,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             required
             rows={10}
             placeholder="글 내용을 입력해 주세요."
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-3 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-3 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
@@ -165,7 +165,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             inputMode="url"
             autoComplete="url"
             placeholder="https://example.com"
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
@@ -177,7 +177,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             id="attachment"
             name="attachment"
             type="file"
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-sm text-text-sub dark:text-text-base file:mr-4 file:rounded-full file:border-0 file:bg-surface-strong dark:file:bg-surface-strong file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-text-sub dark:file:text-text-base hover:file:bg-surface-muted dark:hover:file:bg-surface-muted"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-sm text-text-sub dark:text-text-base file:mr-4 file:rounded-full file:border-0 file:bg-surface-strong dark:file:bg-surface-sub file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-text-sub dark:file:text-text-base hover:file:bg-surface-muted dark:hover:file:bg-surface-muted"
           />
         </div>
 
@@ -190,7 +190,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
           </button>
           <Link
             href="/posts"
-            className="rounded-full border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-medium text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
+            className="rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-medium text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
           >
             취소
           </Link>

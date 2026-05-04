@@ -108,7 +108,7 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
       ) : null}
 
       {successMessage ? (
-        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">{successMessage}</p>
+        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-accent-sub dark:shadow-none">{successMessage}</p>
       ) : null}
 
       <form action={updateProfileAction} className="space-y-4 rounded-2xl border border-border-base dark:border-border-base bg-surface dark:bg-surface-strong p-6">
@@ -129,10 +129,10 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
             name="name"
             defaultValue={profile?.name ?? ""}
             required
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
           />
         </div>
-        <button type="submit" className="rounded-full border border-accent-border bg-accent-soft px-4 py-2 text-sm font-semibold text-[#2f8f88] shadow-[0_0_14px_rgba(129,216,208,0.3)] transition hover:shadow-[0_0_18px_rgba(129,216,208,0.45)] dark:border-accent-border dark:text-cyan-200 dark:shadow-none">
+        <button type="submit" className="rounded-full border border-accent-border bg-accent-soft px-4 py-2 text-sm font-semibold text-[#2f8f88] shadow-[0_0_14px_rgba(129,216,208,0.3)] transition hover:shadow-[0_0_18px_rgba(129,216,208,0.45)] dark:border-accent-border dark:text-accent-sub dark:shadow-none">
           {t(locale, "회원정보 저장", "Save Profile")}
         </button>
       </form>
@@ -146,7 +146,7 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
             name="currentPassword"
             type="password"
             required
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
           />
         </div>
         <div className="space-y-2">
@@ -156,10 +156,10 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
             name="newPassword"
             type="password"
             required
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
           />
         </div>
-        <button type="submit" className="rounded-full border border-accent-border bg-accent-soft px-4 py-2 text-sm font-semibold text-[#2f8f88] shadow-[0_0_14px_rgba(129,216,208,0.3)] transition hover:shadow-[0_0_18px_rgba(129,216,208,0.45)] dark:border-accent-border dark:text-cyan-200 dark:shadow-none">
+        <button type="submit" className="rounded-full border border-accent-border bg-accent-soft px-4 py-2 text-sm font-semibold text-[#2f8f88] shadow-[0_0_14px_rgba(129,216,208,0.3)] transition hover:shadow-[0_0_18px_rgba(129,216,208,0.45)] dark:border-accent-border dark:text-accent-sub dark:shadow-none">
           {t(locale, "비밀번호 변경", "Change Password")}
         </button>
       </form>
@@ -176,15 +176,15 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
             className="w-full rounded-xl border border-danger-border bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none"
           />
         </div>
-        <p className="text-sm text-red-700 dark:text-red-200">
+        <p className="text-sm text-danger-sub dark:text-danger-sub">
           {t(locale, "탈퇴 후에는 계정을 복구할 수 없습니다. 신중하게 진행해 주세요.", "Your account cannot be restored after deletion. Please proceed carefully.")}
         </p>
-        <button type="submit" className="rounded-full border border-red-500/70 bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-700 transition hover:bg-red-500/30 dark:border-red-400/70 dark:bg-red-500/30 dark:text-red-100">
+        <button type="submit" className="rounded-full border border-danger-border bg-danger-soft px-4 py-2 text-sm font-semibold text-danger-sub transition hover:bg-danger-soft dark:border-danger-border dark:bg-danger-soft dark:text-danger-sub">
           {t(locale, "회원 탈퇴하기", "Delete Account")}
         </button>
       </form>
 
-      <Link href="/guest" className="inline-flex rounded-full border border-border-base dark:border-zinc-500 bg-surface-strong dark:bg-zinc-700 px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-zinc-600">
+      <Link href="/guest" className="inline-flex rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong">
         {t(locale, "게스트 게시판으로 돌아가기", "Back to Guest Board")}
       </Link>
     </section>

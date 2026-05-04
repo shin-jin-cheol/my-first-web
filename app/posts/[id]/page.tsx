@@ -22,11 +22,6 @@ type PostDetailPageProps = {
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const { id } = await params;
   const postId = Number(id);
-
-  if (!Number.isFinite(postId) || postId <= 0) {
-    redirect("/posts");
-  }
-
   const post = await getPostById(postId);
   const session = await getSession();
   const comments = await getPostCommentsByPostId(postId);
@@ -139,7 +134,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         <p className="text-text-muted dark:text-text-muted">게시글을 찾을 수 없습니다.</p>
         <Link
           href="/posts"
-          className="inline-flex rounded-full border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-strong px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-muted"
+          className="inline-flex rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
         >
           목록으로 돌아가기
         </Link>
@@ -172,7 +167,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           href={post.linkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-accent-border bg-gradient-to-r from-surface-sub via-surface-strong to-surface-muted dark:from-surface dark:via-surface-sub dark:to-[#2b6661] px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_20px_rgba(129,216,208,0.35)] transition hover:-translate-y-0.5 hover:brightness-110"
+          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-accent-border bg-gradient-to-r from-surface-sub via-surface-muted to-surface-strong dark:from-surface dark:via-surface-sub dark:to-[#2b6661] px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_20px_rgba(129,216,208,0.35)] transition hover:-translate-y-0.5 hover:brightness-110"
         >
           <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-accent-sub shadow-[0_0_10px_rgba(129,216,208,0.8)]" />
           링크 열기
@@ -186,7 +181,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-border-base/60 bg-surface-strong dark:bg-highlight-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_14px_rgba(129,216,208,0.25)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-surface-muted dark:hover:bg-highlight-soft"
         >
-          <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-surface-strong" />
+          <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-text-sub shadow-[0_0_10px_rgba(129,216,208,0.8)]" />
           {post.fileName ?? "파일 열기"}
         </a>
       ) : null}
@@ -202,7 +197,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
             maxLength={500}
             rows={4}
             placeholder="댓글을 입력해 주세요."
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border placeholder:text-text-muted focus:ring"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border placeholder:text-text-muted focus:ring"
           />
           <button
             type="submit"
@@ -236,7 +231,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
                           minLength={1}
                           maxLength={500}
                           rows={3}
-                          className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border focus:ring"
+                          className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border focus:ring"
                         />
                         <button
                           type="submit"
@@ -269,7 +264,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
       <div className="flex items-center gap-3">
         <Link
           href="/posts"
-          className="inline-flex rounded-full border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-strong px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-muted"
+          className="inline-flex rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
         >
           목록으로 돌아가기
         </Link>

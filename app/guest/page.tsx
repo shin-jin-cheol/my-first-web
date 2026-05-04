@@ -89,7 +89,7 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
       ) : null}
 
       {session.role === "owner" ? (
-        <p className="rounded-xl border border-cyan-600/40 bg-accent-soft px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">
+        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-accent-sub dark:shadow-none">
           {t(
             locale,
             "주인 계정으로 로그인 중입니다. 회원이 작성한 게스트 게시글을 관리할 수 있습니다.",

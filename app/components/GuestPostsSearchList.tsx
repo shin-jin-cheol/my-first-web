@@ -64,7 +64,7 @@ export default function GuestPostsSearchList({
               className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
                 active
                   ? "border-[#74cfc6] bg-[#81d8d0] text-text-base shadow-[0_0_18px_rgba(129,216,208,0.4)]"
-                  : "border-border-base bg-surface-strong text-text-sub hover:bg-surface-muted dark:border-border-base dark:bg-surface-sub dark:text-text-sub dark:hover:bg-surface-strong"
+                  : "border-border-base bg-surface-strong text-text-sub hover:bg-surface-muted dark:border-border-sub dark:bg-surface-sub dark:text-text-sub dark:hover:bg-surface-strong"
               }`}
             >
               {option.label}
@@ -79,7 +79,7 @@ export default function GuestPostsSearchList({
         filteredPosts.map((post) => (
           <article
             key={String(post.id)}
-            className="space-y-3 rounded-2xl border border-border-base bg-surface-muted p-5 transition hover:bg-surface-strong dark:border-border-base dark:bg-surface-sub dark:hover:bg-surface-strong"
+            className="space-y-3 rounded-2xl border border-border-strong bg-surface-muted p-5 transition hover:bg-surface-strong dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong"
           >
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-accent-sub">
@@ -107,7 +107,7 @@ export default function GuestPostsSearchList({
                 {post.editHref ? (
                   <Link
                     href={post.editHref}
-                    className="rounded-full border border-border-base bg-surface-strong px-4 py-1.5 text-sm font-semibold text-text-base hover:bg-surface-muted dark:border-accent-border-sub dark:bg-accent-soft dark:text-accent-sub dark:hover:bg-accent-soft"
+                    className="rounded-full border border-border-sub bg-surface-muted px-4 py-1.5 text-sm font-semibold text-text-base hover:bg-surface-strong dark:border-accent-border dark:bg-accent-soft dark:text-accent-sub dark:hover:bg-accent-soft"
                   >
                     {labels.edit}
                   </Link>
@@ -117,7 +117,7 @@ export default function GuestPostsSearchList({
                     <input type="hidden" name="postId" value={post.postId} />
                     <button
                       type="submit"
-                      className="rounded-full border border-border-base bg-surface-strong px-4 py-1.5 text-sm font-semibold text-text-base hover:bg-surface-muted dark:border-danger-border dark:bg-danger-soft dark:text-danger-sub dark:hover:bg-danger-soft"
+                      className="rounded-full border border-border-sub bg-surface-muted px-4 py-1.5 text-sm font-semibold text-text-base hover:bg-surface-strong dark:border-danger-border dark:bg-danger-soft dark:text-danger-sub dark:hover:bg-danger-soft"
                     >
                       {labels.delete}
                     </button>

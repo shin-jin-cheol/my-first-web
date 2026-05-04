@@ -138,7 +138,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
       ) : null}
 
       {showSentMessage ? (
-        <div className="rounded-xl border border-accent-border bg-accent-soft px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">
+        <div className="rounded-xl border border-accent-border bg-accent-soft px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-accent-sub dark:shadow-none">
           <p>
             {t(
               locale,
@@ -167,7 +167,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             required
             readOnly={showSentMessage}
             defaultValue={params.name ?? ""}
-            className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] read-only:bg-surface-strong read-only:text-text-muted dark:border-border-base dark:bg-surface-sub dark:text-text-base dark:read-only:bg-surface-strong dark:read-only:text-text-subtle"
+            className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] read-only:bg-surface-muted read-only:text-text-muted dark:border-border-sub dark:bg-surface-sub dark:text-text-base dark:read-only:bg-surface-strong dark:read-only:text-text-muted"
           />
         </div>
 
@@ -181,7 +181,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             required
             readOnly={showSentMessage}
             defaultValue={params.id ?? ""}
-            className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] read-only:bg-surface-strong read-only:text-text-muted dark:border-border-base dark:bg-surface-sub dark:text-text-base dark:read-only:bg-surface-strong dark:read-only:text-text-subtle"
+            className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] read-only:bg-surface-muted read-only:text-text-muted dark:border-border-sub dark:bg-surface-sub dark:text-text-base dark:read-only:bg-surface-strong dark:read-only:text-text-muted"
           />
         </div>
 
@@ -197,7 +197,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
               required
               readOnly={showSentMessage}
               defaultValue={params.email ?? ""}
-              className="min-w-0 flex-1 rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] read-only:bg-surface-strong read-only:text-text-muted dark:border-border-base dark:bg-surface-sub dark:text-text-base dark:read-only:bg-surface-strong dark:read-only:text-text-subtle"
+              className="min-w-0 flex-1 rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] read-only:bg-surface-muted read-only:text-text-muted dark:border-border-sub dark:bg-surface-sub dark:text-text-base dark:read-only:bg-surface-strong dark:read-only:text-text-muted"
             />
             <SendCodeButton
               idleLabel={t(
@@ -238,7 +238,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
                 pattern="\d{6,8}"
                 placeholder={t(locale, "인증 코드 숫자", "Verification code")}
                 required
-                className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] dark:border-border-base dark:bg-surface-sub dark:text-text-base"
+                className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] dark:border-border-sub dark:bg-surface-sub dark:text-text-base"
               />
               <p className="text-xs text-text-muted dark:text-text-muted">
                 {t(

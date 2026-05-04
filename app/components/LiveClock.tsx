@@ -39,7 +39,7 @@ export default function LiveClock({ className = "" }: LiveClockProps) {
   const label = useMemo(() => (now ? formatNow(now) : "---- --:--:--"), [now]);
 
   return (
-    <div className={`rounded-xl border border-zinc-300 bg-zinc-200/85 px-3 py-2 text-xs font-semibold tracking-wide text-zinc-700 backdrop-blur-md dark:border-cyan-400/40 dark:bg-zinc-900/65 dark:text-cyan-100 ${className}`}>
+    <div className={`rounded-xl border border-border-base bg-surface-strong/85 px-3 py-2 text-xs font-semibold tracking-wide text-text-sub backdrop-blur-md dark:border-accent-border dark:bg-surface-sub/65 dark:text-accent-sub ${className}`}>
       {label}
     </div>
   );
