@@ -136,10 +136,10 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     return (
       <div className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_22px_rgba(129,216,208,0.12)]">
         <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">게시글 상세</h1>
-        <p className="text-text-muted dark:text-zinc-300">게시글을 찾을 수 없습니다.</p>
+        <p className="text-text-muted dark:text-text-muted">게시글을 찾을 수 없습니다.</p>
         <Link
           href="/posts"
-          className="inline-flex rounded-full border border-zinc-400 dark:border-zinc-500 bg-surface-strong dark:bg-zinc-700 px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-zinc-600"
+          className="inline-flex rounded-full border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-strong px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-muted"
         >
           목록으로 돌아가기
         </Link>
@@ -165,16 +165,16 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         </div>
       </header>
 
-      <p className="leading-7 text-zinc-600 dark:text-zinc-300">{post.content}</p>
+      <p className="leading-7 text-text-sub dark:text-text-muted">{post.content}</p>
 
       {post.linkUrl ? (
         <a
           href={post.linkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-zinc-400 dark:border-cyan-500/50 bg-gradient-to-r from-zinc-200 via-zinc-300 to-zinc-400 dark:from-zinc-900 dark:via-zinc-800 dark:to-[#2b6661] px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_20px_rgba(129,216,208,0.35)] transition hover:-translate-y-0.5 hover:brightness-110"
+          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-accent-border bg-gradient-to-r from-surface-sub via-surface-strong to-surface-muted dark:from-surface dark:via-surface-sub dark:to-[#2b6661] px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_20px_rgba(129,216,208,0.35)] transition hover:-translate-y-0.5 hover:brightness-110"
         >
-          <span className="inline-block h-2 w-2 rounded-full bg-zinc-600 dark:bg-[#81d8d0] shadow-[0_0_10px_rgba(129,216,208,0.8)]" />
+          <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-accent-sub shadow-[0_0_10px_rgba(129,216,208,0.8)]" />
           링크 열기
         </a>
       ) : null}
@@ -184,9 +184,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           href={fileDownloadUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-zinc-400 dark:border-zinc-500/60 bg-surface-strong dark:bg-white/10 px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_14px_rgba(129,216,208,0.25)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-surface-muted dark:hover:bg-white/15"
+          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-border-base/60 bg-surface-strong dark:bg-highlight-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_14px_rgba(129,216,208,0.25)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-surface-muted dark:hover:bg-highlight-soft"
         >
-          <span className="inline-block h-2 w-2 rounded-full bg-zinc-600 dark:bg-surface-strong" />
+          <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-surface-strong" />
           {post.fileName ?? "파일 열기"}
         </a>
       ) : null}
@@ -202,11 +202,11 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
             maxLength={500}
             rows={4}
             placeholder="댓글을 입력해 주세요."
-            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-cyan-400/60 placeholder:text-text-muted focus:ring"
+            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border placeholder:text-text-muted focus:ring"
           />
           <button
             type="submit"
-            className="inline-flex rounded-full border border-zinc-400 dark:border-cyan-500/60 bg-surface-strong dark:bg-cyan-500/15 px-4 py-2 text-sm font-semibold text-text-sub dark:text-cyan-100"
+            className="inline-flex rounded-full border border-border-base dark:border-accent-border bg-surface-strong dark:bg-accent-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-accent-sub"
           >
             댓글 작성
           </button>
@@ -223,7 +223,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
                     <p className="font-semibold text-text-sub dark:text-text-sub">{comment.authorName}</p>
                     <p>{comment.dateTime}</p>
                   </div>
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-600 dark:text-zinc-300">{comment.content}</p>
+                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-text-sub dark:text-text-muted">{comment.content}</p>
 
                   {isCommentManageable ? (
                     <div className="mt-3 space-y-2">
@@ -236,11 +236,11 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
                           minLength={1}
                           maxLength={500}
                           rows={3}
-                          className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-cyan-400/60 focus:ring"
+                          className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border focus:ring"
                         />
                         <button
                           type="submit"
-                          className="rounded-full border border-zinc-400 dark:border-cyan-500/50 bg-surface-strong dark:bg-accent-soft px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-cyan-200"
+                          className="rounded-full border border-border-base dark:border-accent-border bg-surface-strong dark:bg-accent-soft px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-accent-sub"
                         >
                           댓글 수정
                         </button>
@@ -250,7 +250,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
                         <input type="hidden" name="commentId" value={comment.id} />
                         <button
                           type="submit"
-                          className="rounded-full border border-zinc-400 dark:border-red-400/60 bg-surface-strong dark:bg-red-500/20 px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-red-300"
+                          className="rounded-full border border-border-base dark:border-danger-border bg-surface-strong dark:bg-danger-soft px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-danger-sub"
                         >
                           댓글 삭제
                         </button>
@@ -269,7 +269,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
       <div className="flex items-center gap-3">
         <Link
           href="/posts"
-          className="inline-flex rounded-full border border-zinc-400 dark:border-zinc-500 bg-surface-strong dark:bg-zinc-700 px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-zinc-600"
+          className="inline-flex rounded-full border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-strong px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-muted"
         >
           목록으로 돌아가기
         </Link>
@@ -285,7 +285,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           <form action={deletePostAction}>
             <button
               type="submit"
-              className="inline-flex rounded-full border border-zinc-400 dark:border-red-400/60 bg-surface-strong dark:bg-red-500/20 px-4 py-2 text-sm font-semibold text-text-sub dark:text-red-300 transition hover:bg-surface-muted dark:hover:bg-red-500/30"
+              className="inline-flex rounded-full border border-border-base dark:border-danger-border bg-surface-strong dark:bg-danger-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-danger-sub transition hover:bg-surface-muted dark:hover:bg-danger-soft"
             >
               삭제하기
             </button>

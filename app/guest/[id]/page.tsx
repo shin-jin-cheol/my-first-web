@@ -156,14 +156,14 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
         </div>
       </header>
 
-      <p className="leading-7 text-zinc-600 dark:text-zinc-300">{post.content}</p>
+      <p className="leading-7 text-text-sub dark:text-text-muted">{post.content}</p>
 
       {post.linkUrl ? (
         <a
           href={post.linkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-zinc-400 dark:border-cyan-500/50 bg-gradient-to-r from-zinc-200 via-zinc-300 to-zinc-400 dark:from-zinc-900 dark:via-zinc-800 dark:to-[#2b6661] px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base"
+          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-accent-border bg-gradient-to-r from-surface-sub via-surface-strong to-surface-muted dark:from-surface dark:via-surface-sub dark:to-[#2b6661] px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base"
         >
           {t(locale, "링크 열기", "Open Link")}
         </a>
@@ -174,7 +174,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
           href={fileDownloadUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-zinc-400 dark:border-zinc-500/60 bg-surface-strong dark:bg-white/10 px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base"
+          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-border-base/60 bg-surface-strong dark:bg-highlight-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base"
         >
           {post.fileName ?? t(locale, "파일 열기", "Open File")}
         </a>
@@ -191,11 +191,11 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
             maxLength={500}
             rows={4}
             placeholder={t(locale, "댓글을 입력해 주세요.", "Write a comment")}
-            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-cyan-400/60 placeholder:text-text-muted focus:ring"
+            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border placeholder:text-text-muted focus:ring"
           />
           <button
             type="submit"
-            className="inline-flex rounded-full border border-zinc-400 dark:border-cyan-500/60 bg-surface-strong dark:bg-cyan-500/15 px-4 py-2 text-sm font-semibold text-text-sub dark:text-cyan-100"
+            className="inline-flex rounded-full border border-border-base dark:border-accent-border bg-surface-strong dark:bg-accent-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-accent-sub"
           >
             {t(locale, "댓글 작성", "Add Comment")}
           </button>
@@ -209,7 +209,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
                   <p className="font-semibold text-text-sub dark:text-text-sub">{comment.authorName}</p>
                   <p>{comment.dateTime}</p>
                 </div>
-                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-zinc-600 dark:text-zinc-300">{comment.content}</p>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-text-sub dark:text-text-muted">{comment.content}</p>
 
                 {canManageComment(session, comment) ? (
                   <div className="mt-3 space-y-2">
@@ -222,11 +222,11 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
                         minLength={1}
                         maxLength={500}
                         rows={3}
-                        className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-cyan-400/60 focus:ring"
+                        className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border focus:ring"
                       />
                       <button
                         type="submit"
-                        className="rounded-full border border-zinc-400 dark:border-cyan-500/50 bg-surface-strong dark:bg-accent-soft px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-cyan-200"
+                        className="rounded-full border border-border-base dark:border-accent-border bg-surface-strong dark:bg-accent-soft px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-accent-sub"
                       >
                         {t(locale, "댓글 수정", "Edit Comment")}
                       </button>
@@ -236,7 +236,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
                       <input type="hidden" name="commentId" value={comment.id} />
                       <button
                         type="submit"
-                        className="rounded-full border border-zinc-400 dark:border-red-400/60 bg-surface-strong dark:bg-red-500/20 px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-red-300"
+                        className="rounded-full border border-border-base dark:border-danger-border bg-surface-strong dark:bg-danger-soft px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-danger-sub"
                       >
                         {t(locale, "댓글 삭제", "Delete Comment")}
                       </button>
@@ -254,14 +254,14 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
       <div className="flex items-center gap-3">
         <Link
           href="/guest"
-          className="inline-flex rounded-full border border-zinc-400 dark:border-zinc-500 bg-surface-strong dark:bg-zinc-700 px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-zinc-600"
+          className="inline-flex rounded-full border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-strong px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-muted"
         >
           {t(locale, "목록으로 돌아가기", "Back to List")}
         </Link>
         {canManage ? (
           <Link
             href={`/guest/${post.id}/edit`}
-            className="inline-flex rounded-full border border-cyan-500/50 bg-accent-soft px-4 py-2 text-sm font-semibold text-cyan-200"
+            className="inline-flex rounded-full border border-accent-border bg-accent-soft px-4 py-2 text-sm font-semibold text-accent-sub"
           >
             {t(locale, "수정하기", "Edit")}
           </Link>
@@ -270,7 +270,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
           <form action={deleteGuestPostAction}>
             <button
               type="submit"
-              className="inline-flex rounded-full border border-red-400/60 bg-red-500/20 px-4 py-2 text-sm font-semibold text-red-300"
+                  className="inline-flex rounded-full border border-danger-border bg-danger-soft px-4 py-2 text-sm font-semibold text-danger-sub"
             >
               {t(locale, "삭제하기", "Delete")}
             </button>

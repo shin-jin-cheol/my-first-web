@@ -44,13 +44,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       ) : null}
 
       {showWithdrawMessage ? (
-        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-2 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">
+        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-2 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-accent-sub dark:shadow-none">
           {t(locale, "회원 탈퇴가 완료되었습니다.", "Your account has been deleted.")}
         </p>
       ) : null}
 
       {showSignupMessage ? (
-        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-2 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">
+        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-2 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-accent-sub dark:shadow-none">
           {t(locale, "이메일 인증이 완료되었습니다. 로그인해 주세요.", "Email verified. Please log in.")}
         </p>
       ) : null}

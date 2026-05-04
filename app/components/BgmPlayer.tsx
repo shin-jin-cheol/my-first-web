@@ -72,11 +72,11 @@ export default function BgmPlayer() {
   return (
     <div className="fixed bottom-24 left-1/2 z-50 flex w-[min(82vw,280px)] -translate-x-1/2 flex-col gap-2 md:bottom-5 md:left-auto md:right-5 md:w-[min(88vw,340px)] md:translate-x-0 md:gap-3">
       {!isMobileViewport || isMobileExpanded ? (
-        <LiveClock className="w-full rounded-2xl border border-zinc-400 bg-surface-muted/95 px-3 py-2 text-center text-zinc-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-4px_8px_rgba(0,0,0,0.05),0_5px_12px_rgba(0,0,0,0.09)] md:rounded-3xl md:px-4 md:py-2.5 dark:border-zinc-600 dark:bg-surface-sub/85 dark:text-cyan-100 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07),inset_0_-7px_12px_rgba(0,0,0,0.32),0_6px_14px_rgba(0,0,0,0.28)]" />
+        <LiveClock className="w-full rounded-2xl border border-border-base bg-surface-muted/95 px-3 py-2 text-center text-text-base shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-4px_8px_rgba(0,0,0,0.05),0_5px_12px_rgba(0,0,0,0.09)] md:rounded-3xl md:px-4 md:py-2.5 dark:border-border-base dark:bg-surface-sub/85 dark:text-accent-sub dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07),inset_0_-7px_12px_rgba(0,0,0,0.32),0_6px_14px_rgba(0,0,0,0.28)]" />
       ) : null}
 
       {isMobileViewport ? (
-        <div className="flex items-center gap-2 rounded-full border border-zinc-400 bg-surface-muted/95 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-4px_8px_rgba(0,0,0,0.05),0_5px_12px_rgba(0,0,0,0.11)] backdrop-blur dark:border-zinc-600 dark:bg-surface/90 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-7px_10px_rgba(0,0,0,0.34),0_5px_12px_rgba(0,0,0,0.28)]">
+        <div className="flex items-center gap-2 rounded-full border border-border-base bg-surface-muted/95 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-4px_8px_rgba(0,0,0,0.05),0_5px_12px_rgba(0,0,0,0.11)] backdrop-blur dark:border-border-base dark:bg-surface/90 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-7px_10px_rgba(0,0,0,0.34),0_5px_12px_rgba(0,0,0,0.28)]">
           <Button
             onClick={togglePlayback}
             className="h-8 w-8 rounded-full px-0 py-0 text-xs"
@@ -100,7 +100,7 @@ export default function BgmPlayer() {
       ) : null}
 
       <div
-        className={`${isMobileViewport && !isMobileExpanded ? "hidden" : "space-y-2 rounded-2xl border border-zinc-400 bg-surface-muted/95 p-3 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-6px_10px_rgba(0,0,0,0.06),0_7px_15px_rgba(0,0,0,0.11)] md:space-y-3 md:rounded-3xl md:p-4 dark:border-zinc-600 dark:bg-surface-sub/85 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-8px_13px_rgba(0,0,0,0.36),0_7px_15px_rgba(0,0,0,0.28)]"}`}
+        className={`${isMobileViewport && !isMobileExpanded ? "hidden" : "space-y-2 rounded-2xl border border-border-base bg-surface-muted/95 p-3 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-6px_10px_rgba(0,0,0,0.06),0_7px_15px_rgba(0,0,0,0.11)] md:space-y-3 md:rounded-3xl md:p-4 dark:border-border-base dark:bg-surface-sub/85 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-8px_13px_rgba(0,0,0,0.36),0_7px_15px_rgba(0,0,0,0.28)]"}`}
       >
         <audio ref={audioRef} src={selectedSrc} preload="auto" autoPlay muted playsInline />
         <label htmlFor="bgm-track" className="sr-only">
@@ -110,7 +110,7 @@ export default function BgmPlayer() {
           id="bgm-track"
           value={selectedSrc}
           onChange={onTrackChange}
-          className="h-9 w-full rounded-xl border border-zinc-400 bg-surface-muted/80 px-2.5 py-2 text-xs font-medium text-text-sub outline-none transition backdrop-blur-md hover:bg-surface-muted focus:border-zinc-500 focus:bg-surface-muted dark:border-white/30 dark:bg-white/10 dark:text-text-base dark:hover:bg-white/15 dark:focus:border-white/50 dark:focus:bg-white/20 md:h-10 md:rounded-2xl md:px-3 md:py-2.5 md:text-sm"
+          className="h-9 w-full rounded-xl border border-border-base bg-surface-muted/80 px-2.5 py-2 text-xs font-medium text-text-sub outline-none transition backdrop-blur-md hover:bg-surface-muted focus:border-border-sub focus:bg-surface-muted dark:border-highlight/30 dark:bg-highlight-soft dark:text-text-base dark:hover:bg-highlight-soft dark:focus:border-highlight/50 dark:focus:bg-highlight-soft md:h-10 md:rounded-2xl md:px-3 md:py-2.5 md:text-sm"
         >
           {tracks.map((track) => (
             <option key={track.src} value={track.src} className="bg-surface-sub text-text-sub dark:bg-surface-sub dark:text-text-base">
@@ -127,7 +127,7 @@ export default function BgmPlayer() {
             step={1}
             value={Math.min(currentTime, duration || 0)}
             onChange={onSeek}
-            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-zinc-400/40 outline-none md:h-2 dark:bg-white/20 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 md:[&::-webkit-slider-thumb]:h-4 md:[&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-zinc-700 dark:[&::-webkit-slider-thumb]:bg-white [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 md:[&::-moz-range-thumb]:h-4 md:[&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:bg-zinc-700 dark:[&::-moz-range-thumb]:bg-white"
+            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-border-base/40 outline-none md:h-2 dark:bg-highlight-soft [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 md:[&::-webkit-slider-thumb]:h-4 md:[&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-surface-strong dark:[&::-webkit-slider-thumb]:bg-highlight [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 md:[&::-moz-range-thumb]:h-4 md:[&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:bg-surface-strong dark:[&::-moz-range-thumb]:bg-highlight"
           />
           <div className="flex items-center justify-between text-[9px] text-text-muted dark:text-text-subtle md:text-[10px]">
             <span>{formatTime(currentTime)}</span>

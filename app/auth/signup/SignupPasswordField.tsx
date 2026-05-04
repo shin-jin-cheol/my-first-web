@@ -14,7 +14,7 @@ type SignupPasswordFieldProps = {
 
 function RuleItem({ ok, text }: { ok: boolean; text: string }) {
   return (
-    <li className={ok ? "text-emerald-600 dark:text-success-sub" : "text-text-muted dark:text-zinc-300"}>
+    <li className={ok ? "text-success dark:text-success-sub" : "text-text-muted dark:text-text-muted"}>
       {ok ? "OK" : "·"} {text}
     </li>
   );
@@ -38,7 +38,7 @@ export default function SignupPasswordField({
 
   return (
     <div className="space-y-2">
-      <label htmlFor="password" className="text-sm text-zinc-600 dark:text-text-sub">
+      <label htmlFor="password" className="text-sm text-text-sub dark:text-text-sub">
         {label}
       </label>
       <input
@@ -51,9 +51,9 @@ export default function SignupPasswordField({
         required
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] dark:border-zinc-600 dark:bg-surface-sub dark:text-text-base"
+        className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] dark:border-border-base dark:bg-surface-sub dark:text-text-base"
       />
-      <p className="text-xs text-text-muted dark:text-zinc-300">{helperText}</p>
+      <p className="text-xs text-text-muted dark:text-text-muted">{helperText}</p>
       <ul className="grid gap-1 text-xs">
         <RuleItem ok={hasLength} text={lengthText} />
         <RuleItem ok={hasLetter} text={letterText} />

@@ -105,7 +105,7 @@ export default function PostsSearchContent({
                     <p className="text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">
                       {labels.ownerSectionTitle}
                     </p>
-                    <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-cyan-200">
+                    <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-accent-sub">
                       {post.categoryLabel}
                     </span>
                   </div>
@@ -150,12 +150,12 @@ export default function PostsSearchContent({
                   <span className="rounded-full border border-border-base bg-surface-strong px-2.5 py-1 text-xs font-semibold text-text-sub dark:border-border-base dark:bg-surface-sub dark:text-text-sub">
                     {post.sourceLabel}
                   </span>
-                  <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-cyan-200">
+                  <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-accent-sub">
                     {post.categoryLabel}
                   </span>
                 </div>
                 <h4 className="mb-3 text-xl font-bold text-text-base dark:text-text-base">
-                  <Link href={post.detailHref} className="transition hover:text-cyan-200">
+                  <Link href={post.detailHref} className="transition hover:text-accent-sub">
                     {post.title}
                   </Link>
                 </h4>

@@ -72,14 +72,14 @@ export function NavMenuMobile({
     <details ref={detailsRef} className="group relative inline-flex h-9 shrink-0 items-center align-middle">
       <summary
         aria-label={t('메뉴 열기', 'Open menu')}
-        className="inline-flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full border border-zinc-500 bg-surface-muted p-0 text-text-sub shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_8px_rgba(0,0,0,0.08)] transition marker:hidden hover:bg-surface-strong [&::-webkit-details-marker]:hidden dark:border-zinc-600 dark:bg-surface-strong dark:text-text-sub dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_8px_rgba(0,0,0,0.22)] dark:hover:bg-surface-sub"
+        className="inline-flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-full border border-border-base bg-surface-muted p-0 text-text-sub shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_8px_rgba(0,0,0,0.08)] transition marker:hidden hover:bg-surface-strong [&::-webkit-details-marker]:hidden dark:border-border-base dark:bg-surface-strong dark:text-text-sub dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_8px_rgba(0,0,0,0.22)] dark:hover:bg-surface-sub"
       >
         <Menu aria-hidden="true" size={18} strokeWidth={2.2} />
         <span className="sr-only">{t('메뉴 열기', 'Open menu')}</span>
       </summary>
       <div
         onClick={closeMenuOnAction}
-        className="absolute right-0 top-11 z-50 w-56 space-y-2 rounded-2xl border border-zinc-400 bg-surface-muted/95 p-3 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_10px_24px_rgba(0,0,0,0.12)] backdrop-blur dark:border-border-base dark:bg-surface-sub/95 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(0,0,0,0.36)]"
+        className="absolute right-0 top-11 z-50 w-56 space-y-2 rounded-2xl border border-border-base bg-surface-muted/95 p-3 text-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_10px_24px_rgba(0,0,0,0.12)] backdrop-blur dark:border-border-base dark:bg-surface-sub/95 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(0,0,0,0.36)]"
       >
         <Link
           href="/"
@@ -117,7 +117,7 @@ export function NavMenuMobile({
           </>
         ) : null}
 
-        <div className="my-1 h-px bg-zinc-400/70 dark:bg-zinc-700" />
+        <div className="my-1 h-px bg-border-base/70 dark:bg-border-sub" />
 
         {session ? (
           <Link
@@ -145,7 +145,7 @@ export function NavMenuMobile({
           </Link>
         ) : null}
 
-        <form action={setLanguageAction} className="inline-flex items-center gap-1 rounded-full border border-zinc-400 bg-surface-strong p-1 text-xs dark:border-zinc-600 dark:bg-surface-strong/80">
+        <form action={setLanguageAction} className="inline-flex items-center gap-1 rounded-full border border-border-base bg-surface-strong p-1 text-xs dark:border-border-base dark:bg-surface-strong/80">
           <button
             type="submit"
             name="lang"

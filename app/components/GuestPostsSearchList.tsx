@@ -82,12 +82,12 @@ export default function GuestPostsSearchList({
             className="space-y-3 rounded-2xl border border-border-base bg-surface-muted p-5 transition hover:bg-surface-strong dark:border-border-base dark:bg-surface-sub dark:hover:bg-surface-strong"
           >
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-cyan-200">
+              <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-accent-sub">
                 {post.categoryLabel}
               </span>
             </div>
             <h2 className="text-xl font-bold text-text-base dark:text-text-base">
-              <Link href={post.detailHref} className="transition hover:text-cyan-200">
+              <Link href={post.detailHref} className="transition hover:text-accent-sub">
                 {post.title}
               </Link>
             </h2>
@@ -107,7 +107,7 @@ export default function GuestPostsSearchList({
                 {post.editHref ? (
                   <Link
                     href={post.editHref}
-                    className="rounded-full border border-border-base bg-surface-strong px-4 py-1.5 text-sm font-semibold text-text-base hover:bg-surface-muted dark:border-accent-border-sub dark:bg-accent-soft dark:text-cyan-200 dark:hover:bg-accent-soft"
+                    className="rounded-full border border-border-base bg-surface-strong px-4 py-1.5 text-sm font-semibold text-text-base hover:bg-surface-muted dark:border-accent-border-sub dark:bg-accent-soft dark:text-accent-sub dark:hover:bg-accent-soft"
                   >
                     {labels.edit}
                   </Link>
