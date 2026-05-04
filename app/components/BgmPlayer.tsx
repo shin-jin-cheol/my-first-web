@@ -110,10 +110,10 @@ export default function BgmPlayer() {
           id="bgm-track"
           value={selectedSrc}
           onChange={onTrackChange}
-          className="h-9 w-full rounded-xl border border-border-base bg-surface-muted/80 px-2.5 py-2 text-xs font-medium text-text-sub outline-none transition backdrop-blur-md hover:bg-surface-muted focus:border-border-strong focus:bg-surface-muted dark:border-highlight/30 dark:bg-highlight-soft dark:text-text-base dark:hover:bg-highlight-soft dark:focus:border-highlight/50 dark:focus:bg-highlight-soft md:h-10 md:rounded-2xl md:px-3 md:py-2.5 md:text-sm"
+          className="h-9 w-full rounded-xl border border-border-base bg-surface-muted/80 px-2.5 py-2 text-xs font-medium text-text-sub outline-none transition backdrop-blur-md hover:bg-surface-muted focus:border-border-strong focus:bg-surface-muted dark:border-highlight/30 dark:bg-surface-sub dark:text-[#f4f4f5] dark:hover:bg-surface-sub dark:focus:border-highlight/50 dark:focus:bg-surface-sub md:h-10 md:rounded-2xl md:px-3 md:py-2.5 md:text-sm"
         >
           {tracks.map((track) => (
-            <option key={track.src} value={track.src} className="bg-surface-sub text-text-sub dark:bg-surface-sub dark:text-text-base">
+            <option key={track.src} value={track.src} className="bg-surface-sub text-text-sub dark:bg-[#18181b] dark:text-[#f4f4f5]">
               {track.label}
             </option>
           ))}
@@ -127,7 +127,8 @@ export default function BgmPlayer() {
             step={1}
             value={Math.min(currentTime, duration || 0)}
             onChange={onSeek}
-            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-border-base/40 outline-none md:h-2 dark:bg-highlight-soft [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:w-3 md:[&::-webkit-slider-thumb]:h-4 md:[&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-surface-strong dark:[&::-webkit-slider-thumb]:bg-highlight [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:w-3 md:[&::-moz-range-thumb]:h-4 md:[&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:bg-surface-strong dark:[&::-moz-range-thumb]:bg-highlight"
+            style={{ accentColor: '#22d3ee' }}
+            className="h-1.5 w-full cursor-pointer rounded-full outline-none md:h-2"
           />
           <div className="flex items-center justify-between text-[9px] text-text-muted dark:text-text-muted md:text-[10px]">
             <span>{formatTime(currentTime)}</span>
