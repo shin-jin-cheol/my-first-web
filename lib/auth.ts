@@ -6,6 +6,7 @@ import { list, put } from "@vercel/blob";
 import { safeJsonParse } from "@/lib/safe-json";
 import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_AUTH_PUBLIC_KEY, SUPABASE_MEMBERS_TABLE, BLOB_READ_WRITE_TOKEN } from "@/lib/env";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
+import { pickLatestBlobUrl } from "@/lib/utils";
 
 export type UserRole = "owner" | "member";
 
@@ -87,22 +88,6 @@ export const ownerAccount = Object.freeze({
   password: OWNER_PASSWORD,
   name: OWNER_NAME,
 });
-
-function pickLatestBlobUrl(
-  blobs: Array<{ url: string; uploadedAt?: string | Date; pathname?: string }>,
-) {
-  if (blobs.length === 0) {
-    return undefined;
-  }
-
-  const sorted = [...blobs].sort((a, b) => {
-    const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : Number.MIN_SAFE_INTEGER;
-    const bTime = b.uploadedAt ? new Date(b.uploadedAt).getTime() : Number.MIN_SAFE_INTEGER;
-    return bTime - aTime;
-  });
-
-  return sorted[0]?.url;
-}
 
 function resolveUsersFilePath() {
   if (process.env.VERCEL) {

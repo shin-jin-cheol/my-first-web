@@ -6,6 +6,7 @@ import { safeJsonParse } from "@/lib/safe-json";
 import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_GUEST_POSTS_TABLE, SUPABASE_UPLOADS_BUCKET, BLOB_READ_WRITE_TOKEN } from "@/lib/env";
 import { getKstDateString, getKstDateTimeString } from "@/lib/date";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
+import { pickLatestBlobUrl } from "@/lib/utils";
 
 export type GuestPost = {
   id: number;
@@ -68,20 +69,6 @@ const CATEGORY_SCHEMA_MESSAGE =
 
 let guestPostsBlobUrlCache: string | undefined;
 let hasTriedSupabaseGuestBootstrap = false;
-
-function pickLatestBlobUrl(blobs: Array<{ url: string; uploadedAt?: string | Date; pathname?: string }>): string | undefined {
-  if (blobs.length === 0) {
-    return undefined;
-  }
-
-  const sorted = [...blobs].sort((a, b) => {
-    const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : Number.MIN_SAFE_INTEGER;
-    const bTime = b.uploadedAt ? new Date(b.uploadedAt).getTime() : Number.MIN_SAFE_INTEGER;
-    return bTime - aTime;
-  });
-
-  return sorted[0]?.url;
-}
 
 function hasBlobStorage() {
   return Boolean(BLOB_READ_WRITE_TOKEN);
