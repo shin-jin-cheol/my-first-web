@@ -22,6 +22,11 @@ type PostDetailPageProps = {
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const { id } = await params;
   const postId = Number(id);
+
+  if (!Number.isFinite(postId) || postId <= 0) {
+    redirect("/posts");
+  }
+
   const post = await getPostById(postId);
   const session = await getSession();
   const comments = await getPostCommentsByPostId(postId);

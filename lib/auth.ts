@@ -1,10 +1,11 @@
 import { promises as fs } from "node:fs";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import path from "node:path";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { list, put } from "@vercel/blob";
 import { safeJsonParse } from "@/lib/safe-json";
-import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_AUTH_PUBLIC_KEY, SUPABASE_MEMBERS_TABLE, BLOB_READ_WRITE_TOKEN } from "@/lib/env";
+import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_AUTH_PUBLIC_KEY, SUPABASE_MEMBERS_TABLE, BLOB_READ_WRITE_TOKEN, OWNER_ID, OWNER_PASSWORD, OWNER_NAME, SESSION_SECRET } from "@/lib/env";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
 import { pickLatestBlobUrl } from "@/lib/utils";
 
@@ -69,9 +70,6 @@ type OwnerMemberView = {
   createdAt: string;
 };
 
-const OWNER_ID = "sjc5001";
-const OWNER_PASSWORD = "sjc5001*";
-const OWNER_NAME = "신진철";
 const SESSION_COOKIE = "sjc-session";
 const DATA_DIR = path.join(process.cwd(), "data");
 const USERS_FILE_LOCAL = path.join(DATA_DIR, "users.json");
@@ -244,7 +242,25 @@ async function requestSupabaseAuth<T>(
 
 function decodeSession(value: string): Session | null {
   try {
-    const json = Buffer.from(value, "base64url").toString("utf-8");
+    const separatorIndex = value.indexOf(".");
+
+    if (separatorIndex <= 0 || separatorIndex >= value.length - 1) {
+      return null;
+    }
+
+    const payload = value.slice(0, separatorIndex);
+    const signature = value.slice(separatorIndex + 1);
+    const expectedSignature = createHmac("sha256", SESSION_SECRET).update(payload).digest("base64url");
+
+    if (signature.length !== expectedSignature.length) {
+      return null;
+    }
+
+    if (!timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+      return null;
+    }
+
+    const json = Buffer.from(payload, "base64url").toString("utf-8");
     const parsed = safeJsonParse<Session>(json, null);
 
     if (!parsed) return null;
@@ -260,7 +276,10 @@ function decodeSession(value: string): Session | null {
 }
 
 function encodeSession(session: Session) {
-  return Buffer.from(JSON.stringify(session), "utf-8").toString("base64url");
+  const payload = Buffer.from(JSON.stringify(session), "utf-8").toString("base64url");
+  const signature = createHmac("sha256", SESSION_SECRET).update(payload).digest("base64url");
+
+  return `${payload}.${signature}`;
 }
 
 async function refreshUsersBlobUrlCache() {
