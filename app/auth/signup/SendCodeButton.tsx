@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 
@@ -74,7 +74,7 @@ export default function SendCodeButton({
       value="send-code"
       formNoValidate
       disabled={isCoolingDown}
-      className="shrink-0 rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-sm font-semibold text-zinc-700 transition hover:border-[#81d8d0] hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-[#81d8d0]"
+      className="shrink-0 rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-sm font-semibold text-text-sub transition hover:border-[#81d8d0] hover:text-text-base disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-600 dark:bg-surface-sub dark:text-text-base dark:hover:border-[#81d8d0]"
     >
       {isCoolingDown ? `${cooldownLabel} (${remainingSeconds}s)` : idleLabel}
     </button>

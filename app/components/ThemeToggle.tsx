@@ -26,8 +26,8 @@ export function ThemeToggle() {
   ];
 
   return (
-    <div className="mt-2 space-y-2 border-t border-zinc-200 pt-2 dark:border-zinc-700">
-      <p className="px-2 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+    <div className="mt-2 space-y-2 border-t border-border-base pt-2 dark:border-border-base">
+      <p className="px-2 text-xs font-semibold uppercase tracking-wide text-text-muted dark:text-text-subtle">
         {locale === 'ko' ? '테마' : 'Theme'}
       </p>
       <div className="flex flex-wrap gap-2">
@@ -39,8 +39,8 @@ export function ThemeToggle() {
             aria-label={locale === 'ko' ? `${option.label} 테마 선택` : `Select ${option.label} theme`}
             className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
               resolvedTheme === option.value
-                ? 'bg-zinc-100 text-zinc-500 ring-1 ring-zinc-300 dark:bg-zinc-700 dark:text-zinc-300 dark:ring-zinc-500'
-                : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700'
+                ? 'bg-surface-sub text-text-muted ring-1 ring-border-base dark:bg-surface-sub dark:text-text-muted dark:ring-border-base'
+                : 'bg-surface text-text-muted hover:bg-surface-sub dark:bg-surface-strong dark:text-text-subtle dark:hover:bg-surface-sub'
             }`}
           >
             <span className="text-current">{option.icon}</span>

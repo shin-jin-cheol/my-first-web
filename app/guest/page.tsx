@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { deleteGuestPostById, getGuestPosts } from "@/lib/guest-posts";
@@ -64,17 +64,17 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
   return (
     <section className="space-y-8">
       <header className="space-y-3">
-        <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">
           Guest Board
         </p>
-        <h1 className="text-4xl font-extrabold text-zinc-700 dark:text-zinc-100 drop-shadow-[0_0_12px_rgba(129,216,208,0.3)]">
+        <h1 className="text-4xl font-extrabold text-text-sub dark:text-text-base drop-shadow-[0_0_12px_rgba(129,216,208,0.3)]">
           {t(locale, "게스트 게시판", "Guest Board")}
         </h1>
         {session.role === "member" ? (
           <div>
             <Link
               href="/guest/new"
-              className="inline-flex rounded-full border border-[#74cfc6] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-zinc-900 shadow-[0_0_18px_rgba(129,216,208,0.5)] transition hover:-translate-y-0.5 hover:brightness-105"
+              className="inline-flex rounded-full border border-[#74cfc6] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_18px_rgba(129,216,208,0.5)] transition hover:-translate-y-0.5 hover:brightness-105"
             >
               {t(locale, "게스트 글 쓰기", "Write Guest Post")}
             </Link>
@@ -83,13 +83,13 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
       </header>
 
       {errorMessage ? (
-        <p className="rounded-xl border border-red-400/50 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <p className="rounded-xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger-sub">
           {errorMessage}
         </p>
       ) : null}
 
       {session.role === "owner" ? (
-        <p className="rounded-xl border border-cyan-600/40 bg-cyan-500/10 px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">
+        <p className="rounded-xl border border-cyan-600/40 bg-accent-soft px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">
           {t(
             locale,
             "주인 계정으로 로그인 중입니다. 회원이 작성한 게스트 게시글을 관리할 수 있습니다.",

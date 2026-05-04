@@ -68,10 +68,10 @@ export default async function PostsPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">
           Blog Posts
         </p>
-        <h1 className="text-4xl font-extrabold text-zinc-700 dark:text-zinc-100 drop-shadow-[0_0_14px_rgba(129,216,208,0.45)]">
+        <h1 className="text-4xl font-extrabold text-text-sub dark:text-text-base drop-shadow-[0_0_14px_rgba(129,216,208,0.45)]">
           {t(locale, "블로그 게시글", "Blog Posts")}
         </h1>
       </div>

@@ -234,3 +234,12 @@ Behavior:
 
 - When Supabase env vars are set, `lib/posts.ts` and `lib/guest-posts.ts` use Supabase first.
 - On first access, if Supabase tables are empty and legacy data exists, existing records are copied once to Supabase.
+
+## Supabase 구현 방식
+
+@supabase/ssr 라이브러리 없이 Supabase REST API를
+직접 구현하여 인증 및 데이터 처리를 구성했습니다.
+- 직접 REST API 호출로 Supabase 연동
+- 자체 세션 관리 구현
+- members 테이블 기반 인증 구조
+- service role 키 기반 서버사이드 요청 처리

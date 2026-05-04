@@ -80,8 +80,8 @@ export default function PostsSearchContent({
               onClick={() => setSelectedCategory(option.value)}
               className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
                 active
-                  ? "border-[#74cfc6] bg-[#81d8d0] text-zinc-900 shadow-[0_0_18px_rgba(129,216,208,0.4)]"
-                  : "border-zinc-400 bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  ? "border-[#74cfc6] bg-[#81d8d0] text-text-base shadow-[0_0_18px_rgba(129,216,208,0.4)]"
+                  : "border-border-base bg-surface-strong text-text-sub hover:bg-surface-muted dark:border-border-base dark:bg-surface-sub dark:text-text-sub dark:hover:bg-surface-strong"
               }`}
             >
               {option.label}
@@ -91,31 +91,31 @@ export default function PostsSearchContent({
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-zinc-700 dark:text-zinc-100 drop-shadow-[0_0_10px_rgba(129,216,208,0.3)]">
+        <h2 className="text-2xl font-bold text-text-sub dark:text-text-base drop-shadow-[0_0_10px_rgba(129,216,208,0.3)]">
           {labels.ownerSectionTitle}
         </h2>
         {filteredOwnerPosts.length === 0 ? (
-          <p className="text-zinc-500 dark:text-zinc-400">{labels.ownerEmpty}</p>
+          <p className="text-text-muted dark:text-text-subtle">{labels.ownerEmpty}</p>
         ) : (
           <div className="grid gap-7 md:grid-cols-2">
             {filteredOwnerPosts.map((post) => (
               <Link key={post.id} href={post.detailHref}>
-                <article className="block h-full min-h-64 cursor-pointer rounded-2xl border border-zinc-500 bg-zinc-300 p-7 shadow-[0_0_22px_rgba(129,216,208,0.12)] transition hover:border-[#81d8d0] hover:bg-zinc-400 hover:shadow-[0_0_34px_rgba(129,216,208,0.28)] dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800">
+                <article className="block h-full min-h-64 cursor-pointer rounded-2xl border border-border-base bg-surface-muted p-7 shadow-[0_0_22px_rgba(129,216,208,0.12)] transition hover:border-[#81d8d0] hover:bg-surface-strong hover:shadow-[0_0_34px_rgba(129,216,208,0.28)] dark:border-border-base dark:bg-surface-sub dark:hover:bg-surface-strong">
                   <div className="mb-3 flex flex-wrap items-center gap-2">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">
                       {labels.ownerSectionTitle}
                     </p>
-                    <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-cyan-200">
+                    <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-cyan-200">
                       {post.categoryLabel}
                     </span>
                   </div>
-                  <h3 className="mb-3 text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                  <h3 className="mb-3 text-xl font-bold text-text-base dark:text-text-base">
                     {post.title}
                   </h3>
-                  <p className="mb-5 line-clamp-4 text-base leading-7 text-zinc-700 dark:text-zinc-200">
+                  <p className="mb-5 line-clamp-4 text-base leading-7 text-text-sub dark:text-text-sub">
                     {post.content}
                   </p>
-                  <div className="space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                  <div className="space-y-2 text-sm text-text-sub dark:text-text-muted">
                     <p>
                       <strong>{labels.author}:</strong> {post.author}
                     </p>
@@ -134,35 +134,35 @@ export default function PostsSearchContent({
       </div>
 
       <div className="space-y-4 pt-4">
-        <h2 className="text-2xl font-bold text-zinc-700 dark:text-zinc-100 drop-shadow-[0_0_10px_rgba(129,216,208,0.3)]">
+        <h2 className="text-2xl font-bold text-text-sub dark:text-text-base drop-shadow-[0_0_10px_rgba(129,216,208,0.3)]">
           {labels.communitySectionTitle}
         </h2>
         {filteredCommunityPosts.length === 0 ? (
-          <p className="text-zinc-500 dark:text-zinc-400">{labels.communityEmpty}</p>
+          <p className="text-text-muted dark:text-text-subtle">{labels.communityEmpty}</p>
         ) : (
           <div className="grid gap-7 md:grid-cols-2">
             {filteredCommunityPosts.map((post) => (
               <article
                 key={post.id}
-                className="h-full min-h-56 rounded-2xl border border-zinc-500 bg-zinc-300 p-7 shadow-[0_0_22px_rgba(129,216,208,0.12)] transition hover:border-cyan-500/50 hover:bg-zinc-400 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                className="h-full min-h-56 rounded-2xl border border-border-base bg-surface-muted p-7 shadow-[0_0_22px_rgba(129,216,208,0.12)] transition hover:border-accent-border-sub hover:bg-surface-strong dark:border-border-base dark:bg-surface-sub dark:hover:bg-surface-strong"
               >
                 <div className="mb-3 flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-zinc-400 bg-zinc-200 px-2.5 py-1 text-xs font-semibold text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200">
+                  <span className="rounded-full border border-border-base bg-surface-strong px-2.5 py-1 text-xs font-semibold text-text-sub dark:border-border-base dark:bg-surface-sub dark:text-text-sub">
                     {post.sourceLabel}
                   </span>
-                  <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-cyan-200">
+                  <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-cyan-200">
                     {post.categoryLabel}
                   </span>
                 </div>
-                <h4 className="mb-3 text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                <h4 className="mb-3 text-xl font-bold text-text-base dark:text-text-base">
                   <Link href={post.detailHref} className="transition hover:text-cyan-200">
                     {post.title}
                   </Link>
                 </h4>
-                <p className="mb-5 line-clamp-4 text-base leading-7 text-zinc-700 dark:text-zinc-200">
+                <p className="mb-5 line-clamp-4 text-base leading-7 text-text-sub dark:text-text-sub">
                   {post.content}
                 </p>
-                <div className="space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                <div className="space-y-2 text-sm text-text-sub dark:text-text-muted">
                   <p>
                     <strong>{labels.author}:</strong> {post.authorDisplay}
                   </p>

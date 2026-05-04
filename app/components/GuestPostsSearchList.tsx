@@ -63,8 +63,8 @@ export default function GuestPostsSearchList({
               onClick={() => setSelectedCategory(option.value)}
               className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
                 active
-                  ? "border-[#74cfc6] bg-[#81d8d0] text-zinc-900 shadow-[0_0_18px_rgba(129,216,208,0.4)]"
-                  : "border-zinc-400 bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+                  ? "border-[#74cfc6] bg-[#81d8d0] text-text-base shadow-[0_0_18px_rgba(129,216,208,0.4)]"
+                  : "border-border-base bg-surface-strong text-text-sub hover:bg-surface-muted dark:border-border-base dark:bg-surface-sub dark:text-text-sub dark:hover:bg-surface-strong"
               }`}
             >
               {option.label}
@@ -74,31 +74,31 @@ export default function GuestPostsSearchList({
       </div>
 
       {filteredPosts.length === 0 ? (
-        <p className="text-zinc-500 dark:text-zinc-400">{labels.empty}</p>
+        <p className="text-text-muted dark:text-text-subtle">{labels.empty}</p>
       ) : (
         filteredPosts.map((post) => (
           <article
             key={String(post.id)}
-            className="space-y-3 rounded-2xl border border-zinc-500 bg-zinc-300 p-5 transition hover:bg-zinc-400 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+            className="space-y-3 rounded-2xl border border-border-base bg-surface-muted p-5 transition hover:bg-surface-strong dark:border-border-base dark:bg-surface-sub dark:hover:bg-surface-strong"
           >
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-cyan-500/40 bg-cyan-500/10 px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-cyan-200">
+              <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-cyan-200">
                 {post.categoryLabel}
               </span>
             </div>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-xl font-bold text-text-base dark:text-text-base">
               <Link href={post.detailHref} className="transition hover:text-cyan-200">
                 {post.title}
               </Link>
             </h2>
-            <p className="text-zinc-700 dark:text-zinc-200">{post.content}</p>
-            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+            <p className="text-text-sub dark:text-text-sub">{post.content}</p>
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-text-sub dark:text-text-muted">
               <p>
                 {labels.author}: {post.authorDisplay}
               </p>
               <p>{labels.date}: {post.date}</p>
             </div>
-            <p className="text-sm text-zinc-700 dark:text-zinc-300">
+            <p className="text-sm text-text-sub dark:text-text-muted">
               {labels.category}: {post.categoryLabel}
             </p>
 
@@ -107,7 +107,7 @@ export default function GuestPostsSearchList({
                 {post.editHref ? (
                   <Link
                     href={post.editHref}
-                    className="rounded-full border border-zinc-600 bg-zinc-400 px-4 py-1.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-500 dark:border-cyan-500/50 dark:bg-cyan-500/10 dark:text-cyan-200 dark:hover:bg-cyan-500/20"
+                    className="rounded-full border border-border-base bg-surface-strong px-4 py-1.5 text-sm font-semibold text-text-base hover:bg-surface-muted dark:border-accent-border-sub dark:bg-accent-soft dark:text-cyan-200 dark:hover:bg-accent-soft"
                   >
                     {labels.edit}
                   </Link>
@@ -117,7 +117,7 @@ export default function GuestPostsSearchList({
                     <input type="hidden" name="postId" value={post.postId} />
                     <button
                       type="submit"
-                      className="rounded-full border border-zinc-600 bg-zinc-400 px-4 py-1.5 text-sm font-semibold text-zinc-900 hover:bg-zinc-500 dark:border-red-400/60 dark:bg-red-500/20 dark:text-red-300 dark:hover:bg-red-500/30"
+                      className="rounded-full border border-border-base bg-surface-strong px-4 py-1.5 text-sm font-semibold text-text-base hover:bg-surface-muted dark:border-danger-border dark:bg-danger-soft dark:text-danger-sub dark:hover:bg-danger-soft"
                     >
                       {labels.delete}
                     </button>

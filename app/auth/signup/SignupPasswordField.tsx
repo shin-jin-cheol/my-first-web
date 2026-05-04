@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 
@@ -14,7 +14,7 @@ type SignupPasswordFieldProps = {
 
 function RuleItem({ ok, text }: { ok: boolean; text: string }) {
   return (
-    <li className={ok ? "text-emerald-600 dark:text-emerald-300" : "text-zinc-500 dark:text-zinc-300"}>
+    <li className={ok ? "text-emerald-600 dark:text-success-sub" : "text-text-muted dark:text-zinc-300"}>
       {ok ? "OK" : "·"} {text}
     </li>
   );
@@ -38,7 +38,7 @@ export default function SignupPasswordField({
 
   return (
     <div className="space-y-2">
-      <label htmlFor="password" className="text-sm text-zinc-600 dark:text-zinc-200">
+      <label htmlFor="password" className="text-sm text-zinc-600 dark:text-text-sub">
         {label}
       </label>
       <input
@@ -51,9 +51,9 @@ export default function SignupPasswordField({
         required
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+        className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] dark:border-zinc-600 dark:bg-surface-sub dark:text-text-base"
       />
-      <p className="text-xs text-zinc-500 dark:text-zinc-300">{helperText}</p>
+      <p className="text-xs text-text-muted dark:text-zinc-300">{helperText}</p>
       <ul className="grid gap-1 text-xs">
         <RuleItem ok={hasLength} text={lengthText} />
         <RuleItem ok={hasLetter} text={letterText} />

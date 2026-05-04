@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
@@ -81,25 +81,25 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   return (
     <section className="space-y-8">
       <header className="space-y-2">
-        <p className="text-sm font-semibold uppercase tracking-wider text-zinc-400">Edit</p>
-        <h1 className="text-4xl font-extrabold text-zinc-700 dark:text-zinc-100 drop-shadow-[0_0_12px_rgba(129,216,208,0.35)]">
+        <p className="text-sm font-semibold uppercase tracking-wider text-text-subtle">Edit</p>
+        <h1 className="text-4xl font-extrabold text-text-sub dark:text-text-base drop-shadow-[0_0_12px_rgba(129,216,208,0.35)]">
           블로그 글 수정
         </h1>
       </header>
 
       <form
         action={updatePostAction}
-        className="space-y-5 rounded-2xl border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 p-6 shadow-[0_0_28px_rgba(129,216,208,0.16)]"
+        className="space-y-5 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-6 shadow-[0_0_28px_rgba(129,216,208,0.16)]"
       >
         <div className="space-y-2">
-          <label htmlFor="category" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+          <label htmlFor="category" className="text-sm font-medium text-text-sub dark:text-text-sub">
             카테고리
           </label>
           <select
             id="category"
             name="category"
             defaultValue={post.category}
-            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           >
             {categoryOptions.map((category) => (
               <option key={category} value={category}>
@@ -110,7 +110,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="title" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+          <label htmlFor="title" className="text-sm font-medium text-text-sub dark:text-text-sub">
             제목
           </label>
           <input
@@ -119,12 +119,12 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             type="text"
             required
             defaultValue={post.title}
-            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="author" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+          <label htmlFor="author" className="text-sm font-medium text-text-sub dark:text-text-sub">
             작성자
           </label>
           <input
@@ -133,12 +133,12 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             type="text"
             required
             defaultValue={post.author}
-            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="content" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+          <label htmlFor="content" className="text-sm font-medium text-text-sub dark:text-text-sub">
             내용
           </label>
           <textarea
@@ -147,12 +147,12 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             required
             rows={10}
             defaultValue={post.content}
-            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-900 px-4 py-3 text-zinc-700 dark:text-zinc-100 outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-surface-strong dark:bg-surface-sub px-4 py-3 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="linkUrl" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+          <label htmlFor="linkUrl" className="text-sm font-medium text-text-sub dark:text-text-sub">
             링크 URL (선택)
           </label>
           <input
@@ -163,22 +163,22 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             autoComplete="url"
             defaultValue={post.linkUrl ?? ""}
             placeholder="https://example.com"
-            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="attachment" className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+          <label htmlFor="attachment" className="text-sm font-medium text-text-sub dark:text-text-sub">
             파일 교체 (선택)
           </label>
           <input
             id="attachment"
             name="attachment"
             type="file"
-            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-zinc-200 dark:bg-zinc-900 px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-100 file:mr-4 file:rounded-full file:border-0 file:bg-zinc-300 dark:file:bg-zinc-700 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-zinc-700 dark:file:text-zinc-100 hover:file:bg-zinc-400 dark:hover:file:bg-zinc-600"
+            className="w-full rounded-xl border border-zinc-400 dark:border-zinc-600 bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-sm text-text-sub dark:text-text-base file:mr-4 file:rounded-full file:border-0 file:bg-surface-muted dark:file:bg-zinc-700 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-text-sub dark:file:text-text-base hover:file:bg-zinc-400 dark:hover:file:bg-zinc-600"
           />
           {post.fileName ? (
-            <label className="inline-flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-300">
+            <label className="inline-flex items-center gap-2 text-sm text-text-muted dark:text-zinc-300">
               <input type="checkbox" name="removeAttachment" className="h-4 w-4 accent-[#81d8d0]" />
               기존 첨부파일 제거
             </label>
@@ -188,13 +188,13 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.6)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
+            className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_20px_rgba(129,216,208,0.6)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
           >
             저장하기
           </button>
           <Link
             href={`/posts/${post.id}`}
-            className="rounded-full border border-zinc-400 dark:border-zinc-500 bg-zinc-200 dark:bg-zinc-700 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-100 transition hover:bg-zinc-300 dark:hover:bg-zinc-600"
+            className="rounded-full border border-zinc-400 dark:border-zinc-500 bg-surface-strong dark:bg-zinc-700 px-4 py-2 text-sm font-medium text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-zinc-600"
           >
             취소
           </Link>

@@ -73,33 +73,33 @@ export default async function NewGuestPostPage({ searchParams }: NewGuestPostPag
   return (
     <section className="space-y-8">
       <header className="space-y-2">
-        <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">
           Guest Write
         </p>
-        <h1 className="text-4xl font-extrabold text-zinc-700 dark:text-zinc-100 drop-shadow-[0_0_12px_rgba(129,216,208,0.35)]">
+        <h1 className="text-4xl font-extrabold text-text-sub dark:text-text-base drop-shadow-[0_0_12px_rgba(129,216,208,0.35)]">
           게스트 글 쓰기
         </h1>
       </header>
 
       {errorMessage ? (
-        <p className="rounded-xl border border-red-400/50 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <p className="rounded-xl border border-danger-border bg-danger-soft px-4 py-3 text-sm text-danger-sub">
           {errorMessage}
         </p>
       ) : null}
 
       <form
         action={createGuestPost}
-        className="space-y-5 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-6 shadow-[0_0_28px_rgba(129,216,208,0.16)]"
+        className="space-y-5 rounded-2xl border border-border-base dark:border-border-base bg-surface dark:bg-surface-strong p-6 shadow-[0_0_28px_rgba(129,216,208,0.16)]"
       >
         <div className="space-y-2">
-          <label htmlFor="category" className="text-sm font-medium text-zinc-600 dark:text-zinc-200">
+          <label htmlFor="category" className="text-sm font-medium text-text-sub dark:text-text-sub">
             카테고리
           </label>
           <select
             id="category"
             name="category"
             defaultValue="study"
-            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           >
             {GUEST_POST_CATEGORIES.map((category) => (
               <option key={category} value={category}>
@@ -110,7 +110,7 @@ export default async function NewGuestPostPage({ searchParams }: NewGuestPostPag
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="title" className="text-sm font-medium text-zinc-600 dark:text-zinc-200">
+          <label htmlFor="title" className="text-sm font-medium text-text-sub dark:text-text-sub">
             제목
           </label>
           <input
@@ -118,12 +118,12 @@ export default async function NewGuestPostPage({ searchParams }: NewGuestPostPag
             name="title"
             type="text"
             placeholder="제목을 입력해 주세요."
-            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="content" className="text-sm font-medium text-zinc-600 dark:text-zinc-200">
+          <label htmlFor="content" className="text-sm font-medium text-text-sub dark:text-text-sub">
             내용
           </label>
           <textarea
@@ -132,12 +132,12 @@ export default async function NewGuestPostPage({ searchParams }: NewGuestPostPag
             required
             rows={10}
             placeholder="글 내용을 입력해 주세요."
-            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 px-4 py-3 text-zinc-700 dark:text-zinc-100 outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-3 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="linkUrl" className="text-sm font-medium text-zinc-600 dark:text-zinc-200">
+          <label htmlFor="linkUrl" className="text-sm font-medium text-text-sub dark:text-text-sub">
             링크 URL (선택)
           </label>
           <input
@@ -147,32 +147,32 @@ export default async function NewGuestPostPage({ searchParams }: NewGuestPostPag
             inputMode="url"
             autoComplete="url"
             placeholder="https://example.com"
-            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 px-4 py-2.5 text-zinc-700 dark:text-zinc-100 outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="attachment" className="text-sm font-medium text-zinc-600 dark:text-zinc-200">
+          <label htmlFor="attachment" className="text-sm font-medium text-text-sub dark:text-text-sub">
             파일 업로드 (선택)
           </label>
           <input
             id="attachment"
             name="attachment"
             type="file"
-            className="w-full rounded-xl border border-zinc-300 dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-900 px-4 py-2.5 text-sm text-zinc-700 dark:text-zinc-100 file:mr-4 file:rounded-full file:border-0 file:bg-zinc-200 dark:file:bg-zinc-700 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-zinc-700 dark:file:text-zinc-100 hover:file:bg-zinc-300 dark:hover:file:bg-zinc-600"
+            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-sm text-text-sub dark:text-text-base file:mr-4 file:rounded-full file:border-0 file:bg-surface-strong dark:file:bg-surface-strong file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-text-sub dark:file:text-text-base hover:file:bg-surface-muted dark:hover:file:bg-surface-muted"
           />
         </div>
 
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.6)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
+            className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_20px_rgba(129,216,208,0.6)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
           >
             게시하기
           </button>
           <Link
             href="/guest"
-            className="rounded-full border border-zinc-300 dark:border-zinc-500 bg-zinc-200 dark:bg-zinc-700 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-100 transition hover:bg-zinc-300 dark:hover:bg-zinc-600"
+            className="rounded-full border border-border-base dark:border-border-base bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-medium text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
           >
             취소
           </Link>

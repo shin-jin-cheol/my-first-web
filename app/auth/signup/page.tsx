@@ -108,15 +108,15 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
   const showSentMessage = params.sent === "1";
 
   return (
-    <section className="mx-auto max-w-xl space-y-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-7 shadow-[0_0_24px_rgba(129,216,208,0.14)] dark:border-zinc-700 dark:bg-zinc-800">
+    <section className="mx-auto max-w-xl space-y-6 rounded-2xl border border-border-base bg-surface p-7 shadow-[0_0_24px_rgba(129,216,208,0.14)] dark:border-border-base dark:bg-surface-strong">
       <header className="space-y-2">
-        <p className="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">
           Auth
         </p>
-        <h1 className="text-3xl font-extrabold text-zinc-700 dark:text-zinc-100">
+        <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">
           {t(locale, "회원가입", "Sign up")}
         </h1>
-        <p className="text-zinc-500 dark:text-zinc-300">
+        <p className="text-text-muted dark:text-text-muted">
           {showSentMessage
             ? t(
                 locale,
@@ -132,13 +132,13 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
       </header>
 
       {errorMessage ? (
-        <p className="rounded-xl border border-red-400/50 bg-red-500/10 px-4 py-2 text-sm text-red-300">
+        <p className="rounded-xl border border-danger-border bg-danger-soft px-4 py-2 text-sm text-danger-sub">
           {errorMessage}
         </p>
       ) : null}
 
       {showSentMessage ? (
-        <div className="rounded-xl border border-cyan-600/40 bg-cyan-500/10 px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">
+        <div className="rounded-xl border border-accent-border bg-accent-soft px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-cyan-200 dark:shadow-none">
           <p>
             {t(
               locale,
@@ -158,7 +158,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
 
       <form action={signupAction} className="space-y-4">
         <div className="space-y-2">
-          <label htmlFor="name" className="text-sm text-zinc-600 dark:text-zinc-200">
+          <label htmlFor="name" className="text-sm text-text-sub dark:text-text-sub">
             {t(locale, "이름", "Name")}
           </label>
           <input
@@ -167,12 +167,12 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             required
             readOnly={showSentMessage}
             defaultValue={params.name ?? ""}
-            className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] read-only:bg-zinc-200 read-only:text-zinc-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:read-only:bg-zinc-800 dark:read-only:text-zinc-300"
+            className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] read-only:bg-surface-strong read-only:text-text-muted dark:border-border-base dark:bg-surface-sub dark:text-text-base dark:read-only:bg-surface-strong dark:read-only:text-text-subtle"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="id" className="text-sm text-zinc-600 dark:text-zinc-200">
+          <label htmlFor="id" className="text-sm text-text-sub dark:text-text-sub">
             {t(locale, "아이디", "ID")}
           </label>
           <input
@@ -181,12 +181,12 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             required
             readOnly={showSentMessage}
             defaultValue={params.id ?? ""}
-            className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] read-only:bg-zinc-200 read-only:text-zinc-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:read-only:bg-zinc-800 dark:read-only:text-zinc-300"
+            className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] read-only:bg-surface-strong read-only:text-text-muted dark:border-border-base dark:bg-surface-sub dark:text-text-base dark:read-only:bg-surface-strong dark:read-only:text-text-subtle"
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="email" className="text-sm text-zinc-600 dark:text-zinc-200">
+          <label htmlFor="email" className="text-sm text-text-sub dark:text-text-sub">
             {t(locale, "이메일", "Email")}
           </label>
           <div className="flex items-stretch gap-3">
@@ -197,7 +197,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
               required
               readOnly={showSentMessage}
               defaultValue={params.email ?? ""}
-              className="min-w-0 flex-1 rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] read-only:bg-zinc-200 read-only:text-zinc-500 dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100 dark:read-only:bg-zinc-800 dark:read-only:text-zinc-300"
+              className="min-w-0 flex-1 rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] read-only:bg-surface-strong read-only:text-text-muted dark:border-border-base dark:bg-surface-sub dark:text-text-base dark:read-only:bg-surface-strong dark:read-only:text-text-subtle"
             />
             <SendCodeButton
               idleLabel={t(
@@ -210,7 +210,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             />
           </div>
           {!showSentMessage ? (
-            <p className="text-xs text-zinc-500 dark:text-zinc-300">
+            <p className="text-xs text-text-muted dark:text-text-muted">
               {t(
                 locale,
                 "인증 코드를 받은 뒤 비밀번호를 입력해 회원가입을 완료합니다.",
@@ -225,7 +225,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             <div className="space-y-2">
               <label
                 htmlFor="verificationCode"
-                className="text-sm text-zinc-600 dark:text-zinc-200"
+                className="text-sm text-text-sub dark:text-text-sub"
               >
                 {t(locale, "인증 코드", "Verification Code")}
               </label>
@@ -238,9 +238,9 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
                 pattern="\d{6,8}"
                 placeholder={t(locale, "인증 코드 숫자", "Verification code")}
                 required
-                className="w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-2.5 text-zinc-700 outline-none focus:border-[#81d8d0] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-100"
+                className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] dark:border-border-base dark:bg-surface-sub dark:text-text-base"
               />
-              <p className="text-xs text-zinc-500 dark:text-zinc-300">
+              <p className="text-xs text-text-muted dark:text-text-muted">
                 {t(
                   locale,
                   "메일로 받은 인증 코드 숫자를 그대로 입력해 주세요.",
@@ -269,7 +269,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
 
             <button
               type="submit"
-              className="rounded-full border border-[#74cfc6] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-zinc-900 shadow-[0_0_20px_rgba(129,216,208,0.62)] hover:shadow-[0_0_24px_rgba(129,216,208,0.72)]"
+              className="rounded-full border border-[#74cfc6] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_20px_rgba(129,216,208,0.62)] hover:shadow-[0_0_24px_rgba(129,216,208,0.72)]"
             >
               {t(locale, "회원가입 완료", "Complete Sign up")}
             </button>
@@ -277,7 +277,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
         ) : null}
       </form>
 
-      <p className="text-sm text-zinc-500 dark:text-zinc-300">
+      <p className="text-sm text-text-muted dark:text-text-muted">
         {t(locale, "이미 계정이 있으면", "Already have an account?")}{" "}
         <Link
           href="/auth/login"
