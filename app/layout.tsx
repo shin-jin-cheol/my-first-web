@@ -78,15 +78,15 @@ export default async function RootLayout({
     <html lang="ko" className={cn("dark", "font-sans", geist.variable)} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col bg-surface-muted text-text-base shadow-[inset_0_140px_140px_-120px_rgba(129,216,208,0.2)] dark:bg-surface dark:text-text-base dark:shadow-[inset_0_120px_120px_-120px_rgba(129,216,208,0.22)] pb-24">
         <ClientLayout>
-        <nav className="border-b border-border-strong bg-surface-muted text-text-base shadow-[0_0_30px_rgba(129,216,208,0.22)] dark:border-border-base dark:bg-surface dark:text-text-base dark:shadow-[0_0_24px_rgba(129,216,208,0.18)]">
+        <nav className="border-b border-border-strong bg-surface-muted text-text-base shadow-[0_0_16px_rgba(129,216,208,0.08)] dark:border-border-base dark:bg-surface dark:text-text-base dark:shadow-[0_0_12px_rgba(129,216,208,0.05)]">
           <div className="mx-auto w-full max-w-4xl px-4 py-3 md:px-6 md:py-4">
             <div className="flex items-center justify-between gap-3 md:hidden">
-              <span className="inline-flex h-9 min-w-0 flex-1 items-center truncate rounded-full border border-border-strong bg-surface-muted/92 px-3 text-sm font-extrabold tracking-[0.01em] text-text-base drop-shadow-[0_0_10px_rgba(129,216,208,0.45)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-border-sub dark:bg-surface-sub/70 dark:text-text-base dark:drop-shadow-none dark:shadow-[0_0_14px_rgba(129,216,208,0.35)]">
+              <span className="inline-flex h-9 min-w-0 flex-1 items-center truncate rounded-full border border-border-strong bg-surface-muted/92 px-3 text-sm font-extrabold tracking-[0.01em] text-text-base drop-shadow-[0_0_6px_rgba(129,216,208,0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-border-sub dark:bg-surface-sub/70 dark:text-text-base dark:drop-shadow-none dark:shadow-[0_0_8px_rgba(129,216,208,0.08)]">
                 공인재 신진철의 생존일기
               </span>
               <div className="flex h-9 shrink-0 items-center gap-2">
                 {session ? (
-                  <span className="inline-flex h-9 items-center rounded-full border border-accent-border bg-accent-soft px-2.5 text-[10px] font-semibold uppercase tracking-wide text-[#2f8f88] shadow-[0_0_10px_rgba(129,216,208,0.35)] dark:border-accent-border dark:bg-accent-soft dark:text-accent-sub dark:shadow-none">
+                  <span className="inline-flex h-9 items-center rounded-full border border-accent-border bg-accent-soft px-2.5 text-[10px] font-semibold uppercase tracking-wide text-[#2f8f88] shadow-[0_0_6px_rgba(129,216,208,0.08)] dark:border-accent-border dark:bg-accent-soft dark:text-accent-sub dark:shadow-none">
                     {session.role}
                   </span>
                 ) : null}
@@ -113,22 +113,22 @@ export default async function RootLayout({
             </div>
 
             <div className="hidden min-w-0 items-center gap-3 md:flex">
-              <span className="inline-flex h-9 min-w-0 flex-1 items-center truncate rounded-full border border-border-strong bg-surface-muted/92 px-3 text-base font-extrabold tracking-[0.01em] text-text-base drop-shadow-[0_0_12px_rgba(129,216,208,0.5)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-border-sub dark:bg-surface-sub/70 dark:text-text-base dark:drop-shadow-none dark:shadow-[0_0_14px_rgba(129,216,208,0.35)] md:text-lg lg:max-w-[15rem] lg:flex-none">
+              <span className="inline-flex h-9 min-w-0 flex-1 items-center truncate rounded-full border border-border-strong bg-surface-muted/92 px-3 text-base font-extrabold tracking-[0.01em] text-text-base drop-shadow-[0_0_6px_rgba(129,216,208,0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-border-sub dark:bg-surface-sub/70 dark:text-text-base dark:drop-shadow-none dark:shadow-[0_0_8px_rgba(129,216,208,0.08)] md:text-lg lg:max-w-[15rem] lg:flex-none">
                 공인재 신진철의 생존일기
               </span>
-              <Link href="/" className="hidden h-9 shrink-0 items-center text-sm font-medium text-text-sub transition hover:text-text-base hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-text-muted dark:hover:text-highlight dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)] lg:inline-flex">
+              <Link href="/" className="hidden h-9 shrink-0 items-center text-sm font-medium text-text-sub transition hover:text-text-base hover:drop-shadow-[0_0_6px_rgba(129,216,208,0.18)] dark:text-text-muted dark:hover:text-highlight dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.18)] lg:inline-flex">
                 {t(locale, "홈", "Home")}
               </Link>
-              <Link href="/posts" className="hidden h-9 shrink-0 items-center text-sm font-medium text-text-sub transition hover:text-text-base hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-text-muted dark:hover:text-highlight dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)] lg:inline-flex">
+              <Link href="/posts" className="hidden h-9 shrink-0 items-center text-sm font-medium text-text-sub transition hover:text-text-base hover:drop-shadow-[0_0_6px_rgba(129,216,208,0.18)] dark:text-text-muted dark:hover:text-highlight dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.18)] lg:inline-flex">
                 {t(locale, "블로그", "Blog")}
               </Link>
-              <Link href="/guest" className="hidden h-9 shrink-0 items-center text-sm font-medium text-text-sub transition hover:text-text-base hover:drop-shadow-[0_0_12px_rgba(129,216,208,0.6)] dark:text-text-muted dark:hover:text-highlight dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.6)] lg:inline-flex">
+              <Link href="/guest" className="hidden h-9 shrink-0 items-center text-sm font-medium text-text-sub transition hover:text-text-base hover:drop-shadow-[0_0_6px_rgba(129,216,208,0.18)] dark:text-text-muted dark:hover:text-highlight dark:hover:drop-shadow-[0_0_8px_rgba(129,216,208,0.18)] lg:inline-flex">
                 {t(locale, "게스트 게시판", "Guest Board")}
               </Link>
               {session ? (
                 <Link
                   href={writeHref}
-                  className="hidden h-9 shrink-0 items-center rounded-full border border-[#74cfc6] bg-[#81d8d0] px-3 text-sm font-semibold text-text-base shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_22px_rgba(129,216,208,0.68)] transition hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_30px_rgba(129,216,208,0.82)] lg:inline-flex"
+                  className="hidden h-9 shrink-0 items-center rounded-full border border-[#74cfc6] bg-[#81d8d0] px-3 text-sm font-semibold text-text-base shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_12px_rgba(129,216,208,0.18)] transition hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-3px_6px_rgba(0,0,0,0.05),0_0_16px_rgba(129,216,208,0.25)] lg:inline-flex"
                 >
                   {writeLabel}
                 </Link>
@@ -144,7 +144,7 @@ export default async function RootLayout({
                 </Link>
               ) : null}
               {session ? (
-                <span className="hidden h-9 shrink-0 items-center rounded-full border border-accent-border bg-accent-soft px-3 text-xs font-semibold uppercase tracking-wide text-[#2f8f88] shadow-[0_0_10px_rgba(129,216,208,0.35)] dark:border-accent-border dark:bg-accent-soft dark:text-accent-sub dark:shadow-none xl:inline-flex">
+                <span className="hidden h-9 shrink-0 items-center rounded-full border border-accent-border bg-accent-soft px-3 text-xs font-semibold uppercase tracking-wide text-[#2f8f88] shadow-[0_0_6px_rgba(129,216,208,0.08)] dark:border-accent-border dark:bg-accent-soft dark:text-accent-sub dark:shadow-none xl:inline-flex">
                   {session.role}
                 </span>
               ) : null}
@@ -178,7 +178,7 @@ export default async function RootLayout({
           </div>
         </nav>
         <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">{children}</main>
-        <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-border-strong bg-surface-muted/95 py-4 text-center text-sm text-text-base shadow-[0_-16px_32px_-18px_rgba(129,216,208,0.32)] backdrop-blur dark:border-border-base dark:bg-surface/95 dark:text-text-muted dark:shadow-[0_-12px_24px_-20px_rgba(129,216,208,0.3)]">
+        <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-border-strong bg-surface-muted/95 py-4 text-center text-sm text-text-base shadow-[0_-8px_16px_-8px_rgba(129,216,208,0.08)] backdrop-blur dark:border-border-base dark:bg-surface/95 dark:text-text-muted dark:shadow-[0_-6px_12px_-12px_rgba(129,216,208,0.08)]">
           <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-3 px-6">
             <p>{t(locale, "© 2026 공인재 신진철의 생존일기", "© 2026 SJC Survival Log")}</p>
             <div className="flex items-center gap-3">
@@ -187,7 +187,7 @@ export default async function RootLayout({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="인스타그램 바로가기"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#515bd4] text-highlight shadow-[0_0_20px_rgba(221,42,123,0.62)] transition hover:-translate-y-0.5 hover:brightness-105"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#515bd4] text-highlight shadow-[0_0_12px_rgba(221,42,123,0.18)] transition hover:-translate-y-0.5 hover:brightness-105"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -204,14 +204,14 @@ export default async function RootLayout({
                 href="https://www.instagram.com/whflwls"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#515bd4] bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_14px_rgba(221,42,123,0.5)] transition hover:brightness-110"
+                className="bg-gradient-to-br from-[#f58529] via-[#dd2a7b] to-[#515bd4] bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_8px_rgba(221,42,123,0.12)] transition hover:brightness-110"
               >
                 @whflwls
               </a>
               <a
                 href="mailto:sjc5001@hs.ac.kr"
                 aria-label="이메일 보내기"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-danger-border bg-gradient-to-br from-[#ea4335] via-[#fbbc05] to-[#34a853] text-highlight shadow-[0_0_20px_rgba(234,67,53,0.5)] transition hover:-translate-y-0.5 hover:brightness-105"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-danger-border bg-gradient-to-br from-[#ea4335] via-[#fbbc05] to-[#34a853] text-highlight shadow-[0_0_12px_rgba(234,67,53,0.12)] transition hover:-translate-y-0.5 hover:brightness-105"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -227,7 +227,7 @@ export default async function RootLayout({
               </a>
               <a
                 href="mailto:sjc5001@hs.ac.kr"
-                className="bg-gradient-to-br from-[#ea4335] via-[#fbbc05] to-[#34a853] bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_14px_rgba(234,67,53,0.45)] transition hover:brightness-110"
+                className="bg-gradient-to-br from-[#ea4335] via-[#fbbc05] to-[#34a853] bg-clip-text text-sm font-semibold text-transparent drop-shadow-[0_0_8px_rgba(234,67,53,0.12)] transition hover:brightness-110"
               >
                 sjc5001@hs.ac.kr
               </a>

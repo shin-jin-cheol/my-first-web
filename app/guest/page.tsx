@@ -67,14 +67,14 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
         <p className="text-sm font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">
           Guest Board
         </p>
-        <h1 className="text-4xl font-extrabold text-text-sub dark:text-text-base drop-shadow-[0_0_12px_rgba(129,216,208,0.3)]">
+        <h1 className="text-4xl font-extrabold text-text-sub dark:text-text-base drop-shadow-[0_0_6px_rgba(129,216,208,0.08)]">
           {t(locale, "게스트 게시판", "Guest Board")}
         </h1>
         {session.role === "member" ? (
           <div>
             <Link
               href="/guest/new"
-              className="inline-flex rounded-full border border-[#74cfc6] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_18px_rgba(129,216,208,0.5)] transition hover:-translate-y-0.5 hover:brightness-105"
+              className="inline-flex rounded-full border border-[#74cfc6] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_8px_rgba(129,216,208,0.12)] transition hover:-translate-y-0.5 hover:brightness-105"
             >
               {t(locale, "게스트 글 쓰기", "Write Guest Post")}
             </Link>
@@ -89,7 +89,7 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
       ) : null}
 
       {session.role === "owner" ? (
-        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-accent-sub dark:shadow-none">
+        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_6px_rgba(129,216,208,0.08)] dark:text-accent-sub dark:shadow-none">
           {t(
             locale,
             "주인 계정으로 로그인 중입니다. 회원이 작성한 게스트 게시글을 관리할 수 있습니다.",

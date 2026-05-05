@@ -11,7 +11,7 @@ export default async function Home() {
       <section className="space-y-5">
         <div className="min-h-[128px] space-y-3 md:min-h-[150px]">
           <h1
-            className={`font-black text-text-sub dark:text-text-base drop-shadow-[0_0_16px_rgba(129,216,208,0.45)] ${
+            className={`font-black text-text-sub dark:text-text-base drop-shadow-[0_0_8px_rgba(129,216,208,0.12)] ${
               isEnglish ? "text-2xl md:text-3xl" : "text-3xl md:text-4xl"
             }`}
           >
@@ -22,9 +22,9 @@ export default async function Home() {
           </p>
         </div>
 
-        <div className="relative overflow-hidden rounded-3xl border border-border-strong bg-surface-muted/85 dark:border-border-base dark:bg-surface-sub/70 shadow-[0_0_32px_rgba(129,216,208,0.2)] backdrop-blur">
+        <div className="relative overflow-hidden rounded-3xl border border-border-strong bg-surface-muted/85 dark:border-border-base dark:bg-surface-sub/70 shadow-[0_0_16px_rgba(129,216,208,0.08)] backdrop-blur">
           <HeroImage />
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(129,216,208,0.2),transparent_45%),radial-gradient(circle_at_80%_70%,rgba(129,216,208,0.12),transparent_40%)]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(129,216,208,0.08),transparent_45%),radial-gradient(circle_at_80%_70%,rgba(129,216,208,0.05),transparent_40%)]" />
         </div>
       </section>
 
@@ -39,7 +39,7 @@ export default async function Home() {
           </p>
           <Link
             href="/posts"
-            className="inline-flex w-full items-center justify-center rounded-full border border-border-strong bg-surface-strong px-4 py-2.5 text-sm font-semibold text-text-base dark:border-border-base dark:bg-surface-strong dark:text-text-base shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_13px_rgba(129,216,208,0.26)] transition hover:-translate-y-0.5 hover:bg-surface-muted hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.26),0_0_15px_rgba(129,216,208,0.34)]"
+            className="inline-flex w-full items-center justify-center rounded-full border border-border-strong bg-surface-strong px-4 py-2.5 text-sm font-semibold text-text-base dark:border-border-base dark:bg-surface-strong dark:text-text-base shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_6px_rgba(129,216,208,0.08)] transition hover:-translate-y-0.5 hover:bg-surface-muted hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.26),0_0_8px_rgba(129,216,208,0.08)]"
           >
             {t(locale, "게시글 목록 열기", "Open Posts")}
           </Link>

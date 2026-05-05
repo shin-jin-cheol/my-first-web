@@ -108,7 +108,7 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
       ) : null}
 
       {successMessage ? (
-        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-accent-sub dark:shadow-none">{successMessage}</p>
+        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-3 text-sm text-[#2f8f88] shadow-[0_0_6px_rgba(129,216,208,0.08)] dark:text-accent-sub dark:shadow-none">{successMessage}</p>
       ) : null}
 
       <form action={updateProfileAction} className="space-y-4 rounded-2xl border border-border-base dark:border-border-base bg-surface dark:bg-surface-strong p-6">
@@ -132,7 +132,7 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
             className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
           />
         </div>
-        <button type="submit" className="rounded-full border border-accent-border bg-accent-soft px-4 py-2 text-sm font-semibold text-[#2f8f88] shadow-[0_0_14px_rgba(129,216,208,0.3)] transition hover:shadow-[0_0_18px_rgba(129,216,208,0.45)] dark:border-accent-border dark:text-accent-sub dark:shadow-none">
+        <button type="submit" className="rounded-full border border-accent-border bg-accent-soft px-4 py-2 text-sm font-semibold text-[#2f8f88] shadow-[0_0_8px_rgba(129,216,208,0.08)] transition hover:shadow-[0_0_8px_rgba(129,216,208,0.12)] dark:border-accent-border dark:text-accent-sub dark:shadow-none">
           {t(locale, "회원정보 저장", "Save Profile")}
         </button>
       </form>
@@ -159,7 +159,7 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
             className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
           />
         </div>
-        <button type="submit" className="rounded-full border border-accent-border bg-accent-soft px-4 py-2 text-sm font-semibold text-[#2f8f88] shadow-[0_0_14px_rgba(129,216,208,0.3)] transition hover:shadow-[0_0_18px_rgba(129,216,208,0.45)] dark:border-accent-border dark:text-accent-sub dark:shadow-none">
+        <button type="submit" className="rounded-full border border-accent-border bg-accent-soft px-4 py-2 text-sm font-semibold text-[#2f8f88] shadow-[0_0_8px_rgba(129,216,208,0.08)] transition hover:shadow-[0_0_8px_rgba(129,216,208,0.12)] dark:border-accent-border dark:text-accent-sub dark:shadow-none">
           {t(locale, "비밀번호 변경", "Change Password")}
         </button>
       </form>

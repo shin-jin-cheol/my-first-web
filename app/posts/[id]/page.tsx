@@ -142,7 +142,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
   if (!post) {
     return (
-      <div className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_22px_rgba(129,216,208,0.12)]">
+      <div className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgba(129,216,208,0.05)]">
         <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">게시글 상세</h1>
         <p className="text-text-muted dark:text-text-muted">게시글을 찾을 수 없습니다.</p>
         <Link
@@ -156,7 +156,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   }
 
   return (
-    <article className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_22px_rgba(129,216,208,0.12)]">
+    <article className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgba(129,216,208,0.05)]">
       <header className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">Post Detail</p>
         <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">{post.title}</h1>
@@ -180,9 +180,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           href={post.linkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-accent-border bg-gradient-to-r from-surface-sub via-surface-muted to-surface-strong dark:from-surface dark:via-surface-sub dark:to-[#2b6661] px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_20px_rgba(129,216,208,0.35)] transition hover:-translate-y-0.5 hover:brightness-110"
+          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-accent-border bg-gradient-to-r from-surface-sub via-surface-muted to-surface-strong dark:from-surface dark:via-surface-sub dark:to-[#2b6661] px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_12px_rgba(129,216,208,0.08)] transition hover:-translate-y-0.5 hover:brightness-110"
         >
-          <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-accent-sub shadow-[0_0_10px_rgba(129,216,208,0.8)]" />
+          <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-accent-sub shadow-[0_0_6px_rgba(129,216,208,0.25)]" />
           링크 열기
         </a>
       ) : null}
@@ -192,9 +192,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           href={fileDownloadUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-border-base/60 bg-surface-strong dark:bg-highlight-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_14px_rgba(129,216,208,0.25)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-surface-muted dark:hover:bg-highlight-soft"
+          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-border-base/60 bg-surface-strong dark:bg-highlight-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_8px_rgba(129,216,208,0.08)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-surface-muted dark:hover:bg-highlight-soft"
         >
-          <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-text-sub shadow-[0_0_10px_rgba(129,216,208,0.8)]" />
+          <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-text-sub shadow-[0_0_6px_rgba(129,216,208,0.25)]" />
           {post.fileName ?? "파일 열기"}
         </a>
       ) : null}
@@ -284,7 +284,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         {canManagePostResult ? (
           <Link
             href={`/posts/${post.id}/edit`}
-            className="inline-flex rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_20px_rgba(129,216,208,0.5)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
+            className="inline-flex rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_12px_rgba(129,216,208,0.12)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
           >
             수정하기
           </Link>

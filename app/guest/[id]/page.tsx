@@ -156,7 +156,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   }
 
   return (
-    <article className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_22px_rgba(129,216,208,0.12)]">
+    <article className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgba(129,216,208,0.05)]">
       <header className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">Guest Detail</p>
         <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">{post.title}</h1>

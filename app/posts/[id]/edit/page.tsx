@@ -82,14 +82,14 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     <section className="space-y-8">
       <header className="space-y-2">
         <p className="text-sm font-semibold uppercase tracking-wider text-text-subtle">Edit</p>
-        <h1 className="text-4xl font-extrabold text-text-sub dark:text-text-base drop-shadow-[0_0_12px_rgba(129,216,208,0.35)]">
+        <h1 className="text-4xl font-extrabold text-text-sub dark:text-text-base drop-shadow-[0_0_6px_rgba(129,216,208,0.08)]">
           블로그 글 수정
         </h1>
       </header>
 
       <form
         action={updatePostAction}
-        className="space-y-5 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-6 shadow-[0_0_28px_rgba(129,216,208,0.16)]"
+        className="space-y-5 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-6 shadow-[0_0_12px_rgba(129,216,208,0.05)]"
       >
         <div className="space-y-2">
           <label htmlFor="category" className="text-sm font-medium text-text-sub dark:text-text-sub">
@@ -188,7 +188,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_20px_rgba(129,216,208,0.6)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
+            className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_12px_rgba(129,216,208,0.18)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
           >
             저장하기
           </button>
