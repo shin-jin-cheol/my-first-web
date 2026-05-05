@@ -22,17 +22,21 @@ type PostDetailPageProps = {
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const { id } = await params;
   const postId = Number(id);
-  const post = await getPostById(postId);
-  const session = await getSession();
-  const comments = await getPostCommentsByPostId(postId);
+  const [post, session, comments] = await Promise.all([
+    getPostById(postId),
+    getSession(),
+    getPostCommentsByPostId(postId),
+  ]);
   const canManagePostResult = canManagePost(session ?? null, post ?? { authorId: undefined });
   const fileDownloadUrl = post?.fileUrl ? buildDownloadUrl(post.fileUrl, post.fileName) : undefined;
 
   async function deletePostAction() {
     "use server";
 
-    const currentSession = await getSession();
-    const currentPost = await getPostById(postId);
+    const [currentSession, currentPost] = await Promise.all([
+      getSession(),
+      getPostById(postId),
+    ]);
 
     const canDeletePost = canManagePost(currentSession ?? null, currentPost ?? { authorId: undefined });
 
@@ -81,7 +85,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   async function updateCommentAction(formData: FormData) {
     "use server";
 
-    const currentSession = await requireSession();
+    const currentSessionPromise = requireSession();
     const commentId = Number(formData.get("commentId") ?? 0);
     const content = String(formData.get("content") ?? "").trim();
 
@@ -89,7 +93,10 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
       redirect(`/posts/${postId}`);
     }
 
-    const currentComments = await getPostCommentsByPostId(postId);
+    const [currentSession, currentComments] = await Promise.all([
+      currentSessionPromise,
+      getPostCommentsByPostId(postId),
+    ]);
     const targetComment = findCommentById(currentComments, commentId);
     const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
 
@@ -106,14 +113,17 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   async function deleteCommentAction(formData: FormData) {
     "use server";
 
-    const currentSession = await requireSession();
+    const currentSessionPromise = requireSession();
     const commentId = Number(formData.get("commentId") ?? 0);
 
     if (!commentId) {
       redirect(`/posts/${postId}`);
     }
 
-    const currentComments = await getPostCommentsByPostId(postId);
+    const [currentSession, currentComments] = await Promise.all([
+      currentSessionPromise,
+      getPostCommentsByPostId(postId),
+    ]);
     const targetComment = findCommentById(currentComments, commentId);
     const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
 
@@ -121,7 +131,10 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
       redirect(`/posts/${postId}`);
     }
 
-    await deletePostCommentById(postId, commentId);
+    const deleted = await deletePostCommentById(postId, commentId);
+    if (!deleted) {
+      redirect(`/posts/${postId}?error=${encodeURIComponent("댓글 삭제에 실패했습니다.")}`);
+    }
     revalidatePath(`/posts/${postId}`, "page");
     revalidatePath("/posts", "page");
     redirect(`/posts/${postId}?comment-deleted=${Date.now()}`);

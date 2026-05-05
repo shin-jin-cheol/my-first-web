@@ -5,6 +5,7 @@ import {
   sendSignupVerificationCode,
 } from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
+import { Input } from "@/components/ui/input";
 import SendCodeButton from "./SendCodeButton";
 import SignupPasswordField from "./SignupPasswordField";
 import { isRedirectError } from "@/lib/redirect-error";
@@ -161,7 +162,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
           <label htmlFor="name" className="text-sm text-text-sub dark:text-text-sub">
             {t(locale, "이름", "Name")}
           </label>
-          <input
+          <Input
             id="name"
             name="name"
             required
@@ -175,7 +176,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
           <label htmlFor="id" className="text-sm text-text-sub dark:text-text-sub">
             {t(locale, "아이디", "ID")}
           </label>
-          <input
+          <Input
             id="id"
             name="id"
             required
@@ -190,7 +191,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             {t(locale, "이메일", "Email")}
           </label>
           <div className="flex items-stretch gap-3">
-            <input
+            <Input
               id="email"
               name="email"
               type="email"
@@ -229,17 +230,17 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
               >
                 {t(locale, "인증 코드", "Verification Code")}
               </label>
-              <input
-                id="verificationCode"
-                name="verificationCode"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={8}
-                pattern="\d{6,8}"
-                placeholder={t(locale, "인증 코드 숫자", "Verification code")}
-                required
-                className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] dark:border-border-sub dark:bg-surface-sub dark:text-text-base"
-              />
+            <Input
+              id="verificationCode"
+              name="verificationCode"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={8}
+              pattern="\d{6,8}"
+              placeholder={t(locale, "인증 코드 숫자", "Verification code")}
+              required
+              className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] dark:border-border-sub dark:bg-surface-sub dark:text-text-base"
+            />
               <p className="text-xs text-text-muted dark:text-text-muted">
                 {t(
                   locale,

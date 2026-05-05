@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import SearchBar from "./SearchBar";
 import type { GuestPostCategory } from "@/lib/post-categories";
-import { includesQuery } from "@/lib/search";
+import { filterByCategoryAndQuery, getCategoryFilterButtonClass } from "@/lib/search-filters";
 import type { GuestPostItem, CategoryOption } from "@/types/posts";
 
 type Labels = {
@@ -35,16 +35,13 @@ export default function GuestPostsSearchList({
   const normalizedQuery = query.trim();
 
   const filteredPosts = useMemo(() => {
-    return posts.filter((post) => {
-      const matchesCategory =
-        selectedCategory === "all" ? true : post.category === selectedCategory;
-      const matchesQuery =
-        !normalizedQuery ||
-        [post.title, post.content, post.authorDisplay, post.date].some((field) =>
-          includesQuery(field, normalizedQuery),
-        );
-
-      return matchesCategory && matchesQuery;
+    return filterByCategoryAndQuery({
+      items: posts,
+      selectedCategory,
+      normalizedQuery,
+      categoryMatches: (post, currentCategory) =>
+        currentCategory === "all" ? true : post.category === currentCategory,
+      queryFields: (post) => [post.title, post.content, post.authorDisplay, post.date],
     });
   }, [posts, normalizedQuery, selectedCategory]);
 
@@ -61,11 +58,7 @@ export default function GuestPostsSearchList({
               key={option.value}
               type="button"
               onClick={() => setSelectedCategory(option.value)}
-              className={`rounded-full border px-4 py-1.5 text-sm font-semibold transition ${
-                active
-                  ? "border-[#74cfc6] bg-[#81d8d0] text-text-base shadow-[0_0_18px_rgba(129,216,208,0.4)]"
-                  : "border-border-base bg-surface-strong text-text-sub hover:bg-surface-muted dark:border-border-sub dark:bg-surface-sub dark:text-text-sub dark:hover:bg-surface-strong"
-              }`}
+              className={getCategoryFilterButtonClass(active)}
             >
               {option.label}
             </button>

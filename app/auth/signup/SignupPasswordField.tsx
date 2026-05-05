@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
 type SignupPasswordFieldProps = {
   label: string;
@@ -41,7 +42,7 @@ export default function SignupPasswordField({
       <label htmlFor="password" className="text-sm text-text-sub dark:text-text-sub">
         {label}
       </label>
-      <input
+      <Input
         id="password"
         name="password"
         type="password"

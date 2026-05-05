@@ -20,9 +20,12 @@ type GuestPostDetailPageProps = {
 };
 
 export default async function GuestPostDetailPage({ params }: GuestPostDetailPageProps) {
-  const locale = await getLocale();
-  const session = await requireSession();
-  const { id } = await params;
+  const [locale, session, resolvedParams] = await Promise.all([
+    getLocale(),
+    requireSession(),
+    params,
+  ]);
+  const { id } = resolvedParams;
   const postId = Number(id);
 
   if (!Number.isFinite(postId) || postId <= 0) {
@@ -40,8 +43,10 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   async function deleteGuestPostAction() {
     "use server";
 
-    const currentSession = await requireSession();
-    const currentPost = await getGuestPostById(postId);
+    const [currentSession, currentPost] = await Promise.all([
+      requireSession(),
+      getGuestPostById(postId),
+    ]);
     const canDelete = canManagePost(currentSession, currentPost ?? { authorId: undefined });
 
     if (!canDelete) {
@@ -61,14 +66,17 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   async function addCommentAction(formData: FormData) {
     "use server";
 
-    const currentSession = await requireSession();
+    const currentSessionPromise = requireSession();
     const content = String(formData.get("comment") ?? "").trim();
 
     if (!content) {
       redirect(`/guest/${postId}?comment=empty`);
     }
 
-    const currentPost = await getGuestPostById(postId);
+    const [currentSession, currentPost] = await Promise.all([
+      currentSessionPromise,
+      getGuestPostById(postId),
+    ]);
     if (!currentPost) {
       redirect("/guest");
     }
@@ -90,7 +98,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   async function updateCommentAction(formData: FormData) {
     "use server";
 
-    const currentSession = await requireSession();
+    const currentSessionPromise = requireSession();
     const commentId = Number(formData.get("commentId") ?? 0);
     const content = String(formData.get("content") ?? "").trim();
 
@@ -98,7 +106,10 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
       redirect(`/guest/${postId}`);
     }
 
-    const currentPost = await getGuestPostById(postId);
+    const [currentSession, currentPost] = await Promise.all([
+      currentSessionPromise,
+      getGuestPostById(postId),
+    ]);
     const targetComment = findCommentById(currentPost?.comments, commentId);
     const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
 
@@ -116,14 +127,17 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   async function deleteCommentAction(formData: FormData) {
     "use server";
 
-    const currentSession = await requireSession();
+    const currentSessionPromise = requireSession();
     const commentId = Number(formData.get("commentId") ?? 0);
 
     if (!commentId) {
       redirect(`/guest/${postId}`);
     }
 
-    const currentPost = await getGuestPostById(postId);
+    const [currentSession, currentPost] = await Promise.all([
+      currentSessionPromise,
+      getGuestPostById(postId),
+    ]);
     const targetComment = findCommentById(currentPost?.comments, commentId);
     const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
 
@@ -131,7 +145,10 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
       redirect(`/guest/${postId}`);
     }
 
-    await deleteGuestCommentById(postId, commentId);
+    const deleted = await deleteGuestCommentById(postId, commentId);
+    if (!deleted) {
+      redirect(`/guest/${postId}?error=${encodeURIComponent("댓글 삭제에 실패했습니다.")}`);
+    }
     revalidatePath(`/guest/${postId}`, "page");
     revalidatePath("/guest", "page");
     revalidatePath("/posts", "page");

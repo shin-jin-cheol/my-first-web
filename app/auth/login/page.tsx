@@ -2,6 +2,7 @@
 import { redirect } from "next/navigation";
 import { login, setSession } from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
+import { Input } from "@/components/ui/input";
 
 async function loginAction(formData: FormData) {
   "use server";
@@ -58,7 +59,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <form action={loginAction} className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="id" className="text-sm text-text-sub dark:text-text-sub">{t(locale, "아이디", "ID")}</label>
-          <input
+          <Input
             id="id"
             name="id"
             required
@@ -67,7 +68,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
         <div className="space-y-2">
           <label htmlFor="password" className="text-sm text-text-sub dark:text-text-sub">{t(locale, "비밀번호", "Password")}</label>
-          <input
+          <Input
             id="password"
             name="password"
             type="password"

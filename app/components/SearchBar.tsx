@@ -1,5 +1,7 @@
 ﻿"use client";
 
+import { Input } from "@/components/ui/input";
+
 type SearchBarProps = {
   value: string;
   onChange: (value: string) => void;
@@ -12,7 +14,7 @@ export default function SearchBar({ value, onChange, placeholder }: SearchBarPro
       <label htmlFor="post-search" className="sr-only">
         검색
       </label>
-      <input
+      <Input
         id="post-search"
         type="text"
         value={value}

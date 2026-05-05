@@ -1,11 +1,12 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { del, list, put } from "@vercel/blob";
+import { list, put } from "@vercel/blob";
 import { GuestPostCategory, normalizeGuestPostCategory } from "@/lib/post-categories";
 import { safeJsonParse } from "@/lib/safe-json";
 import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_GUEST_POSTS_TABLE, SUPABASE_UPLOADS_BUCKET, BLOB_READ_WRITE_TOKEN } from "@/lib/env";
 import { getKstDateString, getKstDateTimeString } from "@/lib/date";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
+import { normalizeLinkUrl, removeAttachment, saveAttachmentFile } from "@/lib/attachment-utils";
 
 export type GuestPost = {
   id: number;
@@ -267,191 +268,16 @@ function resolveGuestPostsFilePath() {
   return GUEST_POSTS_FILE_LOCAL;
 }
 
-
-function sanitizeFileName(fileName: string) {
-  return fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
-}
-
-async function uploadAttachmentToSupabaseStorage(file: File, uniqueName: string) {
-  if (!SUPABASE_SERVICE_ROLE_KEY) {
-    return undefined;
-  }
-
-  const storagePath = `uploads/${uniqueName}`;
-  const response = await fetch(
-    getSupabaseStorageObjectEndpoint(`/${SUPABASE_UPLOADS_BUCKET}/${storagePath}`),
-    {
-      method: "POST",
-      headers: {
-        apikey: SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        "Content-Type": file.type || "application/octet-stream",
-        "x-upsert": "false",
-      },
-      body: Buffer.from(await file.arrayBuffer()),
-      cache: "no-store",
-    },
-  );
-
-  if (!response.ok) {
-    return undefined;
-  }
-
+function getAttachmentRuntimeOptions() {
   return {
-    fileUrl: getSupabasePublicFileUrl(storagePath),
-    fileName: file.name || uniqueName,
+    hasSupabaseStorage: hasSupabaseStorage(),
+    supabaseServiceRoleKey: SUPABASE_SERVICE_ROLE_KEY,
+    supabaseUploadsBucket: SUPABASE_UPLOADS_BUCKET,
+    getSupabaseStorageObjectEndpoint,
+    getSupabasePublicFileUrl,
+    hasBlobStorageToken: Boolean(BLOB_READ_WRITE_TOKEN),
+    uploadsDir: UPLOADS_DIR,
   };
-}
-
-function extractSupabaseStoragePath(fileUrl?: string) {
-  if (!fileUrl) {
-    return undefined;
-  }
-
-  const publicPrefix = `/storage/v1/object/public/${SUPABASE_UPLOADS_BUCKET}/`;
-  const privatePrefix = `/storage/v1/object/${SUPABASE_UPLOADS_BUCKET}/`;
-
-  try {
-    const parsed = new URL(fileUrl);
-    if (parsed.pathname.startsWith(publicPrefix)) {
-      return parsed.pathname.slice(publicPrefix.length);
-    }
-
-    if (parsed.pathname.startsWith(privatePrefix)) {
-      return parsed.pathname.slice(privatePrefix.length);
-    }
-
-    return undefined;
-  } catch {
-    if (fileUrl.startsWith(publicPrefix)) {
-      return fileUrl.slice(publicPrefix.length);
-    }
-
-    if (fileUrl.startsWith(privatePrefix)) {
-      return fileUrl.slice(privatePrefix.length);
-    }
-
-    return undefined;
-  }
-}
-
-async function removeSupabaseAttachment(fileUrl?: string) {
-  if (!SUPABASE_SERVICE_ROLE_KEY) {
-    return;
-  }
-
-  const storagePath = extractSupabaseStoragePath(fileUrl);
-  if (!storagePath) {
-    return;
-  }
-
-  try {
-    await fetch(getSupabaseStorageObjectEndpoint(`/${SUPABASE_UPLOADS_BUCKET}/${storagePath}`), {
-      method: "DELETE",
-      headers: {
-        apikey: SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-      },
-      cache: "no-store",
-    });
-  } catch {
-    // no-op
-  }
-}
-
-function normalizeLinkUrl(input?: string): string | undefined {
-  if (!input) {
-    return undefined;
-  }
-
-  const trimmed = input.trim();
-  if (!trimmed) {
-    return undefined;
-  }
-
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    return trimmed;
-  }
-
-  return `https://${trimmed}`;
-}
-
-async function ensureUploadsDir() {
-  await fs.mkdir(UPLOADS_DIR, { recursive: true });
-}
-
-async function saveAttachmentFile(file?: File | null): Promise<{ fileUrl: string; fileName: string } | undefined> {
-  if (!file || file.size === 0) {
-    return undefined;
-  }
-
-  const safeName = sanitizeFileName(file.name || "upload.bin");
-  const uniqueName = `${Date.now()}-${safeName}`;
-
-  if (hasSupabaseStorage()) {
-    const uploaded = await uploadAttachmentToSupabaseStorage(file, uniqueName);
-    if (uploaded) {
-      return uploaded;
-    }
-  }
-
-  if (BLOB_READ_WRITE_TOKEN) {
-    const blob = await put(`uploads/${uniqueName}`, file, {
-      access: "public",
-      addRandomSuffix: false,
-    });
-
-    return {
-      fileUrl: blob.url,
-      fileName: file.name || safeName,
-    };
-  }
-
-  await ensureUploadsDir();
-  const filePath = path.join(UPLOADS_DIR, uniqueName);
-  const fileBuffer = Buffer.from(await file.arrayBuffer());
-  await fs.writeFile(filePath, fileBuffer);
-
-  return {
-    fileUrl: `/uploads/${uniqueName}`,
-    fileName: file.name || safeName,
-  };
-}
-
-async function removeLocalAttachment(fileUrl?: string) {
-  if (!fileUrl || !fileUrl.startsWith("/uploads/")) {
-    return;
-  }
-
-  const filePath = path.join(process.cwd(), "public", fileUrl.replace(/^\//, ""));
-  try {
-    await fs.unlink(filePath);
-  } catch {
-    // no-op
-  }
-}
-
-async function removeAttachment(fileUrl?: string) {
-  if (!fileUrl) {
-    return;
-  }
-
-  if (hasSupabaseStorage()) {
-    await removeSupabaseAttachment(fileUrl);
-  }
-
-  if (fileUrl.startsWith("/uploads/")) {
-    await removeLocalAttachment(fileUrl);
-    return;
-  }
-
-  if (BLOB_READ_WRITE_TOKEN) {
-    try {
-      await del(fileUrl);
-    } catch {
-      // no-op
-    }
-  }
 }
 
 async function readGuestPostsFromBlob(): Promise<GuestPost[]> {
@@ -590,7 +416,7 @@ export async function getGuestPostById(id: number): Promise<GuestPost | undefine
 export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost> {
   const posts = await readGuestPosts();
   const nextPostId = posts.reduce((maxId, post) => Math.max(maxId, post.id), 0) + 1;
-  const attachment = await saveAttachmentFile(input.attachmentFile);
+  const attachment = await saveAttachmentFile(input.attachmentFile, getAttachmentRuntimeOptions());
 
   const post: GuestPost = {
     id: nextPostId,
@@ -619,7 +445,7 @@ export async function deleteGuestPostById(id: number): Promise<boolean> {
     return false;
   }
 
-  await removeAttachment(targetPost?.fileUrl);
+  await removeAttachment(targetPost?.fileUrl, getAttachmentRuntimeOptions());
   await writeGuestPosts(filtered);
   return true;
 }
