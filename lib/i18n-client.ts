@@ -1,20 +1,24 @@
-
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-export function useLocale(): 'ko' | 'en' {
-  const [locale, setLocale] = useState<'ko' | 'en'>('ko');
+type Locale = 'ko' | 'en';
 
-  useEffect(() => {
-    // 쿠키에서 lang 값 추출
-    const langCookie = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('lang='))
-      ?.split('=')[1];
-    
-    setLocale((langCookie === 'en' ? 'en' : 'ko') as 'ko' | 'en');
-  }, []);
+function getInitialLocale(): Locale {
+  if (typeof document === 'undefined') {
+    return 'ko';
+  }
+
+  const langCookie = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith('lang='))
+    ?.split('=')[1];
+
+  return langCookie === 'en' ? 'en' : 'ko';
+}
+
+export function useLocale(): Locale {
+  const [locale] = useState<Locale>(() => getInitialLocale());
 
   return locale;
 }

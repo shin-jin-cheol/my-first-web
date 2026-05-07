@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
+type ResolvedTheme = 'light' | 'dark';
 
 interface ThemeContextType {
   theme: Theme | undefined;
@@ -10,57 +11,94 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
+const THEME_STORAGE_KEY = 'theme';
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark');
-  const [isMounted, setIsMounted] = useState(false);
-  function applyTheme(selectedTheme: Theme) {
-    const html = document.documentElement;
-    const isDark =
-      selectedTheme === 'dark' ||
-      (selectedTheme === 'system' &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches);
+function isTheme(value: string | null): value is Theme {
+  return value === 'light' || value === 'dark' || value === 'system';
+}
 
-    if (isDark) {
-      html.classList.add('dark');
-    } else {
-      html.classList.remove('dark');
-    }
+function getSystemTheme(): ResolvedTheme {
+  if (typeof window === 'undefined') {
+    return 'light';
   }
 
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function getStoredTheme(): Theme | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+    return isTheme(storedTheme) ? storedTheme : null;
+  } catch {
+    return null;
+  }
+}
+
+function getInitialTheme(): Theme {
+  return getStoredTheme() ?? 'system';
+}
+
+function resolveTheme(selectedTheme: Theme): ResolvedTheme {
+  return selectedTheme === 'system' ? getSystemTheme() : selectedTheme;
+}
+
+function applyTheme(selectedTheme: Theme) {
+  if (typeof document === 'undefined') {
+    return;
+  }
+
+  document.documentElement.classList.toggle('dark', resolveTheme(selectedTheme) === 'dark');
+}
+
+function storeTheme(selectedTheme: Theme) {
+  try {
+    window.localStorage.setItem(THEME_STORAGE_KEY, selectedTheme);
+  } catch {
+    // localStorage may be unavailable in restricted browser contexts.
+  }
+}
+
+const themeScript = `
+(() => {
+  try {
+    const storedTheme = window.localStorage.getItem('${THEME_STORAGE_KEY}');
+    const theme = storedTheme === 'light' || storedTheme === 'dark' || storedTheme === 'system' ? storedTheme : 'system';
+    const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.classList.toggle('dark', isDark);
+  } catch {
+    document.documentElement.classList.toggle('dark', window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+})();
+`;
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState<Theme>(() => getInitialTheme());
+
   useEffect(() => {
-    setIsMounted(true);
-
-    // localStorage에서 사용자 선택 복원, 없으면 'dark' 기본값
-    const storedTheme = (localStorage.getItem('theme') as Theme) || 'dark';
-    setTheme(storedTheme);
-    applyTheme(storedTheme);
-  }, []);
-
-  useEffect(() => {
-    if (!isMounted) return;
-
-    // localStorage에 저장
-    localStorage.setItem('theme', theme);
     applyTheme(theme);
 
-    // 'system' 선택 시 OS 설정 변경 감시
     if (theme === 'system') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleChange = () => applyTheme(theme);
       mediaQuery.addEventListener('change', handleChange);
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
-  }, [theme, isMounted]);
+  }, [theme]);
 
   const updateTheme = (newTheme: Theme) => {
+    storeTheme(newTheme);
     setTheme(newTheme);
   };
 
-  const value: ThemeContextType =  { theme, updateTheme };
+  const value: ThemeContextType = { theme, updateTheme };
 
   return (
     <ThemeContext.Provider value={value}>
+      <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       {children}
     </ThemeContext.Provider>
   );
