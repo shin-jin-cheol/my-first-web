@@ -2,6 +2,7 @@
 
 import { Settings } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocale } from '@/lib/i18n-client';
 import { useTheme } from './ThemeProvider';
 
@@ -13,11 +14,21 @@ type ThemeOption = {
   icon: ReactNode;
 };
 
+const baseButtonClass = 'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition';
+const defaultButtonClass = `${baseButtonClass} bg-surface text-text-muted hover:bg-surface-sub dark:bg-surface-sub dark:text-text-subtle dark:hover:bg-surface-strong`;
+const selectedButtonClass = `${baseButtonClass} bg-surface-sub text-text-muted ring-1 ring-border-base dark:bg-surface-strong dark:text-text-muted dark:ring-border-strong`;
+
 export function ThemeToggle() {
   const locale = useLocale();
   const { theme, updateTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   const resolvedTheme: Theme = theme ?? 'dark';
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setMounted(true), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const themeOptions: ThemeOption[] = [
     { value: 'light', label: locale === 'ko' ? '라이트' : 'Light', icon: '☼' },
@@ -37,11 +48,7 @@ export function ThemeToggle() {
             type="button"
             onClick={() => updateTheme(option.value)}
             aria-label={locale === 'ko' ? `${option.label} 테마 선택` : `Select ${option.label} theme`}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
-              resolvedTheme === option.value
-                ? 'bg-surface-sub text-text-muted ring-1 ring-border-base dark:bg-surface-strong dark:text-text-muted dark:ring-border-strong'
-                  : 'bg-surface text-text-muted hover:bg-surface-sub dark:bg-surface-sub dark:text-text-subtle dark:hover:bg-surface-strong'
-            }`}
+            className={mounted && resolvedTheme === option.value ? selectedButtonClass : defaultButtonClass}
           >
             <span className="text-current">{option.icon}</span>
             <span className="text-current">{option.label}</span>

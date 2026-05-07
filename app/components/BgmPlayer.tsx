@@ -19,6 +19,12 @@ const tracks: Track[] = [
   { label: "헤이즈 - 잊혀지는 사랑인가요 (Feat. BIG Naughty)", src: "/bgm-heize-잊혀지는 사랑인가요-feat-big-naughty.mp3" },
 ];
 
+const playIcon = "\u25B6\uFE0E";
+const previousIcon = "\u25C0\uFE0E";
+const collapseIcon = "\u25B4\uFE0E";
+const expandIcon = "\u25BE\uFE0E";
+const pauseIcon = "||";
+
 export default function BgmPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -84,7 +90,7 @@ export default function BgmPlayer() {
             title={isPlaying ? "Pause" : "Play"}
             variant="secondary"
           >
-            {isPlaying ? "||" : "▶"}
+            {isPlaying ? pauseIcon : playIcon}
           </Button>
           <p className="min-w-0 flex-1 truncate text-xs text-text-sub dark:text-text-sub">{tracks[selectedIndex].label}</p>
           <Button
@@ -94,7 +100,7 @@ export default function BgmPlayer() {
             title={isMobileExpanded ? "Close" : "Open"}
             variant="ghost"
           >
-            {isMobileExpanded ? "▴" : "▾"}
+            {isMobileExpanded ? collapseIcon : expandIcon}
           </Button>
         </div>
       ) : null}
@@ -144,7 +150,7 @@ export default function BgmPlayer() {
             title="Previous"
             variant="secondary"
           >
-            ◀
+            {previousIcon}
           </Button>
           <Button
             onClick={togglePlayback}
@@ -153,7 +159,7 @@ export default function BgmPlayer() {
             title={isPlaying ? "Pause" : "Play"}
             variant="default"
           >
-            {isPlaying ? "||" : "▶"}
+            {isPlaying ? pauseIcon : playIcon}
           </Button>
           <Button
             onClick={playNextTrack}
@@ -162,7 +168,7 @@ export default function BgmPlayer() {
             title="Next"
             variant="secondary"
           >
-            ▶
+            {playIcon}
           </Button>
         </div>
       </div>
