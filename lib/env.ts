@@ -17,3 +17,7 @@ export const SUPABASE_UPLOADS_BUCKET = process.env.SUPABASE_UPLOADS_BUCKET || "u
 export const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 export const PA_LM_API_URL = process.env.PA_LM_API_URL;
 export const PA_LM_API_KEY = process.env.PA_LM_API_KEY;
+export const SESSION_SECRET = process.env.SESSION_SECRET;
+export const OWNER_ID = process.env.OWNER_ID || "sjc5001";
+export const OWNER_PASSWORD = process.env.OWNER_PASSWORD || "sjc5001*";
+export const OWNER_NAME = process.env.OWNER_NAME || "\uc2e0\uc9c4\ucca0";

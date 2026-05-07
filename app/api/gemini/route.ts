@@ -1,8 +1,18 @@
 import { NextRequest } from 'next/server'
 import { PA_LM_API_URL, PA_LM_API_KEY } from '@/lib/env'
+import { getSession } from '@/lib/auth'
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getSession()
+
+    if (!session) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
     const body = await req.json()
     const apiUrl = PA_LM_API_URL
     const apiKey = PA_LM_API_KEY

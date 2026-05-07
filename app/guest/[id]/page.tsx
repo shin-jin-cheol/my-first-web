@@ -15,11 +15,9 @@ type GuestPostDetailPageProps = {
 };
 
 export default async function GuestPostDetailPage({ params }: GuestPostDetailPageProps) {
-  const [locale, session, resolvedParams] = await Promise.all([
-    getLocale(),
-    requireSession(),
-    params,
-  ]);
+  const localePromise = getLocale();
+  const sessionPromise = requireSession();
+  const resolvedParams = await params;
   const { id } = resolvedParams;
   const postId = Number(id);
 
@@ -27,7 +25,11 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
     redirect("/guest");
   }
 
-  const post = await getGuestPostById(postId);
+  const [locale, session, post] = await Promise.all([
+    localePromise,
+    sessionPromise,
+    getGuestPostById(postId),
+  ]);
   if (!post) {
     redirect("/guest");
   }

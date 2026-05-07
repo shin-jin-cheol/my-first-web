@@ -1,5 +1,7 @@
+import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { SESSION_SECRET } from "@/lib/env";
 import { safeJsonParse } from "@/lib/safe-json";
 
 export type UserRole = "owner" | "member";
@@ -11,9 +13,38 @@ export type Session = {
 };
 const SESSION_COOKIE = "sjc-session";
 
+function signSessionPayload(payload: string) {
+  if (!SESSION_SECRET) {
+    throw new Error("SESSION_SECRET is required for session signing.");
+  }
+
+  return createHmac("sha256", SESSION_SECRET).update(payload).digest("base64url");
+}
+
+function verifySessionSignature(payload: string, signature: string) {
+  if (!SESSION_SECRET) {
+    return false;
+  }
+
+  const expected = signSessionPayload(payload);
+  const expectedBuffer = Buffer.from(expected, "base64url");
+  const signatureBuffer = Buffer.from(signature, "base64url");
+
+  return (
+    expectedBuffer.length === signatureBuffer.length &&
+    timingSafeEqual(expectedBuffer, signatureBuffer)
+  );
+}
+
 function decodeSession(value: string): Session | null {
   try {
-    const json = Buffer.from(value, "base64url").toString("utf-8");
+    const [payload, signature] = value.split(".");
+
+    if (!payload || !signature || !verifySessionSignature(payload, signature)) {
+      return null;
+    }
+
+    const json = Buffer.from(payload, "base64url").toString("utf-8");
     const parsed = safeJsonParse<Session>(json, null);
 
     if (!parsed) return null;
@@ -29,7 +60,8 @@ function decodeSession(value: string): Session | null {
 }
 
 function encodeSession(session: Session) {
-  return Buffer.from(JSON.stringify(session), "utf-8").toString("base64url");
+  const payload = Buffer.from(JSON.stringify(session), "utf-8").toString("base64url");
+  return `${payload}.${signSessionPayload(payload)}`;
 }
 
 export async function getSession(): Promise<Session | null> {

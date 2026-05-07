@@ -1,8 +1,6 @@
 import type { Session } from "@/lib/auth/session";
+import { OWNER_ID, OWNER_NAME, OWNER_PASSWORD } from "@/lib/env";
 import {
-  OWNER_ID,
-  OWNER_NAME,
-  OWNER_PASSWORD,
   getMemberById,
   hasSupabaseAuth,
   saveMember,

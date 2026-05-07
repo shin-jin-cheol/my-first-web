@@ -1,6 +1,16 @@
-import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_AUTH_PUBLIC_KEY, SUPABASE_MEMBERS_TABLE } from "@/lib/env";
+import {
+  OWNER_ID,
+  OWNER_NAME,
+  OWNER_PASSWORD,
+  SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_AUTH_PUBLIC_KEY,
+  SUPABASE_MEMBERS_TABLE,
+} from "@/lib/env";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
 import { hasSupabaseStorage, readJsonStorage, writeJsonStorage } from "@/lib/storage";
+
+export { OWNER_ID, OWNER_NAME, OWNER_PASSWORD };
 
 export type MemberRecord = {
   id: string;
@@ -55,9 +65,6 @@ export type OwnerMemberView = {
   createdAt: string;
 };
 
-export const OWNER_ID = "sjc5001";
-export const OWNER_PASSWORD = "sjc5001*";
-export const OWNER_NAME = "신진철";
 const USERS_BLOB_KEY = "auth/users.json";
 // SUPABASE_* and blob token are centralized in lib/env.ts
 
@@ -169,7 +176,7 @@ async function requestSupabaseAuth<T>(
     return {
       ok: false,
       data: null,
-      message: "Supabase Auth 환경변수가 설정되지 않았습니다.",
+      message: "Supabase Auth \ud658\uacbd\ubcc0\uc218\uac00 \uc124\uc815\ub418\uc9c0 \uc54a\uc558\uc2b5\ub2c8\ub2e4.",
     };
   }
 
@@ -200,7 +207,7 @@ async function requestSupabaseAuth<T>(
     return {
       ok: false,
       data,
-      message: parseAuthErrorMessage(data) || "Supabase Auth 요청에 실패했습니다.",
+      message: parseAuthErrorMessage(data) || "Supabase Auth \uc694\uccad\uc5d0 \uc2e4\ud328\ud588\uc2b5\ub2c8\ub2e4.",
     };
   }
 
@@ -430,3 +437,4 @@ export async function deleteSupabaseAuthUser(authUserId: string) {
 
   return result.ok;
 }
+
