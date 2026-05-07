@@ -14,13 +14,16 @@ import { findCommentById } from "@/lib/comment-utils";
 import { getSession, requireSession } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/post-categories";
 import { canManagePost, canManageComment } from "@/lib/permissions";
+import { getFormNumber, getFormString } from "@/lib/form-utils";
+import { getLocale, tk } from "@/lib/i18n";
 
 type PostDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
 export default async function PostDetailPage({ params }: PostDetailPageProps) {
-  const { id } = await params;
+  const [locale, resolvedParams] = await Promise.all([getLocale(), params]);
+  const { id } = resolvedParams;
   const postId = Number(id);
   const [post, session, comments] = await Promise.all([
     getPostById(postId),
@@ -46,7 +49,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
     const deleted = await deletePostById(postId);
     if (!deleted) {
-      redirect(`/posts/${postId}?error=${encodeURIComponent("게시글 삭제에 실패했습니다.")}`);
+      redirect(`/posts/${postId}?error=${encodeURIComponent(tk("ko", "postDeleteFailed"))}`);
     }
 
     revalidatePath("/", "page");
@@ -58,7 +61,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     "use server";
 
     const currentSession = await requireSession();
-    const content = String(formData.get("comment") ?? "").trim();
+    const content = getFormString(formData, "comment");
 
     if (!content) {
       redirect(`/posts/${postId}?comment=empty`);
@@ -86,8 +89,8 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     "use server";
 
     const currentSessionPromise = requireSession();
-    const commentId = Number(formData.get("commentId") ?? 0);
-    const content = String(formData.get("content") ?? "").trim();
+    const commentId = getFormNumber(formData, "commentId");
+    const content = getFormString(formData, "content");
 
     if (!commentId || !content) {
       redirect(`/posts/${postId}`);
@@ -114,7 +117,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     "use server";
 
     const currentSessionPromise = requireSession();
-    const commentId = Number(formData.get("commentId") ?? 0);
+    const commentId = getFormNumber(formData, "commentId");
 
     if (!commentId) {
       redirect(`/posts/${postId}`);
@@ -133,7 +136,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
     const deleted = await deletePostCommentById(postId, commentId);
     if (!deleted) {
-      redirect(`/posts/${postId}?error=${encodeURIComponent("댓글 삭제에 실패했습니다.")}`);
+      redirect(`/posts/${postId}?error=${encodeURIComponent(tk("ko", "commentDeleteFailed"))}`);
     }
     revalidatePath(`/posts/${postId}`, "page");
     revalidatePath("/posts", "page");
@@ -143,13 +146,13 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   if (!post) {
     return (
       <div className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgba(129,216,208,0.05)]">
-        <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">게시글 상세</h1>
-        <p className="text-text-muted dark:text-text-muted">게시글을 찾을 수 없습니다.</p>
+        <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">{tk(locale, "postDetailTitle")}</h1>
+        <p className="text-text-muted dark:text-text-muted">{tk(locale, "postNotFound")}</p>
         <Link
           href="/posts"
           className="inline-flex rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
         >
-          목록으로 돌아가기
+          {tk(locale, "backToList")}
         </Link>
       </div>
     );
@@ -162,13 +165,13 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">{post.title}</h1>
         <div className="flex flex-wrap gap-4 text-sm text-text-muted dark:text-text-subtle">
           <p>
-            <strong>작성자:</strong> {post.author}
+            <strong>{tk(locale, "author")}:</strong> {post.author}
           </p>
           <p>
-            <strong>카테고리:</strong> {getCategoryLabel(post.category)}
+            <strong>{tk(locale, "category")}:</strong> {getCategoryLabel(post.category)}
           </p>
           <p>
-            <strong>날짜:</strong> {post.date}
+            <strong>{tk(locale, "date")}:</strong> {post.date}
           </p>
         </div>
       </header>
@@ -183,7 +186,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-accent-border bg-gradient-to-r from-surface-sub via-surface-muted to-surface-strong dark:from-surface dark:via-surface-sub dark:to-[#2b6661] px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_12px_rgba(129,216,208,0.08)] transition hover:-translate-y-0.5 hover:brightness-110"
         >
           <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-accent-sub shadow-[0_0_6px_rgba(129,216,208,0.25)]" />
-          링크 열기
+          {tk(locale, "openLink")}
         </a>
       ) : null}
 
@@ -195,12 +198,12 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-border-base/60 bg-surface-strong dark:bg-highlight-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_8px_rgba(129,216,208,0.08)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-surface-muted dark:hover:bg-highlight-soft"
         >
           <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-text-sub shadow-[0_0_6px_rgba(129,216,208,0.25)]" />
-          {post.fileName ?? "파일 열기"}
+          {post.fileName ?? tk(locale, "openFile")}
         </a>
       ) : null}
 
       <section className="space-y-4 rounded-2xl border border-border-base dark:border-border-base/80 bg-surface-strong/70 dark:bg-surface-sub/40 p-5">
-        <h2 className="text-lg font-bold text-text-sub dark:text-text-base">댓글</h2>
+        <h2 className="text-lg font-bold text-text-sub dark:text-text-base">{tk(locale, "comments")}</h2>
 
         <form action={addCommentAction} className="space-y-3">
           <textarea
@@ -209,14 +212,14 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
             minLength={1}
             maxLength={500}
             rows={4}
-            placeholder="댓글을 입력해 주세요."
+            placeholder={tk(locale, "writeComment")}
             className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border placeholder:text-text-muted focus:ring"
           />
           <button
             type="submit"
             className="inline-flex rounded-full border border-border-base dark:border-accent-border bg-surface-strong dark:bg-accent-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-accent-sub"
           >
-            댓글 작성
+            {tk(locale, "addComment")}
           </button>
         </form>
 
@@ -250,7 +253,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
                           type="submit"
                           className="rounded-full border border-border-base dark:border-accent-border bg-surface-strong dark:bg-accent-soft px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-accent-sub"
                         >
-                          댓글 수정
+                          {tk(locale, "editComment")}
                         </button>
                       </form>
 
@@ -260,7 +263,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
                           type="submit"
                           className="rounded-full border border-border-base dark:border-danger-border bg-surface-strong dark:bg-danger-soft px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-danger-sub"
                         >
-                          댓글 삭제
+                          {tk(locale, "deleteComment")}
                         </button>
                       </form>
                     </div>
@@ -270,7 +273,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
             })}
           </ul>
         ) : (
-          <p className="text-sm text-text-muted dark:text-text-subtle">아직 댓글이 없습니다.</p>
+          <p className="text-sm text-text-muted dark:text-text-subtle">{tk(locale, "noComments")}</p>
         )}
       </section>
 
@@ -279,14 +282,14 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           href="/posts"
           className="inline-flex rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
         >
-          목록으로 돌아가기
+          {tk(locale, "backToList")}
         </Link>
         {canManagePostResult ? (
           <Link
             href={`/posts/${post.id}/edit`}
             className="inline-flex rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_12px_rgba(129,216,208,0.12)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
           >
-            수정하기
+            {tk(locale, "edit")}
           </Link>
         ) : null}
         {canManagePostResult ? (
@@ -295,7 +298,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
               type="submit"
               className="inline-flex rounded-full border border-border-base dark:border-danger-border bg-surface-strong dark:bg-danger-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-danger-sub transition hover:bg-surface-muted dark:hover:bg-danger-soft"
             >
-              삭제하기
+              {tk(locale, "delete")}
             </button>
           </form>
         ) : null}

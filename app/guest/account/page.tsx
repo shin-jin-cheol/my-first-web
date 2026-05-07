@@ -10,6 +10,7 @@ import {
 } from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
+import { getFormString } from "@/lib/form-utils";
 
 type GuestAccountPageProps = {
   searchParams: Promise<{ error?: string; success?: string }>;
@@ -43,7 +44,7 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
       return;
     }
 
-    const name = String(formData.get("name") ?? "").trim();
+    const name = getFormString(formData, "name");
     const result = await updateMemberProfile(currentSession.userId, name);
 
     if (!result.ok) {
@@ -62,8 +63,8 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
       return;
     }
 
-    const currentPassword = String(formData.get("currentPassword") ?? "").trim();
-    const newPassword = String(formData.get("newPassword") ?? "").trim();
+    const currentPassword = getFormString(formData, "currentPassword");
+    const newPassword = getFormString(formData, "newPassword");
 
     const result = await changeMemberPassword(currentSession.userId, currentPassword, newPassword);
     if (!result.ok) {
@@ -82,7 +83,7 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
       return;
     }
 
-    const password = String(formData.get("withdrawPassword") ?? "").trim();
+    const password = getFormString(formData, "withdrawPassword");
     const result = await deleteMemberAccount(currentSession.userId, password);
 
     if (!result.ok) {

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import SendCodeButton from "./SendCodeButton";
 import SignupPasswordField from "./SignupPasswordField";
 import { isRedirectError } from "@/lib/redirect-error";
+import { getFormString } from "@/lib/form-utils";
 
 function buildSignupQuery(params: Record<string, string | undefined>) {
   const search = new URLSearchParams();
@@ -26,10 +27,10 @@ async function signupAction(formData: FormData) {
   "use server";
 
   try {
-    const intent = String(formData.get("intent") ?? "").trim();
-    const id = String(formData.get("id") ?? "").trim();
-    const name = String(formData.get("name") ?? "").trim();
-    const email = String(formData.get("email") ?? "").trim();
+    const intent = getFormString(formData, "intent");
+    const id = getFormString(formData, "id");
+    const name = getFormString(formData, "name");
+    const email = getFormString(formData, "email");
 
     if (intent === "send-code") {
       const result = await sendSignupVerificationCode(id, name, email);
@@ -54,8 +55,8 @@ async function signupAction(formData: FormData) {
       );
     }
 
-    const password = String(formData.get("password") ?? "").trim();
-    const verificationCode = String(formData.get("verificationCode") ?? "").trim();
+    const password = getFormString(formData, "password");
+    const verificationCode = getFormString(formData, "verificationCode");
 
     const result = await completeSignupWithVerificationCode(
       id,

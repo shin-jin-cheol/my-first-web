@@ -14,6 +14,7 @@ import { getLocale, t } from "@/lib/i18n";
 import { requireSession } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/post-categories";
 import { canManagePost, canManageComment } from "@/lib/permissions";
+import { getFormNumber, getFormString } from "@/lib/form-utils";
 
 type GuestPostDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -67,7 +68,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
     "use server";
 
     const currentSessionPromise = requireSession();
-    const content = String(formData.get("comment") ?? "").trim();
+    const content = getFormString(formData, "comment");
 
     if (!content) {
       redirect(`/guest/${postId}?comment=empty`);
@@ -99,8 +100,8 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
     "use server";
 
     const currentSessionPromise = requireSession();
-    const commentId = Number(formData.get("commentId") ?? 0);
-    const content = String(formData.get("content") ?? "").trim();
+    const commentId = getFormNumber(formData, "commentId");
+    const content = getFormString(formData, "content");
 
     if (!commentId || !content) {
       redirect(`/guest/${postId}`);
@@ -128,7 +129,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
     "use server";
 
     const currentSessionPromise = requireSession();
-    const commentId = Number(formData.get("commentId") ?? 0);
+    const commentId = getFormNumber(formData, "commentId");
 
     if (!commentId) {
       redirect(`/guest/${postId}`);

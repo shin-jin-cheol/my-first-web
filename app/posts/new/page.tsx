@@ -7,6 +7,8 @@ import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
 import { addPost } from "@/lib/posts";
 import { isRedirectError } from "@/lib/redirect-error";
 import { normalizeCategory, normalizeAttachment } from "@/lib/utils";
+import { getFormString } from "@/lib/form-utils";
+import { getLocale, tk } from "@/lib/i18n";
 
 
 
@@ -19,19 +21,19 @@ async function createPost(formData: FormData) {
       redirect("/guest/new");
     }
 
-    const title = String(formData.get("title") ?? "").trim();
-    const author = String(formData.get("author") ?? "").trim();
-    const content = String(formData.get("content") ?? "").trim();
-    const category = String(formData.get("category") ?? "study").trim();
-    const linkUrl = String(formData.get("linkUrl") ?? "").trim();
+    const title = getFormString(formData, "title");
+    const author = getFormString(formData, "author");
+    const content = getFormString(formData, "content");
+    const category = getFormString(formData, "category", "study");
+    const linkUrl = getFormString(formData, "linkUrl");
     const attachmentFile = formData.get("attachment");
 
     if (!title) {
-      redirect(`/posts/new?error=${encodeURIComponent("제목을 입력해 주세요.")}`);
+      redirect(`/posts/new?error=${encodeURIComponent(tk("ko", "titleRequired"))}`);
     }
 
     if (!author || !content) {
-      redirect(`/posts/new?error=${encodeURIComponent("작성자와 내용을 입력해 주세요.")}`);
+      redirect(`/posts/new?error=${encodeURIComponent(tk("ko", "authorContentRequired"))}`);
     }
 
     await addPost({
@@ -56,7 +58,7 @@ async function createPost(formData: FormData) {
     const message =
       error instanceof Error
         ? error.message
-        : "게시글 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+        : tk("ko", "postSaveFailed");
     redirect(`/posts/new?error=${encodeURIComponent(message)}`);
   }
 }
@@ -66,7 +68,7 @@ type NewPostPageProps = {
 };
 
 export default async function NewPostPage({ searchParams }: NewPostPageProps) {
-  const session = await requireSession();
+  const [locale, session] = await Promise.all([getLocale(), requireSession()]);
   if (session.role !== "owner") {
     redirect("/guest/new");
   }
@@ -81,7 +83,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
           Write
         </p>
         <h1 className="text-4xl font-extrabold text-text-sub dark:text-text-base drop-shadow-[0_0_6px_rgba(129,216,208,0.08)]">
-          블로그 글 쓰기
+          {tk(locale, "writeBlogPost")}
         </h1>
       </header>
 
@@ -97,7 +99,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
       >
         <div className="space-y-2">
           <label htmlFor="category" className="text-sm font-medium text-text-sub dark:text-text-sub">
-            카테고리
+            {tk(locale, "category")}
           </label>
           <select
             id="category"
@@ -115,48 +117,48 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
 
         <div className="space-y-2">
           <label htmlFor="title" className="text-sm font-medium text-text-sub dark:text-text-sub">
-            제목
+            {tk(locale, "title")}
           </label>
           <input
             id="title"
             name="title"
             type="text"
-            placeholder="제목을 입력해 주세요."
+            placeholder={tk(locale, "enterTitle")}
             className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
         <div className="space-y-2">
           <label htmlFor="author" className="text-sm font-medium text-text-sub dark:text-text-sub">
-            작성자
+            {tk(locale, "author")}
           </label>
           <input
             id="author"
             name="author"
             type="text"
             required
-            placeholder="작성자 이름"
+            placeholder={tk(locale, "enterAuthorName")}
             className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
         <div className="space-y-2">
           <label htmlFor="content" className="text-sm font-medium text-text-sub dark:text-text-sub">
-            내용
+            {tk(locale, "content")}
           </label>
           <textarea
             id="content"
             name="content"
             required
             rows={10}
-            placeholder="글 내용을 입력해 주세요."
+            placeholder={tk(locale, "enterContent")}
             className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-3 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
           />
         </div>
 
         <div className="space-y-2">
           <label htmlFor="linkUrl" className="text-sm font-medium text-text-sub dark:text-text-sub">
-            링크 URL (선택)
+            {tk(locale, "linkUrlOptional")}
           </label>
           <input
             id="linkUrl"
@@ -171,7 +173,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
 
         <div className="space-y-2">
           <label htmlFor="attachment" className="text-sm font-medium text-text-sub dark:text-text-sub">
-            파일 업로드 (선택)
+            {tk(locale, "uploadFileOptional")}
           </label>
           <input
             id="attachment"
@@ -186,13 +188,13 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             type="submit"
             className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_12px_rgba(129,216,208,0.18)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
           >
-            게시하기
+            {tk(locale, "publish")}
           </button>
           <Link
             href="/posts"
             className="rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-medium text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
           >
-            취소
+            {tk(locale, "cancel")}
           </Link>
         </div>
       </form>

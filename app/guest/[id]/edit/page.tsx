@@ -8,6 +8,7 @@ import { getLocale, t } from "@/lib/i18n";
 import { canManagePost } from "@/lib/permissions";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import { normalizeCategory } from "@/lib/utils";
+import { getFormString } from "@/lib/form-utils";
 
 type EditGuestPostPageProps = {
   params: Promise<{ id: string }>;
@@ -47,9 +48,9 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
       redirect("/guest");
     }
 
-    const title = String(formData.get("title") ?? "").trim();
-    const content = String(formData.get("content") ?? "").trim();
-    const category = String(formData.get("category") ?? "study").trim();
+    const title = getFormString(formData, "title");
+    const content = getFormString(formData, "content");
+    const category = getFormString(formData, "category", "study");
 
     if (!title) {
       const message = encodeURIComponent("제목을 입력해 주세요.");

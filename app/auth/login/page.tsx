@@ -3,12 +3,13 @@ import { redirect } from "next/navigation";
 import { login, setSession } from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
+import { getFormString } from "@/lib/form-utils";
 
 async function loginAction(formData: FormData) {
   "use server";
 
-  const id = String(formData.get("id") ?? "").trim();
-  const password = String(formData.get("password") ?? "").trim();
+  const id = getFormString(formData, "id");
+  const password = getFormString(formData, "password");
 
   const session = await login(id, password);
   if (!session) {

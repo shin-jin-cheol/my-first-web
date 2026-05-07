@@ -7,6 +7,7 @@ import { getCategoryLabel, GUEST_POST_CATEGORIES } from "@/lib/post-categories";
 import { getLocale, t } from "@/lib/i18n";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import GuestPostsSearchList from "@/app/components/GuestPostsSearchList";
+import { getFormNumber } from "@/lib/form-utils";
 
 type GuestBoardPageProps = {
   searchParams: Promise<{ error?: string }>;
@@ -40,7 +41,7 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
     "use server";
 
     const currentSession = await requireSession();
-    const postId = Number(formData.get("postId") ?? 0);
+    const postId = getFormNumber(formData, "postId");
     if (!postId) {
       return;
     }
