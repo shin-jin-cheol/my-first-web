@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import SearchableList from "./SearchableList";
+import SearchableList, { createSearchableListSection } from "./SearchableList";
 import type { GuestPostCategory } from "@/lib/post-categories";
 import type { GuestPostItem, CategoryOption } from "@/types/posts";
 
@@ -34,7 +34,7 @@ export default function GuestPostsSearchList({
       searchPlaceholder={labels.searchPlaceholder}
       categoryOptions={categoryOptions}
       sections={[
-        {
+        createSearchableListSection({
           key: "guest-posts",
           items: posts,
           emptyLabel: labels.empty,
@@ -92,7 +92,7 @@ export default function GuestPostsSearchList({
               ) : null}
             </article>
           ),
-        },
+        }),
       ]}
     />
   );

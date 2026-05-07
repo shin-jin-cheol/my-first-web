@@ -6,42 +6,68 @@ import SearchBar from "./SearchBar";
 import { filterByCategoryAndQuery, getCategoryFilterButtonClass } from "@/lib/search-filters";
 import type { CategoryOption } from "@/types/posts";
 
-type ItemCallback<TItem, TResult> = {
-  bivarianceHack(item: TItem): TResult;
-}["bivarianceHack"];
-
-type CategoryMatchCallback<TItem, TCategory extends string> = {
-  bivarianceHack(item: TItem, selectedCategory: "all" | TCategory): boolean;
-}["bivarianceHack"];
-
-type SearchableListSection<TItem, TCategory extends string> = {
+type SearchableListSectionConfig<TItem, TCategory extends string> = {
   key: string;
   items: TItem[];
   emptyLabel: string;
   sectionClassName?: string;
   heading?: ReactNode;
   listClassName?: string;
-  categoryMatches: CategoryMatchCallback<TItem, TCategory>;
-  queryFields: ItemCallback<TItem, Array<string | undefined>>;
-  renderItem: ItemCallback<TItem, ReactNode>;
+  categoryMatches: (item: TItem, selectedCategory: "all" | TCategory) => boolean;
+  queryFields: (item: TItem) => Array<string | undefined>;
+  renderItem: (item: TItem) => ReactNode;
 };
 
-type SearchableListProps<TCategory extends string, TSection extends SearchableListSection<unknown, TCategory>> = {
+type SearchableListSection<TCategory extends string> = {
+  key: string;
+  emptyLabel: string;
+  sectionClassName?: string;
+  heading?: ReactNode;
+  listClassName?: string;
+  renderFilteredItems: (selectedCategory: "all" | TCategory, normalizedQuery: string) => ReactNode[];
+};
+
+export function createSearchableListSection<TItem, TCategory extends string>({
+  key,
+  items,
+  emptyLabel,
+  sectionClassName,
+  heading,
+  listClassName,
+  categoryMatches,
+  queryFields,
+  renderItem,
+}: SearchableListSectionConfig<TItem, TCategory>): SearchableListSection<TCategory> {
+  return {
+    key,
+    emptyLabel,
+    sectionClassName,
+    heading,
+    listClassName,
+    renderFilteredItems: (selectedCategory, normalizedQuery) =>
+      filterByCategoryAndQuery({
+        items,
+        selectedCategory,
+        normalizedQuery,
+        categoryMatches,
+        queryFields,
+      }).map(renderItem),
+  };
+}
+
+type SearchableListProps<TCategory extends string> = {
   rootClassName: string;
   searchPlaceholder: string;
   categoryOptions: CategoryOption<TCategory>[];
-  sections: TSection[];
+  sections: SearchableListSection<TCategory>[];
 };
 
-export default function SearchableList<
-  TCategory extends string,
-  TSection extends SearchableListSection<unknown, TCategory>,
->({
+export default function SearchableList<TCategory extends string>({
   rootClassName,
   searchPlaceholder,
   categoryOptions,
   sections,
-}: SearchableListProps<TCategory, TSection>) {
+}: SearchableListProps<TCategory>) {
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<"all" | TCategory>("all");
   const normalizedQuery = query.trim();
@@ -49,14 +75,7 @@ export default function SearchableList<
   const filteredSections = useMemo(() => {
     return sections.map((section) => ({
       ...section,
-      filteredItems: filterByCategoryAndQuery({
-        items: section.items,
-        selectedCategory,
-        normalizedQuery,
-        categoryMatches: (item, currentCategory) =>
-          section.categoryMatches(item, currentCategory as "all" | TCategory),
-        queryFields: section.queryFields,
-      }),
+      filteredItems: section.renderFilteredItems(selectedCategory, normalizedQuery),
     }));
   }, [normalizedQuery, sections, selectedCategory]);
 
@@ -86,11 +105,9 @@ export default function SearchableList<
           section.filteredItems.length === 0 ? (
             <p className="text-text-muted dark:text-text-subtle">{section.emptyLabel}</p>
           ) : section.listClassName ? (
-            <div className={section.listClassName}>
-              {section.filteredItems.map((item) => section.renderItem(item))}
-            </div>
+            <div className={section.listClassName}>{section.filteredItems}</div>
           ) : (
-            section.filteredItems.map((item) => section.renderItem(item))
+            section.filteredItems
           );
 
         if (!section.sectionClassName) {

@@ -108,6 +108,12 @@
     --success: #059669;
     --success-sub: #6ee7b7;
     --brand: #f472b6;
+    --instagram-start: #f58529;
+    --instagram-mid: #dd2a7b;
+    --instagram-end: #515bd4;
+    --mail-start: #ea4335;
+    --mail-mid: #fbbc05;
+    --mail-end: #34a853;
     --overlay: rgb(0 0 0 / 0.1);
     --highlight: #ffffff;
     --highlight-soft: rgb(255 255 255 / 0.1);
@@ -169,6 +175,12 @@
     --success: #6ee7b7;
     --success-sub: #059669;
     --brand: #f472b6;
+    --instagram-start: #f58529;
+    --instagram-mid: #dd2a7b;
+    --instagram-end: #515bd4;
+    --mail-start: #ea4335;
+    --mail-mid: #fbbc05;
+    --mail-end: #34a853;
     --overlay: rgb(0 0 0 / 0.1);
     --highlight: #ffffff;
     --highlight-soft: rgb(255 255 255 / 0.15);

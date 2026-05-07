@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import SearchableList from "./SearchableList";
+import SearchableList, { createSearchableListSection } from "./SearchableList";
 import type { BlogPostCategory } from "@/lib/post-categories";
 import type { OwnerPostItem, CommunityPostItem, CategoryOption } from "@/types/posts";
 
@@ -33,7 +33,7 @@ export default function PostsSearchContent({
       searchPlaceholder={labels.searchPlaceholder}
       categoryOptions={categoryOptions}
       sections={[
-        {
+        createSearchableListSection({
           key: "owner-posts",
           items: ownerPosts,
           emptyLabel: labels.ownerEmpty,
@@ -78,8 +78,8 @@ export default function PostsSearchContent({
               </article>
             </Link>
           ),
-        },
-        {
+        }),
+        createSearchableListSection({
           key: "community-posts",
           items: communityPosts,
           emptyLabel: labels.communityEmpty,
@@ -137,7 +137,7 @@ export default function PostsSearchContent({
               </div>
             </article>
           ),
-        },
+        }),
       ]}
     />
   );

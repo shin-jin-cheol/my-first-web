@@ -323,9 +323,8 @@ function mapSupabaseRowToPostComment(row: SupabasePostCommentRow): PostComment {
   };
 }
 
-function mapPostCommentToSupabaseRow(comment: PostComment) {
+function mapPostCommentToSupabaseRow(comment: Omit<PostComment, "id">) {
   return {
-    id: comment.id,
     post_id: comment.postId,
     author_id: comment.authorId,
     author_name: comment.authorName,
@@ -358,18 +357,7 @@ export async function addPostCommentByPostId(
   input: { authorId: string; authorName: string; content: string },
 ): Promise<PostComment | undefined> {
   if (hasSupabaseStorage()) {
-    const nextIdResult = await requestSupabasePostComments<SupabasePostCommentRow[]>(
-      "GET",
-      `?select=id&post_id=eq.${postId}&order=id.desc&limit=1`,
-    );
-
-    const nextCommentId =
-      !nextIdResult.ok || !Array.isArray(nextIdResult.data) || nextIdResult.data.length === 0
-        ? 1
-        : nextIdResult.data[0].id + 1;
-
-    const comment: PostComment = {
-      id: nextCommentId,
+    const comment: Omit<PostComment, "id"> = {
       postId,
       authorId: input.authorId,
       authorName: input.authorName,

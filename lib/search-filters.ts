@@ -1,22 +1,20 @@
 import { includesQuery } from "@/lib/search";
 
-type CategoryValue = "all" | string;
-
-type FilterOptions<T> = {
+type FilterOptions<T, TCategory extends string> = {
   items: T[];
-  selectedCategory: CategoryValue;
+  selectedCategory: "all" | TCategory;
   normalizedQuery: string;
-  categoryMatches: (item: T, selectedCategory: CategoryValue) => boolean;
+  categoryMatches: (item: T, selectedCategory: "all" | TCategory) => boolean;
   queryFields: (item: T) => Array<string | undefined>;
 };
 
-export function filterByCategoryAndQuery<T>({
+export function filterByCategoryAndQuery<T, TCategory extends string>({
   items,
   selectedCategory,
   normalizedQuery,
   categoryMatches,
   queryFields,
-}: FilterOptions<T>): T[] {
+}: FilterOptions<T, TCategory>): T[] {
   return items.filter((item) => {
     const matchesCategory = categoryMatches(item, selectedCategory);
     const matchesQuery =

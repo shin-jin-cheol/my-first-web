@@ -219,7 +219,7 @@ function mapSupabaseRowToGuestComment(row: SupabaseGuestCommentRow): GuestCommen
   };
 }
 
-function mapGuestCommentToSupabaseRow(postId: number, comment: GuestComment) {
+function mapGuestCommentToSupabaseRow(postId: number, comment: Omit<GuestComment, "id">) {
   return {
     guest_post_id: postId,
     author_id: comment.authorId,
@@ -508,8 +508,7 @@ export async function addGuestCommentById(
   input: { authorId: string; authorName: string; content: string },
 ): Promise<GuestComment | undefined> {
   if (hasSupabaseStorage()) {
-    const comment: GuestComment = {
-      id: 0,
+    const comment: Omit<GuestComment, "id"> = {
       authorId: input.authorId,
       authorName: input.authorName,
       content: input.content,
