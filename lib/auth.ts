@@ -1,9 +1,11 @@
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { list, put } from "@vercel/blob";
 import { safeJsonParse } from "@/lib/safe-json";
-import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_AUTH_PUBLIC_KEY, SUPABASE_MEMBERS_TABLE } from "@/lib/env";
+import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_AUTH_PUBLIC_KEY, SUPABASE_MEMBERS_TABLE, BLOB_READ_WRITE_TOKEN } from "@/lib/env";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
-import { hasSupabaseStorage, readJsonStorage, writeJsonStorage } from "@/lib/storage";
 
 export type UserRole = "owner" | "member";
 
@@ -70,9 +72,13 @@ const OWNER_ID = "sjc5001";
 const OWNER_PASSWORD = "sjc5001*";
 const OWNER_NAME = "신진철";
 const SESSION_COOKIE = "sjc-session";
+const DATA_DIR = path.join(process.cwd(), "data");
+const USERS_FILE_LOCAL = path.join(DATA_DIR, "users.json");
+const USERS_FILE_TMP = path.join("/tmp", "my-first-web-users.json");
 const USERS_BLOB_KEY = "auth/users.json";
 // SUPABASE_* and blob token are centralized in lib/env.ts
 
+let usersBlobUrlCache: string | undefined;
 let hasTriedSupabaseBootstrap = false;
 const PASSWORD_POLICY = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
 
@@ -81,6 +87,38 @@ export const ownerAccount = Object.freeze({
   password: OWNER_PASSWORD,
   name: OWNER_NAME,
 });
+
+function pickLatestBlobUrl(
+  blobs: Array<{ url: string; uploadedAt?: string | Date; pathname?: string }>,
+) {
+  if (blobs.length === 0) {
+    return undefined;
+  }
+
+  const sorted = [...blobs].sort((a, b) => {
+    const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : Number.MIN_SAFE_INTEGER;
+    const bTime = b.uploadedAt ? new Date(b.uploadedAt).getTime() : Number.MIN_SAFE_INTEGER;
+    return bTime - aTime;
+  });
+
+  return sorted[0]?.url;
+}
+
+function resolveUsersFilePath() {
+  if (process.env.VERCEL) {
+    return USERS_FILE_TMP;
+  }
+
+  return USERS_FILE_LOCAL;
+}
+
+function hasBlobStorage() {
+  return Boolean(BLOB_READ_WRITE_TOKEN);
+}
+
+function hasSupabaseStorage() {
+  return Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+}
 
 function hasSupabaseAuth() {
   return Boolean(SUPABASE_URL && SUPABASE_AUTH_PUBLIC_KEY);
@@ -240,29 +278,111 @@ function encodeSession(session: Session) {
   return Buffer.from(JSON.stringify(session), "utf-8").toString("base64url");
 }
 
-async function readMembersFromLegacyStorage(): Promise<MemberRecord[]> {
-  return readJsonStorage({
-    blobKey: USERS_BLOB_KEY,
-    localFileName: "users.json",
-    tmpFileName: "my-first-web-users.json",
-    seedData: [] as Array<Partial<MemberRecord> & { id: string }>,
-    normalize: (members) =>
-      (Array.isArray(members) ? members : [])
-        .map(normalizeMemberRecord)
-        .filter((member) => member.id && member.id !== OWNER_ID),
-    useBlob: true,
-    logPrefix: "readUsersFromBlob",
+async function refreshUsersBlobUrlCache() {
+  const existing = await list({ prefix: USERS_BLOB_KEY, limit: 100 });
+  const exactPathBlobs = existing.blobs.filter((blob) => blob.pathname === USERS_BLOB_KEY);
+  usersBlobUrlCache = pickLatestBlobUrl(exactPathBlobs.length > 0 ? exactPathBlobs : existing.blobs);
+}
+
+async function readUsersFromBlob(): Promise<MemberRecord[]> {
+  if (!hasBlobStorage()) {
+    return [];
+  }
+
+  await refreshUsersBlobUrlCache();
+
+  const seed = usersBlobUrlCache
+    ? null
+    : await put(USERS_BLOB_KEY, JSON.stringify([], null, 2), {
+        access: "public",
+        addRandomSuffix: false,
+        allowOverwrite: false,
+        contentType: "application/json",
+      }).catch(() => null);
+
+  if (seed?.url) {
+    usersBlobUrlCache = seed.url;
+  }
+
+  if (!usersBlobUrlCache) {
+    return [];
+  }
+
+  const fetchUrl = `${usersBlobUrlCache}${usersBlobUrlCache.includes("?") ? "&" : "?"}ts=${Date.now()}`;
+  let response = await fetch(fetchUrl, { cache: "no-store" });
+
+  if (!response.ok) {
+    await refreshUsersBlobUrlCache();
+
+    if (!usersBlobUrlCache) {
+      console.error(`readUsersFromBlob: no usersBlobUrlCache after refresh, initial status=${response.status} ${response.statusText}`);
+      return [];
+    }
+
+    const retryUrl = `${usersBlobUrlCache}${usersBlobUrlCache.includes("?") ? "&" : "?"}ts=${Date.now()}`;
+    response = await fetch(retryUrl, { cache: "no-store" });
+    if (!response.ok) {
+      console.error(`readUsersFromBlob: retry fetch failed status=${response.status} ${response.statusText}`);
+      return [];
+    }
+  }
+
+  const data = (await response.json()) as Array<Partial<MemberRecord> & { id: string }>;
+  return Array.isArray(data) ? data.map(normalizeMemberRecord) : [];
+}
+
+async function writeUsersToBlob(members: MemberRecord[]) {
+  if (!hasBlobStorage()) {
+    return;
+  }
+
+  const blob = await put(USERS_BLOB_KEY, JSON.stringify(members, null, 2), {
+    access: "public",
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: "application/json",
   });
+
+  usersBlobUrlCache = blob.url;
+}
+
+async function ensureUsersFile() {
+  if (hasBlobStorage()) {
+    await readUsersFromBlob();
+    return;
+  }
+
+  const usersFilePath = resolveUsersFilePath();
+
+  try {
+    await fs.access(usersFilePath);
+  } catch {
+    await fs.mkdir(path.dirname(usersFilePath), { recursive: true });
+    await fs.writeFile(usersFilePath, JSON.stringify([], null, 2), "utf-8");
+  }
+}
+
+async function readMembersFromLegacyStorage(): Promise<MemberRecord[]> {
+  if (hasBlobStorage()) {
+    return readUsersFromBlob();
+  }
+
+  await ensureUsersFile();
+  const raw = await fs.readFile(resolveUsersFilePath(), "utf-8");
+  const parsed = safeJsonParse<Array<Partial<MemberRecord> & { id: string }>>(raw, []) ?? [];
+
+  return parsed
+    .map(normalizeMemberRecord)
+    .filter((member) => member.id && member.id !== OWNER_ID);
 }
 
 async function writeMembersToLegacyStorage(members: MemberRecord[]) {
-  await writeJsonStorage(members, {
-    blobKey: USERS_BLOB_KEY,
-    localFileName: "users.json",
-    tmpFileName: "my-first-web-users.json",
-    seedData: [] as MemberRecord[],
-    useBlob: true,
-  });
+  if (hasBlobStorage()) {
+    await writeUsersToBlob(members);
+    return;
+  }
+
+  await fs.writeFile(resolveUsersFilePath(), JSON.stringify(members, null, 2), "utf-8");
 }
 
 async function readMembersFromSupabase() {

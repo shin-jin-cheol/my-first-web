@@ -1,13 +1,18 @@
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import { BlogPostCategory, normalizeBlogPostCategory } from "@/lib/post-categories";
+import { safeJsonParse } from "@/lib/safe-json";
 import {
   SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY,
   SUPABASE_POSTS_TABLE,
   SUPABASE_POST_COMMENTS_TABLE,
+  SUPABASE_UPLOADS_BUCKET,
+  BLOB_READ_WRITE_TOKEN,
 } from "@/lib/env";
 import { getKstDateString, getKstDateTimeString } from "@/lib/date";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
-import { normalizeLinkUrl } from "@/lib/attachment-utils";
-import { deleteFile, hasSupabaseStorage, readJsonStorage, saveFile, writeJsonStorage } from "@/lib/storage";
+import { normalizeLinkUrl, removeAttachment, saveAttachmentFile } from "@/lib/attachment-utils";
 
 export type Post = {
   id: number;
@@ -77,6 +82,10 @@ type SupabasePostCommentRow = {
   date_time: string;
 };
 
+const DATA_DIR = path.join(process.cwd(), "data");
+const POSTS_FILE_LOCAL = path.join(DATA_DIR, "posts.json");
+const POSTS_FILE_TMP = path.join("/tmp", "my-first-web-posts.json");
+const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
 // SUPABASE_* constants are centralized in lib/env.ts
 const CATEGORY_SCHEMA_MESSAGE =
   "선택한 카테고리를 저장하려면 Supabase SQL Editor에서 docs/supabase-content.sql을 먼저 실행해야 합니다.";
@@ -113,6 +122,10 @@ const initialPosts: Post[] = [
 
 let hasTriedSupabasePostsBootstrap = false;
 
+function hasSupabaseStorage() {
+  return Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+}
+
 function getSupabasePostsEndpoint(query = "") {
   if (!SUPABASE_URL) {
     return "";
@@ -129,6 +142,23 @@ function getSupabasePostCommentsEndpoint(query = "") {
 
   const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${SUPABASE_POST_COMMENTS_TABLE}`;
   return `${base}${query}`;
+}
+
+function getSupabaseStorageObjectEndpoint(pathname = "") {
+  if (!SUPABASE_URL) {
+    return "";
+  }
+
+  const base = `${SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object`;
+  return `${base}${pathname}`;
+}
+
+function getSupabasePublicFileUrl(storagePath: string) {
+  if (!SUPABASE_URL) {
+    return "";
+  }
+
+  return `${SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object/public/${SUPABASE_UPLOADS_BUCKET}/${storagePath}`;
 }
 
 async function requestSupabase<T>(
@@ -263,22 +293,34 @@ async function getNextSupabasePostId() {
   return result.data[0].id + 1;
 }
 
+async function ensurePostsFile() {
+  const postsFilePath = resolvePostsFilePath();
+
+  try {
+    await fs.access(postsFilePath);
+  } catch {
+    await fs.mkdir(path.dirname(postsFilePath), { recursive: true });
+    await fs.writeFile(postsFilePath, JSON.stringify(initialPosts, null, 2), "utf-8");
+  }
+}
+
+function resolvePostsFilePath() {
+  // Vercel deployment filesystem is read-only except /tmp.
+  if (process.env.VERCEL) {
+    return POSTS_FILE_TMP;
+  }
+  return POSTS_FILE_LOCAL;
+}
+
 async function readPostsFromLegacyStorage(): Promise<Post[]> {
-  return readJsonStorage({
-    localFileName: "posts.json",
-    tmpFileName: "my-first-web-posts.json",
-    seedData: initialPosts,
-    normalize: (posts: Array<Omit<Post, "category"> & { category?: string }>) =>
-      (posts ?? []).map(normalizePostRecord),
-  });
+  await ensurePostsFile();
+  const raw = await fs.readFile(resolvePostsFilePath(), "utf-8");
+  const parsed = safeJsonParse<Array<Omit<Post, "category"> & { category?: string }>>(raw, []);
+  return (parsed ?? []).map(normalizePostRecord);
 }
 
 async function writePostsToLegacyStorage(posts: Post[]) {
-  await writeJsonStorage(posts, {
-    localFileName: "posts.json",
-    tmpFileName: "my-first-web-posts.json",
-    seedData: initialPosts,
-  });
+  await fs.writeFile(resolvePostsFilePath(), JSON.stringify(posts, null, 2), "utf-8");
 }
 
 async function readPosts(): Promise<Post[]> {
@@ -308,6 +350,18 @@ async function writePosts(posts: Post[]) {
   }
 
   await writePostsToLegacyStorage(posts);
+}
+
+function getAttachmentRuntimeOptions() {
+  return {
+    hasSupabaseStorage: hasSupabaseStorage(),
+    supabaseServiceRoleKey: SUPABASE_SERVICE_ROLE_KEY,
+    supabaseUploadsBucket: SUPABASE_UPLOADS_BUCKET,
+    getSupabaseStorageObjectEndpoint,
+    getSupabasePublicFileUrl,
+    hasBlobStorageToken: Boolean(BLOB_READ_WRITE_TOKEN),
+    uploadsDir: UPLOADS_DIR,
+  };
 }
 
 // date formatting is centralized in lib/date.ts
@@ -534,7 +588,7 @@ export async function getPostById(id: number): Promise<Post | undefined> {
 }
 
 export async function addPost(input: NewPostInput): Promise<Post> {
-  const attachment = await saveFile(input.attachmentFile);
+  const attachment = await saveAttachmentFile(input.attachmentFile, getAttachmentRuntimeOptions());
 
   const nextPostId = hasSupabaseStorage()
     ? await getNextSupabasePostId()
@@ -611,11 +665,11 @@ export async function deletePostById(id: number): Promise<boolean> {
         return false;
       }
 
-      await deleteFile(targetPost?.fileUrl);
+      await removeAttachment(targetPost?.fileUrl, getAttachmentRuntimeOptions());
       return true;
     }
 
-    await deleteFile(targetPost?.fileUrl);
+    await removeAttachment(targetPost?.fileUrl, getAttachmentRuntimeOptions());
     return true;
   }
 
@@ -627,7 +681,7 @@ export async function deletePostById(id: number): Promise<boolean> {
     return false;
   }
 
-  await deleteFile(targetPost?.fileUrl);
+  await removeAttachment(targetPost?.fileUrl, getAttachmentRuntimeOptions());
 
   await writePosts(filtered);
   return true;
@@ -639,19 +693,19 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
     return undefined;
   }
 
-  const attachment = await saveFile(input.attachmentFile);
+  const attachment = await saveAttachmentFile(input.attachmentFile, getAttachmentRuntimeOptions());
 
   let nextFileUrl = currentPost.fileUrl;
   let nextFileName = currentPost.fileName;
 
   if (input.removeAttachment) {
-    await deleteFile(currentPost.fileUrl);
+    await removeAttachment(currentPost.fileUrl, getAttachmentRuntimeOptions());
     nextFileUrl = undefined;
     nextFileName = undefined;
   }
 
   if (attachment) {
-    await deleteFile(currentPost.fileUrl);
+    await removeAttachment(currentPost.fileUrl, getAttachmentRuntimeOptions());
     nextFileUrl = attachment.fileUrl;
     nextFileName = attachment.fileName;
   }
