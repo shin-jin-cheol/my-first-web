@@ -122,7 +122,7 @@ export function NavMenuMobile({
         {session ? (
           <Link
             href={writeHref}
-            className="block rounded-lg border border-[#a8dfd7] bg-[#81d8d0] px-2 py-1.5 text-center font-semibold text-text-base shadow-[0_0_6px_rgba(129,216,208,0.08)]"
+            className="block rounded-lg border border-[var(--accent-light)] bg-[var(--accent-primary)] px-2 py-1.5 text-center font-semibold text-text-base shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)]"
           >
             {writeLabel}
           </Link>

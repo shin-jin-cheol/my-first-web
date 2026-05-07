@@ -81,7 +81,7 @@ export default function PostsSearchContent({
       </div>
 
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-text-sub dark:text-text-base drop-shadow-[0_0_6px_rgba(129,216,208,0.08)]">
+        <h2 className="text-2xl font-bold text-text-sub dark:text-text-base drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)]">
           {labels.ownerSectionTitle}
         </h2>
         {filteredOwnerPosts.length === 0 ? (
@@ -90,12 +90,12 @@ export default function PostsSearchContent({
           <div className="grid gap-7 md:grid-cols-2">
             {filteredOwnerPosts.map((post) => (
               <Link key={post.id} href={post.detailHref}>
-                <article className="block h-full min-h-64 cursor-pointer rounded-2xl border border-border-strong bg-surface-muted p-7 shadow-[0_0_12px_rgba(129,216,208,0.05)] transition hover:border-[#81d8d0] hover:bg-surface-strong hover:shadow-[0_0_16px_rgba(129,216,208,0.08)] dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong">
+                <article className="block h-full min-h-64 cursor-pointer rounded-2xl border border-border-strong bg-surface-muted p-7 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)] transition hover:border-[var(--accent-primary)] hover:bg-surface-strong hover:shadow-[0_0_16px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong">
                   <div className="mb-3 flex flex-wrap items-center gap-2">
                     <p className="text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">
                       {labels.ownerSectionTitle}
                     </p>
-                    <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-accent-sub">
+                    <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[var(--accent-dark)] dark:text-accent-sub">
                       {post.categoryLabel}
                     </span>
                   </div>
@@ -134,13 +134,13 @@ export default function PostsSearchContent({
             {filteredCommunityPosts.map((post) => (
               <article
                 key={post.id}
-                className="h-full min-h-56 rounded-2xl border border-border-strong bg-surface-muted p-7 shadow-[0_0_12px_rgba(129,216,208,0.05)] transition hover:border-accent-border hover:bg-surface-strong dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong"
+                className="h-full min-h-56 rounded-2xl border border-border-strong bg-surface-muted p-7 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)] transition hover:border-accent-border hover:bg-surface-strong dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong"
               >
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   <span className="rounded-full border border-border-base bg-surface-strong px-2.5 py-1 text-xs font-semibold text-text-sub dark:border-border-sub dark:bg-surface-strong dark:text-text-sub">
                     {post.sourceLabel}
                   </span>
-                  <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-accent-sub">
+                  <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[var(--accent-dark)] dark:text-accent-sub">
                     {post.categoryLabel}
                   </span>
                 </div>

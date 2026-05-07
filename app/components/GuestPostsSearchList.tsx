@@ -75,7 +75,7 @@ export default function GuestPostsSearchList({
             className="space-y-3 rounded-2xl border border-border-strong bg-surface-muted p-5 transition hover:bg-surface-strong dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong"
           >
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[#2f8f88] dark:text-accent-sub">
+              <span className="rounded-full border border-accent-border bg-accent-soft px-2.5 py-1 text-xs font-semibold text-[var(--accent-dark)] dark:text-accent-sub">
                 {post.categoryLabel}
               </span>
             </div>

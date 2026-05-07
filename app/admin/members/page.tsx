@@ -16,7 +16,7 @@ export default async function AdminMembersPage() {
       <div className="rounded-2xl border border-border-base dark:border-border-base bg-surface dark:bg-surface-strong p-5">
         <p className="text-sm text-text-muted dark:text-text-muted">{t(locale, "주인 계정", "Owner Account")}</p>
         <p className="text-text-sub dark:text-text-base">ID: {ownerAccount.id}</p>
-        <p className="text-text-sub dark:text-text-base">PW: {ownerAccount.password}</p>
+        <p className="text-text-sub dark:text-text-base">PW: ●●●●●●</p>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-border-base dark:border-border-base bg-surface dark:bg-surface-strong">
@@ -41,7 +41,7 @@ export default async function AdminMembersPage() {
                 <tr key={member.id} className="border-t border-border-base dark:border-border-base text-text-sub dark:text-text-sub">
                   <td className="px-4 py-3">{member.name ?? "-"}</td>
                   <td className="px-4 py-3">{member.id}</td>
-                  <td className="px-4 py-3">{member.password}</td>
+                  <td className="px-4 py-3">●●●●●●</td>
                   <td className="px-4 py-3">{member.createdAt.slice(0, 10)}</td>
                 </tr>
               ))
