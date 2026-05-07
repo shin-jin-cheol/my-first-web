@@ -2,6 +2,17 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { del, put } from "@vercel/blob";
 
+const MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024;
+const ALLOWED_ATTACHMENT_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "application/pdf",
+  "text/plain",
+  "video/mp4",
+]);
+
 type SupabaseAttachmentOptions = {
   supabaseServiceRoleKey?: string;
   supabaseUploadsBucket: string;
@@ -17,6 +28,30 @@ export type AttachmentRuntimeOptions = SupabaseAttachmentOptions & {
 
 export function sanitizeFileName(fileName: string): string {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
+}
+
+function isHttpOrHttpsUrl(input: string): boolean {
+  try {
+    const parsedUrl = new URL(input);
+    return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+function normalizeUrlCandidate(input: string): string | undefined {
+  const trimmed = input.trim();
+
+  if (!trimmed) {
+    return undefined;
+  }
+
+  if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(trimmed)) {
+    return isHttpOrHttpsUrl(trimmed) ? trimmed : undefined;
+  }
+
+  const candidate = `https://${trimmed}`;
+  return isHttpOrHttpsUrl(candidate) ? candidate : undefined;
 }
 
 async function uploadAttachmentToSupabaseStorage(
@@ -135,6 +170,14 @@ export async function saveAttachmentFile(
     return undefined;
   }
 
+  if (file.size > MAX_ATTACHMENT_SIZE_BYTES) {
+    throw new Error("첨부 파일은 10MB를 초과할 수 없습니다.");
+  }
+
+  if (!ALLOWED_ATTACHMENT_MIME_TYPES.has(file.type)) {
+    throw new Error("허용되지 않는 첨부 파일 형식입니다.");
+  }
+
   const safeName = sanitizeFileName(file.name || "upload.bin");
   const uniqueName = `${Date.now()}-${safeName}`;
 
@@ -198,14 +241,5 @@ export function normalizeLinkUrl(input?: string): string | undefined {
     return undefined;
   }
 
-  const trimmed = input.trim();
-  if (!trimmed) {
-    return undefined;
-  }
-
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    return trimmed;
-  }
-
-  return `https://${trimmed}`;
+  return normalizeUrlCandidate(input);
 }
