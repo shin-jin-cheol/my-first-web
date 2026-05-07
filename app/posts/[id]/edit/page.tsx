@@ -1,13 +1,11 @@
 ﻿import Link from "next/link";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
-import { getPostById, updatePostById } from "@/lib/posts";
+import { getPostById } from "@/lib/posts";
 import { canManagePost } from "@/lib/permissions";
-import { normalizeCategory, normalizeAttachment } from "@/lib/utils";
-import { getFormString } from "@/lib/form-utils";
 import { getLocale, tk } from "@/lib/i18n";
+import { updatePostAction } from "@/app/posts/actions";
 
 type EditPostPageProps = {
   params: Promise<{ id: string }>;
@@ -36,48 +34,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     redirect(`/posts/${postId}`);
   }
 
-  async function updatePostAction(formData: FormData) {
-    "use server";
-
-    const currentSession = await requireSession();
-    const currentPost = await getPostById(postId);
-    const canUpdate = canManagePost(currentSession, currentPost ?? { authorId: undefined });
-
-    if (!canUpdate) {
-      redirect(`/posts/${postId}`);
-    }
-
-    const title = getFormString(formData, "title");
-    const author = getFormString(formData, "author");
-    const content = getFormString(formData, "content");
-    const category = getFormString(formData, "category", "study");
-    const linkUrl = getFormString(formData, "linkUrl");
-    const attachmentFile = formData.get("attachment");
-    const removeAttachment = formData.get("removeAttachment") === "on";
-
-    if (!title || !author || !content) {
-      return;
-    }
-
-    if (currentSession.role !== "owner" && category === "notice") {
-      redirect(`/posts/${postId}`);
-    }
-
-    await updatePostById(postId, {
-      title,
-      author,
-      content,
-      category: normalizeCategory(category, 'blog'),
-      linkUrl,
-      attachmentFile: normalizeAttachment(attachmentFile),
-      removeAttachment,
-    });
-
-    revalidatePath("/", "page");
-    revalidatePath("/posts", "page");
-    revalidatePath(`/posts/${postId}`, "page");
-    redirect(`/posts/${postId}?updated=${Date.now()}`);
-  }
+  const boundUpdatePostAction = updatePostAction.bind(null, postId);
 
   const categoryOptions =
     session.role === "owner"
@@ -94,7 +51,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
       </header>
 
       <form
-        action={updatePostAction}
+        action={boundUpdatePostAction}
         className="space-y-5 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-6 shadow-[0_0_12px_rgba(129,216,208,0.05)]"
       >
         <div className="space-y-2">

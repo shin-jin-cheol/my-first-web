@@ -1,13 +1,11 @@
 ﻿import Link from "next/link";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { deleteGuestPostById, getGuestPosts } from "@/lib/guest-posts";
+import { getGuestPosts } from "@/lib/guest-posts";
 import { getMemberSummaries, requireSession } from "@/lib/auth";
 import { getCategoryLabel, GUEST_POST_CATEGORIES } from "@/lib/post-categories";
 import { getLocale, t } from "@/lib/i18n";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import GuestPostsSearchList from "@/app/components/GuestPostsSearchList";
-import { getFormNumber } from "@/lib/form-utils";
+import { deleteGuestPostAction } from "@/app/guest/actions";
 
 type GuestBoardPageProps = {
   searchParams: Promise<{ error?: string }>;
@@ -36,31 +34,6 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
     category: post.category,
     categoryLabel: getCategoryLabel(post.category),
   }));
-
-  async function deleteGuestPostAction(formData: FormData) {
-    "use server";
-
-    const currentSession = await requireSession();
-    const postId = getFormNumber(formData, "postId");
-    if (!postId) {
-      return;
-    }
-
-    const currentPosts = await getGuestPosts();
-    const targetPost = currentPosts.find((post) => post.id === postId);
-    const canDelete =
-      currentSession.role === "owner" ||
-      (currentSession.role === "member" && targetPost?.authorId === currentSession.userId);
-
-    if (!canDelete) {
-      return;
-    }
-
-    await deleteGuestPostById(postId);
-    revalidatePath("/guest", "page");
-    revalidatePath("/posts", "page");
-    redirect(`/guest?deleted=${Date.now()}`);
-  }
 
   return (
     <section className="space-y-8">

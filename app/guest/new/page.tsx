@@ -1,63 +1,12 @@
 import Link from "next/link";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { addGuestPost } from "@/lib/guest-posts";
-import { getMemberProfile, requireSession } from "@/lib/auth";
+import { requireSession } from "@/lib/auth";
 import { GUEST_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
-import { isRedirectError } from "@/lib/redirect-error";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
-import { normalizeCategory, normalizeAttachment } from "@/lib/utils";
-import { getFormString } from "@/lib/form-utils";
 import { getLocale, tk } from "@/lib/i18n";
+import { createGuestPost } from "@/app/guest/actions";
 
 
-
-async function createGuestPost(formData: FormData) {
-  "use server";
-
-  try {
-    const session = await requireSession();
-    if (session.role !== "member") {
-      redirect("/guest");
-    }
-
-    const title = getFormString(formData, "title");
-    const content = getFormString(formData, "content");
-    const category = getFormString(formData, "category", "study");
-    const linkUrl = getFormString(formData, "linkUrl");
-    const attachmentFile = formData.get("attachment");
-    const profile = await getMemberProfile(session.userId);
-    const authorName = profile?.name?.trim() || session.userName?.trim() || session.userId;
-
-    if (!title || !content) {
-      redirect(`/guest/new?error=${encodeURIComponent(tk("ko", "titleContentRequired"))}`);
-    }
-
-    await addGuestPost({
-      title,
-      content,
-      authorId: session.userId,
-      authorName,
-      category: normalizeCategory(category, 'guest'),
-      linkUrl,
-      attachmentFile: normalizeAttachment(attachmentFile),
-    });
-
-    revalidatePath("/guest");
-    revalidatePath("/posts");
-    redirect("/guest");
-  } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
-
-    const message =
-      error instanceof Error
-        ? error.message
-        : tk("ko", "guestPostSaveFailed");
-    redirect(`/guest/new?error=${encodeURIComponent(message)}`);
-  }
-}
 
 type NewGuestPostPageProps = {
   searchParams: Promise<{ error?: string }>;

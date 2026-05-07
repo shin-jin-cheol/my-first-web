@@ -1,7 +1,7 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
 import BgmPlayer from "./components/BgmPlayer";
-import { clearSession, getSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { getLocale, t } from "@/lib/i18n";
@@ -10,6 +10,7 @@ import { NavMenuMobile } from "./components/NavMenuMobile";
 import "./globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { logoutAction } from "@/app/auth/actions";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -50,13 +51,6 @@ export default async function RootLayout({
   const writeHref = session?.role === "owner" ? "/posts/new" : "/guest/new";
   const writeLabel =
     session?.role === "owner" ? t(locale, "새 글 쓰기", "Write") : t(locale, "게스트 글 쓰기", "Write Guest Post");
-
-  async function logoutAction() {
-    "use server";
-
-    await clearSession();
-    redirect("/auth/login");
-  }
 
   async function setLanguageAction(formData: FormData) {
     "use server";

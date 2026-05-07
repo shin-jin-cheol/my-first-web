@@ -1,21 +1,14 @@
 ﻿import Link from "next/link";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import {
-  addPostCommentByPostId,
-  deletePostById,
-  deletePostCommentById,
   getPostById,
   getPostCommentsByPostId,
-  updatePostCommentById,
 } from "@/lib/posts";
 import { buildDownloadUrl } from "@/lib/download-url";
-import { findCommentById } from "@/lib/comment-utils";
-import { getSession, requireSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/post-categories";
 import { canManagePost, canManageComment } from "@/lib/permissions";
-import { getFormNumber, getFormString } from "@/lib/form-utils";
 import { getLocale, tk } from "@/lib/i18n";
+import { addCommentAction, deleteCommentAction, deletePostAction, updateCommentAction } from "@/app/posts/actions";
 
 type PostDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -33,115 +26,10 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const canManagePostResult = canManagePost(session ?? null, post ?? { authorId: undefined });
   const fileDownloadUrl = post?.fileUrl ? buildDownloadUrl(post.fileUrl, post.fileName) : undefined;
 
-  async function deletePostAction() {
-    "use server";
-
-    const [currentSession, currentPost] = await Promise.all([
-      getSession(),
-      getPostById(postId),
-    ]);
-
-    const canDeletePost = canManagePost(currentSession ?? null, currentPost ?? { authorId: undefined });
-
-    if (!canDeletePost) {
-      redirect(`/posts/${postId}`);
-    }
-
-    const deleted = await deletePostById(postId);
-    if (!deleted) {
-      redirect(`/posts/${postId}?error=${encodeURIComponent(tk("ko", "postDeleteFailed"))}`);
-    }
-
-    revalidatePath("/", "page");
-    revalidatePath("/posts", "page");
-    redirect(`/posts?deleted=${Date.now()}`);
-  }
-
-  async function addCommentAction(formData: FormData) {
-    "use server";
-
-    const currentSession = await requireSession();
-    const content = getFormString(formData, "comment");
-
-    if (!content) {
-      redirect(`/posts/${postId}?comment=empty`);
-    }
-
-    const currentPost = await getPostById(postId);
-    if (!currentPost) {
-      redirect("/posts");
-    }
-
-    const authorName = currentSession.userName?.trim() || currentSession.userId;
-
-    await addPostCommentByPostId(postId, {
-      authorId: currentSession.userId,
-      authorName,
-      content,
-    });
-
-    revalidatePath(`/posts/${postId}`, "page");
-    revalidatePath("/posts", "page");
-    redirect(`/posts/${postId}?commented=${Date.now()}`);
-  }
-
-  async function updateCommentAction(formData: FormData) {
-    "use server";
-
-    const currentSessionPromise = requireSession();
-    const commentId = getFormNumber(formData, "commentId");
-    const content = getFormString(formData, "content");
-
-    if (!commentId || !content) {
-      redirect(`/posts/${postId}`);
-    }
-
-    const [currentSession, currentComments] = await Promise.all([
-      currentSessionPromise,
-      getPostCommentsByPostId(postId),
-    ]);
-    const targetComment = findCommentById(currentComments, commentId);
-    const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
-
-    if (!canManageCommentResult) {
-      redirect(`/posts/${postId}`);
-    }
-
-    await updatePostCommentById(postId, commentId, content);
-    revalidatePath(`/posts/${postId}`, "page");
-    revalidatePath("/posts", "page");
-    redirect(`/posts/${postId}?comment-updated=${Date.now()}`);
-  }
-
-  async function deleteCommentAction(formData: FormData) {
-    "use server";
-
-    const currentSessionPromise = requireSession();
-    const commentId = getFormNumber(formData, "commentId");
-
-    if (!commentId) {
-      redirect(`/posts/${postId}`);
-    }
-
-    const [currentSession, currentComments] = await Promise.all([
-      currentSessionPromise,
-      getPostCommentsByPostId(postId),
-    ]);
-    const targetComment = findCommentById(currentComments, commentId);
-    const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
-
-    if (!canManageCommentResult) {
-      redirect(`/posts/${postId}`);
-    }
-
-    const deleted = await deletePostCommentById(postId, commentId);
-    if (!deleted) {
-      redirect(`/posts/${postId}?error=${encodeURIComponent(tk("ko", "commentDeleteFailed"))}`);
-    }
-    revalidatePath(`/posts/${postId}`, "page");
-    revalidatePath("/posts", "page");
-    redirect(`/posts/${postId}?comment-deleted=${Date.now()}`);
-  }
+  const boundDeletePostAction = deletePostAction.bind(null, postId);
+  const boundAddCommentAction = addCommentAction.bind(null, postId);
+  const boundUpdateCommentAction = updateCommentAction.bind(null, postId);
+  const boundDeleteCommentAction = deleteCommentAction.bind(null, postId);
 
   if (!post) {
     return (
@@ -205,7 +93,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
       <section className="space-y-4 rounded-2xl border border-border-base dark:border-border-base/80 bg-surface-strong/70 dark:bg-surface-sub/40 p-5">
         <h2 className="text-lg font-bold text-text-sub dark:text-text-base">{tk(locale, "comments")}</h2>
 
-        <form action={addCommentAction} className="space-y-3">
+        <form action={boundAddCommentAction} className="space-y-3">
           <textarea
             name="comment"
             required
@@ -238,7 +126,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
                   {isCommentManageable ? (
                     <div className="mt-3 space-y-2">
-                      <form action={updateCommentAction} className="space-y-2">
+                      <form action={boundUpdateCommentAction} className="space-y-2">
                         <input type="hidden" name="commentId" value={comment.id} />
                         <textarea
                           name="content"
@@ -257,7 +145,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
                         </button>
                       </form>
 
-                      <form action={deleteCommentAction}>
+                      <form action={boundDeleteCommentAction}>
                         <input type="hidden" name="commentId" value={comment.id} />
                         <button
                           type="submit"
@@ -293,7 +181,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           </Link>
         ) : null}
         {canManagePostResult ? (
-          <form action={deletePostAction}>
+          <form action={boundDeletePostAction}>
             <button
               type="submit"
               className="inline-flex rounded-full border border-border-base dark:border-danger-border bg-surface-strong dark:bg-danger-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-danger-sub transition hover:bg-surface-muted dark:hover:bg-danger-soft"

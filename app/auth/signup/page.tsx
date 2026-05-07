@@ -1,97 +1,9 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import {
-  completeSignupWithVerificationCode,
-  sendSignupVerificationCode,
-} from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
 import SendCodeButton from "./SendCodeButton";
 import SignupPasswordField from "./SignupPasswordField";
-import { isRedirectError } from "@/lib/redirect-error";
-import { getFormString } from "@/lib/form-utils";
-
-function buildSignupQuery(params: Record<string, string | undefined>) {
-  const search = new URLSearchParams();
-
-  for (const [key, value] of Object.entries(params)) {
-    if (value) {
-      search.set(key, value);
-    }
-  }
-
-  return `/auth/signup?${search.toString()}`;
-}
-
-async function signupAction(formData: FormData) {
-  "use server";
-
-  try {
-    const intent = getFormString(formData, "intent");
-    const id = getFormString(formData, "id");
-    const name = getFormString(formData, "name");
-    const email = getFormString(formData, "email");
-
-    if (intent === "send-code") {
-      const result = await sendSignupVerificationCode(id, name, email);
-      if (!result.ok) {
-        redirect(
-          buildSignupQuery({
-            error: result.message ?? "인증 코드 전송에 실패했습니다.",
-            id,
-            name,
-            email,
-          }),
-        );
-      }
-
-      redirect(
-        buildSignupQuery({
-          sent: "1",
-          id,
-          name,
-          email,
-        }),
-      );
-    }
-
-    const password = getFormString(formData, "password");
-    const verificationCode = getFormString(formData, "verificationCode");
-
-    const result = await completeSignupWithVerificationCode(
-      id,
-      name,
-      email,
-      password,
-      verificationCode,
-    );
-
-    if (!result.ok) {
-      redirect(
-        buildSignupQuery({
-          error: result.message ?? "회원가입에 실패했습니다.",
-          sent: "1",
-          id,
-          name,
-          email,
-        }),
-      );
-    }
-
-    redirect("/auth/login?signup=1");
-  } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
-
-    redirect(
-      buildSignupQuery({
-        error: "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-        sent: "1",
-      }),
-    );
-  }
-}
+import { signupAction } from "@/app/auth/actions";
 
 type SignupPageProps = {
   searchParams: Promise<{

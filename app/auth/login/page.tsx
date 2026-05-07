@@ -1,24 +1,7 @@
 ﻿import Link from "next/link";
-import { redirect } from "next/navigation";
-import { login, setSession } from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
-import { getFormString } from "@/lib/form-utils";
-
-async function loginAction(formData: FormData) {
-  "use server";
-
-  const id = getFormString(formData, "id");
-  const password = getFormString(formData, "password");
-
-  const session = await login(id, password);
-  if (!session) {
-    redirect("/auth/login?error=1");
-  }
-
-  await setSession(session);
-  redirect("/");
-}
+import { loginAction } from "@/app/auth/actions";
 
 type LoginPageProps = {
   searchParams: Promise<{ error?: string; withdraw?: string; signup?: string }>;

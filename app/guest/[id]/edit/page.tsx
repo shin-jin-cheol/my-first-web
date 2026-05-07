@@ -1,14 +1,12 @@
 ﻿import Link from "next/link";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getGuestPostById, updateGuestPostById } from "@/lib/guest-posts";
+import { getGuestPostById } from "@/lib/guest-posts";
 import { requireSession } from "@/lib/auth";
 import { getCategoryLabel, GUEST_POST_CATEGORIES } from "@/lib/post-categories";
 import { getLocale, t } from "@/lib/i18n";
 import { canManagePost } from "@/lib/permissions";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
-import { normalizeCategory } from "@/lib/utils";
-import { getFormString } from "@/lib/form-utils";
+import { updateGuestPostAction } from "@/app/guest/actions";
 
 type EditGuestPostPageProps = {
   params: Promise<{ id: string }>;
@@ -37,41 +35,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
     redirect("/guest");
   }
 
-  async function updateGuestPostAction(formData: FormData) {
-    "use server";
-
-    const currentSession = await requireSession();
-    const currentPost = await getGuestPostById(postId);
-    const canUpdate = canManagePost(currentSession, currentPost ?? { authorId: undefined });
-
-    if (!canUpdate) {
-      redirect("/guest");
-    }
-
-    const title = getFormString(formData, "title");
-    const content = getFormString(formData, "content");
-    const category = getFormString(formData, "category", "study");
-
-    if (!title) {
-      const message = encodeURIComponent("제목을 입력해 주세요.");
-      redirect(`/guest/${postId}/edit?error=${message}`);
-    }
-
-    if (!content) {
-      const message = encodeURIComponent("내용을 입력해 주세요.");
-      redirect(`/guest/${postId}/edit?error=${message}`);
-    }
-
-    await updateGuestPostById(postId, {
-      title,
-      content,
-      category: normalizeCategory(category, 'guest'),
-    });
-
-    revalidatePath("/guest", "page");
-    revalidatePath("/posts", "page");
-    redirect(`/guest?updated=${Date.now()}`);
-  }
+  const boundUpdateGuestPostAction = updateGuestPostAction.bind(null, postId);
 
   return (
     <section className="space-y-8">
@@ -91,7 +55,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
       ) : null}
 
       <form
-        action={updateGuestPostAction}
+        action={boundUpdateGuestPostAction}
         className="space-y-5 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-6"
       >
         <div className="space-y-2">

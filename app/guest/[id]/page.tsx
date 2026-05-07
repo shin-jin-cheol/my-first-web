@@ -1,20 +1,14 @@
 ﻿import Link from "next/link";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
-  addGuestCommentById,
-  deleteGuestCommentById,
-  deleteGuestPostById,
   getGuestPostById,
-  updateGuestCommentById,
 } from "@/lib/guest-posts";
 import { buildDownloadUrl } from "@/lib/download-url";
-import { findCommentById } from "@/lib/comment-utils";
 import { getLocale, t } from "@/lib/i18n";
 import { requireSession } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/post-categories";
 import { canManagePost, canManageComment } from "@/lib/permissions";
-import { getFormNumber, getFormString } from "@/lib/form-utils";
+import { addCommentAction, deleteCommentAction, deleteGuestPostAction, updateCommentAction } from "@/app/guest/actions";
 
 type GuestPostDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -41,120 +35,10 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
 
   const canManage = canManagePost(session, post);
 
-  async function deleteGuestPostAction() {
-    "use server";
-
-    const [currentSession, currentPost] = await Promise.all([
-      requireSession(),
-      getGuestPostById(postId),
-    ]);
-    const canDelete = canManagePost(currentSession, currentPost ?? { authorId: undefined });
-
-    if (!canDelete) {
-      redirect(`/guest/${postId}`);
-    }
-
-    const deleted = await deleteGuestPostById(postId);
-    if (!deleted) {
-      redirect(`/guest/${postId}?error=${encodeURIComponent("방명록 삭제에 실패했습니다.")}`);
-    }
-
-    revalidatePath("/guest", "page");
-    revalidatePath("/posts", "page");
-    redirect(`/guest?deleted=${Date.now()}`);
-  }
-
-  async function addCommentAction(formData: FormData) {
-    "use server";
-
-    const currentSessionPromise = requireSession();
-    const content = getFormString(formData, "comment");
-
-    if (!content) {
-      redirect(`/guest/${postId}?comment=empty`);
-    }
-
-    const [currentSession, currentPost] = await Promise.all([
-      currentSessionPromise,
-      getGuestPostById(postId),
-    ]);
-    if (!currentPost) {
-      redirect("/guest");
-    }
-
-    const authorName = currentSession.userName?.trim() || currentSession.userId;
-
-    await addGuestCommentById(postId, {
-      authorId: currentSession.userId,
-      authorName,
-      content,
-    });
-
-    revalidatePath(`/guest/${postId}`, "page");
-    revalidatePath("/guest", "page");
-    revalidatePath("/posts", "page");
-    redirect(`/guest/${postId}?commented=${Date.now()}`);
-  }
-
-  async function updateCommentAction(formData: FormData) {
-    "use server";
-
-    const currentSessionPromise = requireSession();
-    const commentId = getFormNumber(formData, "commentId");
-    const content = getFormString(formData, "content");
-
-    if (!commentId || !content) {
-      redirect(`/guest/${postId}`);
-    }
-
-    const [currentSession, currentPost] = await Promise.all([
-      currentSessionPromise,
-      getGuestPostById(postId),
-    ]);
-    const targetComment = findCommentById(currentPost?.comments, commentId);
-    const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
-
-    if (!canManageCommentResult) {
-      redirect(`/guest/${postId}`);
-    }
-
-    await updateGuestCommentById(postId, commentId, content);
-    revalidatePath(`/guest/${postId}`, "page");
-    revalidatePath("/guest", "page");
-    revalidatePath("/posts", "page");
-    redirect(`/guest/${postId}?comment-updated=${Date.now()}`);
-  }
-
-  async function deleteCommentAction(formData: FormData) {
-    "use server";
-
-    const currentSessionPromise = requireSession();
-    const commentId = getFormNumber(formData, "commentId");
-
-    if (!commentId) {
-      redirect(`/guest/${postId}`);
-    }
-
-    const [currentSession, currentPost] = await Promise.all([
-      currentSessionPromise,
-      getGuestPostById(postId),
-    ]);
-    const targetComment = findCommentById(currentPost?.comments, commentId);
-    const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
-
-    if (!canManageCommentResult) {
-      redirect(`/guest/${postId}`);
-    }
-
-    const deleted = await deleteGuestCommentById(postId, commentId);
-    if (!deleted) {
-      redirect(`/guest/${postId}?error=${encodeURIComponent("댓글 삭제에 실패했습니다.")}`);
-    }
-    revalidatePath(`/guest/${postId}`, "page");
-    revalidatePath("/guest", "page");
-    revalidatePath("/posts", "page");
-    redirect(`/guest/${postId}?comment-deleted=${Date.now()}`);
-  }
+  const boundDeleteGuestPostAction = deleteGuestPostAction.bind(null, postId);
+  const boundAddCommentAction = addCommentAction.bind(null, postId);
+  const boundUpdateCommentAction = updateCommentAction.bind(null, postId);
+  const boundDeleteCommentAction = deleteCommentAction.bind(null, postId);
 
   return (
     <article className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]">
@@ -201,7 +85,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
       <section className="space-y-4 rounded-2xl border border-border-base dark:border-border-sub/80 bg-surface-strong/70 dark:bg-surface/40 p-5">
         <h2 className="text-lg font-bold text-text-sub dark:text-text-base">{t(locale, "댓글", "Comments")}</h2>
 
-        <form action={addCommentAction} className="space-y-3">
+        <form action={boundAddCommentAction} className="space-y-3">
           <textarea
             name="comment"
             required
@@ -231,7 +115,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
 
                 {canManageComment(session, comment) ? (
                   <div className="mt-3 space-y-2">
-                    <form action={updateCommentAction} className="space-y-2">
+                    <form action={boundUpdateCommentAction} className="space-y-2">
                       <input type="hidden" name="commentId" value={comment.id} />
                       <textarea
                         name="content"
@@ -250,7 +134,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
                       </button>
                     </form>
 
-                    <form action={deleteCommentAction}>
+                    <form action={boundDeleteCommentAction}>
                       <input type="hidden" name="commentId" value={comment.id} />
                       <button
                         type="submit"
@@ -285,7 +169,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
           </Link>
         ) : null}
         {canManage ? (
-          <form action={deleteGuestPostAction}>
+          <form action={boundDeleteGuestPostAction}>
             <button
               type="submit"
               className="inline-flex rounded-full border border-danger-border bg-danger-soft px-4 py-2 text-sm font-semibold text-danger-sub"

@@ -1,67 +1,10 @@
 import Link from "next/link";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
-import { addPost } from "@/lib/posts";
-import { isRedirectError } from "@/lib/redirect-error";
-import { normalizeCategory, normalizeAttachment } from "@/lib/utils";
-import { getFormString } from "@/lib/form-utils";
 import { getLocale, tk } from "@/lib/i18n";
-
-
-
-async function createPost(formData: FormData) {
-  "use server";
-
-  try {
-    const session = await requireSession();
-    if (session.role !== "owner") {
-      redirect("/guest/new");
-    }
-
-    const title = getFormString(formData, "title");
-    const author = getFormString(formData, "author");
-    const content = getFormString(formData, "content");
-    const category = getFormString(formData, "category", "study");
-    const linkUrl = getFormString(formData, "linkUrl");
-    const attachmentFile = formData.get("attachment");
-
-    if (!title) {
-      redirect(`/posts/new?error=${encodeURIComponent(tk("ko", "titleRequired"))}`);
-    }
-
-    if (!author || !content) {
-      redirect(`/posts/new?error=${encodeURIComponent(tk("ko", "authorContentRequired"))}`);
-    }
-
-    await addPost({
-      title,
-      author,
-      authorId: undefined,
-      content,
-      category: normalizeCategory(category, 'blog'),
-      linkUrl,
-      attachmentFile: normalizeAttachment(attachmentFile),
-    });
-
-    revalidatePath("/");
-    revalidatePath("/posts");
-    revalidatePath("/guest");
-    redirect("/posts");
-  } catch (error) {
-    if (isRedirectError(error)) {
-      throw error;
-    }
-
-    const message =
-      error instanceof Error
-        ? error.message
-        : tk("ko", "postSaveFailed");
-    redirect(`/posts/new?error=${encodeURIComponent(message)}`);
-  }
-}
+import { createPost } from "@/app/posts/actions";
 
 type NewPostPageProps = {
   searchParams: Promise<{ error?: string }>;

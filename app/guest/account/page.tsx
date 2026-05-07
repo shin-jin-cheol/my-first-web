@@ -1,16 +1,12 @@
 ﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
-  changeMemberPassword,
-  clearSession,
-  deleteMemberAccount,
   getMemberProfile,
   requireSession,
-  updateMemberProfile,
 } from "@/lib/auth";
 import { getLocale, t } from "@/lib/i18n";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
-import { getFormString } from "@/lib/form-utils";
+import { changePasswordAction, updateProfileAction, withdrawAction } from "@/app/auth/actions";
 
 type GuestAccountPageProps = {
   searchParams: Promise<{ error?: string; success?: string }>;
@@ -35,65 +31,6 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
       : "";
 
   const profile = await getMemberProfile(session.userId);
-
-  async function updateProfileAction(formData: FormData) {
-    "use server";
-
-    const currentSession = await requireSession();
-    if (currentSession.role !== "member") {
-      return;
-    }
-
-    const name = getFormString(formData, "name");
-    const result = await updateMemberProfile(currentSession.userId, name);
-
-    if (!result.ok) {
-      const message = encodeURIComponent(result.message ?? "회원정보 수정에 실패했습니다.");
-      redirect(`/guest/account?error=${message}`);
-    }
-
-    redirect("/guest/account?success=profile");
-  }
-
-  async function changePasswordAction(formData: FormData) {
-    "use server";
-
-    const currentSession = await requireSession();
-    if (currentSession.role !== "member") {
-      return;
-    }
-
-    const currentPassword = getFormString(formData, "currentPassword");
-    const newPassword = getFormString(formData, "newPassword");
-
-    const result = await changeMemberPassword(currentSession.userId, currentPassword, newPassword);
-    if (!result.ok) {
-      const message = encodeURIComponent(result.message ?? "비밀번호 변경에 실패했습니다.");
-      redirect(`/guest/account?error=${message}`);
-    }
-
-    redirect("/guest/account?success=password");
-  }
-
-  async function withdrawAction(formData: FormData) {
-    "use server";
-
-    const currentSession = await requireSession();
-    if (currentSession.role !== "member") {
-      return;
-    }
-
-    const password = getFormString(formData, "withdrawPassword");
-    const result = await deleteMemberAccount(currentSession.userId, password);
-
-    if (!result.ok) {
-      const message = encodeURIComponent(result.message ?? "회원 탈퇴에 실패했습니다.");
-      redirect(`/guest/account?error=${message}`);
-    }
-
-    await clearSession();
-    redirect("/auth/login?withdraw=1");
-  }
 
   return (
     <section className="space-y-6">
