@@ -1,12 +1,9 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
-import { list, put } from "@vercel/blob";
 import { GuestPostCategory, normalizeGuestPostCategory } from "@/lib/post-categories";
-import { safeJsonParse } from "@/lib/safe-json";
-import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, SUPABASE_GUEST_POSTS_TABLE, SUPABASE_UPLOADS_BUCKET, BLOB_READ_WRITE_TOKEN } from "@/lib/env";
+import { SUPABASE_URL, SUPABASE_GUEST_POSTS_TABLE } from "@/lib/env";
 import { getKstDateString, getKstDateTimeString } from "@/lib/date";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
-import { normalizeLinkUrl, removeAttachment, saveAttachmentFile } from "@/lib/attachment-utils";
+import { normalizeLinkUrl } from "@/lib/attachment-utils";
+import { deleteFile, hasSupabaseStorage, readJsonStorage, saveFile, writeJsonStorage } from "@/lib/storage";
 
 export type GuestPost = {
   id: number;
@@ -58,39 +55,12 @@ type SupabaseLegacyGuestPostRow = Omit<SupabaseGuestPostRow, "category"> & {
   category?: string | null;
 };
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const GUEST_POSTS_FILE_LOCAL = path.join(DATA_DIR, "guest-posts.json");
-const GUEST_POSTS_FILE_TMP = path.join("/tmp", "my-first-web-guest-posts.json");
 const GUEST_POSTS_BLOB_KEY = "guest/guest-posts.json";
-const UPLOADS_DIR = path.join(process.cwd(), "public", "uploads");
 // SUPABASE_* constants are centralized in lib/env.ts
 const CATEGORY_SCHEMA_MESSAGE =
   "선택한 카테고리를 저장하려면 Supabase SQL Editor에서 docs/supabase-content.sql을 먼저 실행해야 합니다.";
 
-let guestPostsBlobUrlCache: string | undefined;
 let hasTriedSupabaseGuestBootstrap = false;
-
-function pickLatestBlobUrl(blobs: Array<{ url: string; uploadedAt?: string | Date; pathname?: string }>): string | undefined {
-  if (blobs.length === 0) {
-    return undefined;
-  }
-
-  const sorted = [...blobs].sort((a, b) => {
-    const aTime = a.uploadedAt ? new Date(a.uploadedAt).getTime() : Number.MIN_SAFE_INTEGER;
-    const bTime = b.uploadedAt ? new Date(b.uploadedAt).getTime() : Number.MIN_SAFE_INTEGER;
-    return bTime - aTime;
-  });
-
-  return sorted[0]?.url;
-}
-
-function hasBlobStorage() {
-  return Boolean(BLOB_READ_WRITE_TOKEN);
-}
-
-function hasSupabaseStorage() {
-  return Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
-}
 
 function getSupabaseGuestPostsEndpoint(query = "") {
   if (!SUPABASE_URL) {
@@ -99,23 +69,6 @@ function getSupabaseGuestPostsEndpoint(query = "") {
 
   const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${SUPABASE_GUEST_POSTS_TABLE}`;
   return `${base}${query}`;
-}
-
-function getSupabaseStorageObjectEndpoint(pathname = "") {
-  if (!SUPABASE_URL) {
-    return "";
-  }
-
-  const base = `${SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object`;
-  return `${base}${pathname}`;
-}
-
-function getSupabasePublicFileUrl(storagePath: string) {
-  if (!SUPABASE_URL) {
-    return "";
-  }
-
-  return `${SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object/public/${SUPABASE_UPLOADS_BUCKET}/${storagePath}`;
 }
 
 async function requestSupabase<T>(
@@ -254,125 +207,25 @@ async function syncGuestPostsToSupabase(posts: GuestPost[]) {
   await requestSupabase("DELETE", `?id=not.in.(${keepIds})`);
 }
 
-async function refreshGuestPostsBlobUrlCache() {
-  const existing = await list({ prefix: GUEST_POSTS_BLOB_KEY, limit: 100 });
-  const exactPathBlobs = existing.blobs.filter((blob) => blob.pathname === GUEST_POSTS_BLOB_KEY);
-  guestPostsBlobUrlCache = pickLatestBlobUrl(exactPathBlobs.length > 0 ? exactPathBlobs : existing.blobs);
-}
-
-function resolveGuestPostsFilePath() {
-  // Vercel deployment filesystem is read-only except /tmp.
-  if (process.env.VERCEL) {
-    return GUEST_POSTS_FILE_TMP;
-  }
-  return GUEST_POSTS_FILE_LOCAL;
-}
-
-function getAttachmentRuntimeOptions() {
-  return {
-    hasSupabaseStorage: hasSupabaseStorage(),
-    supabaseServiceRoleKey: SUPABASE_SERVICE_ROLE_KEY,
-    supabaseUploadsBucket: SUPABASE_UPLOADS_BUCKET,
-    getSupabaseStorageObjectEndpoint,
-    getSupabasePublicFileUrl,
-    hasBlobStorageToken: Boolean(BLOB_READ_WRITE_TOKEN),
-    uploadsDir: UPLOADS_DIR,
-  };
-}
-
-async function readGuestPostsFromBlob(): Promise<GuestPost[]> {
-  if (!hasBlobStorage()) {
-    return [];
-  }
-
-  await refreshGuestPostsBlobUrlCache();
-
-  const seed = guestPostsBlobUrlCache
-    ? null
-    : await put(GUEST_POSTS_BLOB_KEY, JSON.stringify([], null, 2), {
-        access: "public",
-        addRandomSuffix: false,
-        allowOverwrite: false,
-        contentType: "application/json",
-      }).catch(() => null);
-
-  if (seed?.url) {
-    guestPostsBlobUrlCache = seed.url;
-  }
-
-  if (!guestPostsBlobUrlCache) {
-    return [];
-  }
-
-  const fetchUrl = `${guestPostsBlobUrlCache}${guestPostsBlobUrlCache.includes("?") ? "&" : "?"}ts=${Date.now()}`;
-  let response = await fetch(fetchUrl, { cache: "no-store" });
-  if (!response.ok) {
-    await refreshGuestPostsBlobUrlCache();
-
-    if (!guestPostsBlobUrlCache) {
-      return [];
-    }
-
-    const retryUrl = `${guestPostsBlobUrlCache}${guestPostsBlobUrlCache.includes("?") ? "&" : "?"}ts=${Date.now()}`;
-    response = await fetch(retryUrl, { cache: "no-store" });
-    if (!response.ok) {
-      return [];
-    }
-  }
-
-  const data = (await response.json()) as Array<Omit<GuestPost, "category"> & { category?: string }>;
-  return Array.isArray(data) ? data.map(normalizeGuestPostRecord) : [];
-}
-
-async function writeGuestPostsToBlob(posts: GuestPost[]) {
-  if (!hasBlobStorage()) {
-    return;
-  }
-
-  const blob = await put(GUEST_POSTS_BLOB_KEY, JSON.stringify(posts, null, 2), {
-    access: "public",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    contentType: "application/json",
-  });
-
-  guestPostsBlobUrlCache = blob.url;
-}
-
-async function ensureGuestPostsFile() {
-  if (hasBlobStorage()) {
-    await readGuestPostsFromBlob();
-    return;
-  }
-
-  const guestPostsFilePath = resolveGuestPostsFilePath();
-
-  try {
-    await fs.access(guestPostsFilePath);
-  } catch {
-    await fs.mkdir(path.dirname(guestPostsFilePath), { recursive: true });
-    await fs.writeFile(guestPostsFilePath, JSON.stringify([], null, 2), "utf-8");
-  }
-}
-
 async function readGuestPostsFromLegacyStorage(): Promise<GuestPost[]> {
-  if (hasBlobStorage()) {
-    return readGuestPostsFromBlob();
-  }
-
-  await ensureGuestPostsFile();
-  const raw = await fs.readFile(resolveGuestPostsFilePath(), "utf-8");
-  const parsed = safeJsonParse<Array<Omit<GuestPost, "category"> & { category?: string }>>(raw, []);
-  return (parsed ?? []).map(normalizeGuestPostRecord);
+  return readJsonStorage({
+    blobKey: GUEST_POSTS_BLOB_KEY,
+    localFileName: "guest-posts.json",
+    tmpFileName: "my-first-web-guest-posts.json",
+    seedData: [] as Array<Omit<GuestPost, "category"> & { category?: string }>,
+    normalize: (posts) => (Array.isArray(posts) ? posts.map(normalizeGuestPostRecord) : []),
+    useBlob: true,
+  });
 }
 
 async function writeGuestPostsToLegacyStorage(posts: GuestPost[]) {
-  if (hasBlobStorage()) {
-    await writeGuestPostsToBlob(posts);
-    return;
-  }
-
-  await fs.writeFile(resolveGuestPostsFilePath(), JSON.stringify(posts, null, 2), "utf-8");
+  await writeJsonStorage(posts, {
+    blobKey: GUEST_POSTS_BLOB_KEY,
+    localFileName: "guest-posts.json",
+    tmpFileName: "my-first-web-guest-posts.json",
+    seedData: [] as GuestPost[],
+    useBlob: true,
+  });
 }
 
 async function readGuestPosts(): Promise<GuestPost[]> {
@@ -416,7 +269,7 @@ export async function getGuestPostById(id: number): Promise<GuestPost | undefine
 export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost> {
   const posts = await readGuestPosts();
   const nextPostId = posts.reduce((maxId, post) => Math.max(maxId, post.id), 0) + 1;
-  const attachment = await saveAttachmentFile(input.attachmentFile, getAttachmentRuntimeOptions());
+  const attachment = await saveFile(input.attachmentFile);
 
   const post: GuestPost = {
     id: nextPostId,
@@ -445,7 +298,7 @@ export async function deleteGuestPostById(id: number): Promise<boolean> {
     return false;
   }
 
-  await removeAttachment(targetPost?.fileUrl, getAttachmentRuntimeOptions());
+  await deleteFile(targetPost?.fileUrl);
   await writeGuestPosts(filtered);
   return true;
 }
