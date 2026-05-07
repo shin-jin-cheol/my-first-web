@@ -199,6 +199,9 @@ export async function updateGuestPostAction(postId: number, formData: FormData) 
   const title = getFormString(formData, "title");
   const content = getFormString(formData, "content");
   const category = getFormString(formData, "category", "study");
+  const linkUrl = getFormString(formData, "linkUrl");
+  const attachmentFile = formData.get("attachment");
+  const removeAttachment = formData.get("removeAttachment") === "on";
 
   if (!title) {
     const message = encodeURIComponent("제목을 입력해 주세요.");
@@ -214,6 +217,9 @@ export async function updateGuestPostAction(postId: number, formData: FormData) 
     title,
     content,
     category: normalizeCategory(category, "guest"),
+    linkUrl,
+    attachmentFile: normalizeAttachment(attachmentFile),
+    removeAttachment,
   });
 
   revalidatePath("/guest", "page");

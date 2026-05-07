@@ -45,8 +45,8 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 
 작업 전 아래 파일을 먼저 읽고 현재 작업에 적용해야 합니다.
 
-- `.github/ARCHITECTURE.md`
-- `.github/context.md`
+- `ARCHITECTURE.md`
+- `context.md`
 - `.github/copilot-instructions.md`
 - 작업 주제와 관련된 `node_modules/next/dist/docs/` 문서
 

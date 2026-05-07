@@ -1,5 +1,9 @@
 import { GuestPostCategory, normalizeGuestPostCategory } from "@/lib/post-categories";
-import { SUPABASE_URL, SUPABASE_GUEST_POSTS_TABLE } from "@/lib/env";
+import {
+  SUPABASE_URL,
+  SUPABASE_GUEST_POSTS_TABLE,
+  SUPABASE_GUEST_POST_COMMENTS_TABLE,
+} from "@/lib/env";
 import { getKstDateString, getKstDateTimeString } from "@/lib/date";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
 import { normalizeLinkUrl } from "@/lib/attachment-utils";
@@ -37,6 +41,15 @@ type NewGuestPostInput = {
   attachmentFile?: File | null;
 };
 
+type UpdateGuestPostInput = {
+  title: string;
+  content: string;
+  category: GuestPostCategory;
+  linkUrl?: string;
+  attachmentFile?: File | null;
+  removeAttachment?: boolean;
+};
+
 type SupabaseGuestPostRow = {
   id: number;
   title: string;
@@ -48,11 +61,27 @@ type SupabaseGuestPostRow = {
   link_url: string | null;
   file_url: string | null;
   file_name: string | null;
-  comments: GuestComment[] | null;
 };
 
 type SupabaseLegacyGuestPostRow = Omit<SupabaseGuestPostRow, "category"> & {
   category?: string | null;
+};
+
+type SupabaseGuestPostWithCommentsRow = SupabaseGuestPostRow & {
+  comments?: GuestComment[] | null;
+};
+
+type SupabaseLegacyGuestPostWithCommentsRow = SupabaseLegacyGuestPostRow & {
+  comments?: GuestComment[] | null;
+};
+
+type SupabaseGuestCommentRow = {
+  id: number;
+  guest_post_id: number;
+  author_id: string | null;
+  author_name: string;
+  content: string;
+  created_at: string;
 };
 
 const GUEST_POSTS_BLOB_KEY = "guest/guest-posts.json";
@@ -71,6 +100,15 @@ function getSupabaseGuestPostsEndpoint(query = "") {
   return `${base}${query}`;
 }
 
+function getSupabaseGuestPostCommentsEndpoint(query = "") {
+  if (!SUPABASE_URL) {
+    return "";
+  }
+
+  const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${SUPABASE_GUEST_POST_COMMENTS_TABLE}`;
+  return `${base}${query}`;
+}
+
 async function requestSupabase<T>(
   method: "GET" | "POST" | "PATCH" | "DELETE",
   query: string,
@@ -86,7 +124,47 @@ async function requestSupabase<T>(
   });
 }
 
-function mapSupabaseRowToGuestPost(row: SupabaseGuestPostRow | SupabaseLegacyGuestPostRow): GuestPost {
+async function requestSupabaseGuestComments<T>(
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  query: string,
+  body?: unknown,
+  prefer?: string,
+): Promise<{ ok: boolean; status: number; data: T | null }> {
+  return requestSupabaseHttp<T>(getSupabaseGuestPostCommentsEndpoint(query), {
+    method,
+    body,
+    prefer,
+    parseMode: "text",
+  });
+}
+
+function formatGuestCommentDateTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  })
+    .format(date)
+    .replace(",", "");
+}
+
+function mapSupabaseRowToGuestPost(
+  row:
+    | SupabaseGuestPostRow
+    | SupabaseLegacyGuestPostRow
+    | SupabaseGuestPostWithCommentsRow
+    | SupabaseLegacyGuestPostWithCommentsRow,
+): GuestPost {
   return {
     id: row.id,
     title: row.title,
@@ -98,7 +176,7 @@ function mapSupabaseRowToGuestPost(row: SupabaseGuestPostRow | SupabaseLegacyGue
     linkUrl: row.link_url ?? undefined,
     fileUrl: row.file_url ?? undefined,
     fileName: row.file_name ?? undefined,
-    comments: Array.isArray(row.comments) ? row.comments : [],
+    comments: "comments" in row && Array.isArray(row.comments) ? row.comments : [],
   };
 }
 
@@ -114,7 +192,6 @@ function mapGuestPostToSupabaseRow(post: GuestPost) {
     link_url: post.linkUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
-    comments: post.comments ?? [],
   };
 }
 
@@ -129,7 +206,26 @@ function mapGuestPostToSupabaseLegacyRow(post: GuestPost) {
     link_url: post.linkUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
-    comments: post.comments ?? [],
+  };
+}
+
+function mapSupabaseRowToGuestComment(row: SupabaseGuestCommentRow): GuestComment {
+  return {
+    id: row.id,
+    authorId: row.author_id ?? "",
+    authorName: row.author_name,
+    content: row.content,
+    dateTime: formatGuestCommentDateTime(row.created_at),
+  };
+}
+
+function mapGuestCommentToSupabaseRow(postId: number, comment: GuestComment) {
+  return {
+    guest_post_id: postId,
+    author_id: comment.authorId,
+    author_name: comment.authorName,
+    content: comment.content,
+    created_at: new Date().toISOString(),
   };
 }
 
@@ -142,26 +238,86 @@ function normalizeGuestPostRecord(
   };
 }
 
+async function readGuestCommentsFromSupabase(postId?: number): Promise<Map<number, GuestComment[]> | null> {
+  const postFilter = typeof postId === "number" ? `&guest_post_id=eq.${postId}` : "";
+  const result = await requestSupabaseGuestComments<SupabaseGuestCommentRow[]>(
+    "GET",
+    `?select=id,guest_post_id,author_id,author_name,content,created_at${postFilter}&order=id.asc`,
+  );
+
+  const commentsByPostId = new Map<number, GuestComment[]>();
+  if (!result.ok || !Array.isArray(result.data)) {
+    return null;
+  }
+
+  for (const row of result.data) {
+    const comments = commentsByPostId.get(row.guest_post_id) ?? [];
+    comments.push(mapSupabaseRowToGuestComment(row));
+    commentsByPostId.set(row.guest_post_id, comments);
+  }
+
+  return commentsByPostId;
+}
+
 async function readGuestPostsFromSupabase(): Promise<GuestPost[]> {
   const result = await requestSupabase<SupabaseGuestPostRow[]>(
     "GET",
-    "?select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name,comments&order=id.desc",
+    "?select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name&order=id.desc",
   );
 
   if (result.ok && Array.isArray(result.data)) {
-    return result.data.map(mapSupabaseRowToGuestPost);
+    const commentsByPostId = await readGuestCommentsFromSupabase();
+    if (!commentsByPostId) {
+      const commentsResult = await requestSupabase<SupabaseGuestPostWithCommentsRow[]>(
+        "GET",
+        "?select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name,comments&order=id.desc",
+      );
+
+      if (commentsResult.ok && Array.isArray(commentsResult.data)) {
+        return commentsResult.data.map(mapSupabaseRowToGuestPost);
+      }
+    }
+
+    return result.data.map((row) => ({
+      ...mapSupabaseRowToGuestPost(row),
+      comments: commentsByPostId?.get(row.id) ?? [],
+    }));
   }
 
   const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
     "GET",
-    "?select=id,title,content,author_id,author_name,date,link_url,file_url,file_name,comments&order=id.desc",
+    "?select=id,title,content,author_id,author_name,date,link_url,file_url,file_name&order=id.desc",
   );
 
   if (!legacyResult.ok || !Array.isArray(legacyResult.data)) {
-    return [];
+    const commentsResult = await requestSupabase<SupabaseGuestPostWithCommentsRow[]>(
+      "GET",
+      "?select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name,comments&order=id.desc",
+    );
+
+    if (!commentsResult.ok || !Array.isArray(commentsResult.data)) {
+      return [];
+    }
+
+    return commentsResult.data.map(mapSupabaseRowToGuestPost);
   }
 
-  return legacyResult.data.map(mapSupabaseRowToGuestPost);
+  const commentsByPostId = await readGuestCommentsFromSupabase();
+  if (!commentsByPostId) {
+    const legacyCommentsResult = await requestSupabase<SupabaseLegacyGuestPostWithCommentsRow[]>(
+      "GET",
+      "?select=id,title,content,author_id,author_name,date,link_url,file_url,file_name,comments&order=id.desc",
+    );
+
+    if (legacyCommentsResult.ok && Array.isArray(legacyCommentsResult.data)) {
+      return legacyCommentsResult.data.map(mapSupabaseRowToGuestPost);
+    }
+  }
+
+  return legacyResult.data.map((row) => ({
+    ...mapSupabaseRowToGuestPost(row),
+    comments: commentsByPostId?.get(row.id) ?? [],
+  }));
 }
 
 async function syncGuestPostsToSupabase(posts: GuestPost[]) {
@@ -305,7 +461,7 @@ export async function deleteGuestPostById(id: number): Promise<boolean> {
 
 export async function updateGuestPostById(
   id: number,
-  input: { title: string; content: string; category: GuestPostCategory },
+  input: UpdateGuestPostInput,
 ): Promise<GuestPost | undefined> {
   const posts = await readGuestPosts();
   const index = posts.findIndex((post) => post.id === id);
@@ -314,11 +470,32 @@ export async function updateGuestPostById(
     return undefined;
   }
 
+  const currentPost = posts[index];
+  const attachment = await saveFile(input.attachmentFile);
+
+  let nextFileUrl = currentPost.fileUrl;
+  let nextFileName = currentPost.fileName;
+
+  if (input.removeAttachment) {
+    await deleteFile(currentPost.fileUrl);
+    nextFileUrl = undefined;
+    nextFileName = undefined;
+  }
+
+  if (attachment) {
+    await deleteFile(currentPost.fileUrl);
+    nextFileUrl = attachment.fileUrl;
+    nextFileName = attachment.fileName;
+  }
+
   const updatedPost: GuestPost = {
-    ...posts[index],
+    ...currentPost,
     title: input.title,
     content: input.content,
     category: normalizeGuestPostCategory(input.category),
+    linkUrl: normalizeLinkUrl(input.linkUrl),
+    fileUrl: nextFileUrl,
+    fileName: nextFileName,
   };
 
   posts[index] = updatedPost;
@@ -330,6 +507,29 @@ export async function addGuestCommentById(
   postId: number,
   input: { authorId: string; authorName: string; content: string },
 ): Promise<GuestComment | undefined> {
+  if (hasSupabaseStorage()) {
+    const comment: GuestComment = {
+      id: 0,
+      authorId: input.authorId,
+      authorName: input.authorName,
+      content: input.content,
+      dateTime: getKstDateTimeString(),
+    };
+
+    const result = await requestSupabaseGuestComments<SupabaseGuestCommentRow[]>(
+      "POST",
+      "",
+      [mapGuestCommentToSupabaseRow(postId, comment)],
+      "return=representation",
+    );
+
+    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+      return undefined;
+    }
+
+    return mapSupabaseRowToGuestComment(result.data[0]);
+  }
+
   const posts = await readGuestPosts();
   const index = posts.findIndex((post) => post.id === postId);
 
@@ -363,6 +563,21 @@ export async function updateGuestCommentById(
   commentId: number,
   content: string,
 ): Promise<GuestComment | undefined> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabaseGuestComments<SupabaseGuestCommentRow[]>(
+      "PATCH",
+      `?guest_post_id=eq.${postId}&id=eq.${commentId}&select=id,guest_post_id,author_id,author_name,content,created_at`,
+      { content },
+      "return=representation",
+    );
+
+    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+      return undefined;
+    }
+
+    return mapSupabaseRowToGuestComment(result.data[0]);
+  }
+
   const posts = await readGuestPosts();
   const index = posts.findIndex((post) => post.id === postId);
 
@@ -396,6 +611,17 @@ export async function updateGuestCommentById(
 }
 
 export async function deleteGuestCommentById(postId: number, commentId: number): Promise<boolean> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabaseGuestComments<SupabaseGuestCommentRow[]>(
+      "DELETE",
+      `?guest_post_id=eq.${postId}&id=eq.${commentId}&select=id,guest_post_id,author_id,author_name,content,created_at`,
+      undefined,
+      "return=representation",
+    );
+
+    return Boolean(result.ok && Array.isArray(result.data) && result.data.length > 0);
+  }
+
   const posts = await readGuestPosts();
   const index = posts.findIndex((post) => post.id === postId);
 

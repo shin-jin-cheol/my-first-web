@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getGuestPostById } from "@/lib/guest-posts";
 import { requireSession } from "@/lib/auth";
 import { getCategoryLabel, GUEST_POST_CATEGORIES } from "@/lib/post-categories";
-import { getLocale, t } from "@/lib/i18n";
+import { getLocale, t, tk } from "@/lib/i18n";
 import { canManagePost } from "@/lib/permissions";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import { updateGuestPostAction } from "@/app/guest/actions";
@@ -101,6 +101,40 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
             defaultValue={post.content}
             className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-3 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
           />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="linkUrl" className="text-sm font-medium text-text-sub dark:text-text-sub">
+            {tk(locale, "linkUrlOptional")}
+          </label>
+          <input
+            id="linkUrl"
+            name="linkUrl"
+            type="text"
+            inputMode="url"
+            autoComplete="url"
+            defaultValue={post.linkUrl ?? ""}
+            placeholder="https://example.com"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="attachment" className="text-sm font-medium text-text-sub dark:text-text-sub">
+            {tk(locale, "replaceFileOptional")}
+          </label>
+          <input
+            id="attachment"
+            name="attachment"
+            type="file"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-sm text-text-sub dark:text-text-base file:mr-4 file:rounded-full file:border-0 file:bg-surface-muted dark:file:bg-surface-sub file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-text-sub dark:file:text-text-base hover:file:bg-surface-strong dark:hover:file:bg-surface-muted"
+          />
+          {post.fileName ? (
+            <label className="inline-flex items-center gap-2 text-sm text-text-muted dark:text-text-muted">
+              <input type="checkbox" name="removeAttachment" className="h-4 w-4 accent-[#81d8d0]" />
+              {tk(locale, "removeExistingAttachment")}
+            </label>
+          ) : null}
         </div>
 
         <div className="flex items-center gap-3 pt-2">
