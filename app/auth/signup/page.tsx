@@ -34,12 +34,12 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
           {showSentMessage
             ? t(
                 locale,
-                "硫붿씪濡?諛쏆? ?몄쬆 肄붾뱶瑜??낅젰?섍퀬 鍮꾨?踰덊샇瑜??뺥븯硫??뚯썝媛?낆씠 ?꾨즺?⑸땲??",
+                "이메일로 받은 인증 코드를 입력하고 비밀번호를 정하면 회원가입이 완료됩니다.",
                 "Enter the verification code from your email and choose a password to finish signing up.",
               )
             : t(
                 locale,
-                "?대쫫, ?꾩씠?? ?대찓?쇱쓣 癒쇱? ?낅젰?????몄쬆 肄붾뱶瑜?諛쏆븘 二쇱꽭??",
+                "이름, 아이디, 이메일을 먼저 입력하고 인증 코드를 받아 주세요.",
                 "Enter your name, ID, and email first, then request a verification code.",
               )}
         </p>
@@ -56,14 +56,14 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
           <p>
             {t(
               locale,
-              "?몄쬆 肄붾뱶瑜??대찓?쇰줈 ?꾩넚?덉뒿?덈떎. 硫붿씪?④낵 ?ㅽ뙵?⑥쓣 ?④퍡 ?뺤씤??二쇱꽭??",
+              "인증 코드를 이메일로 전송했습니다. 메일함과 스팸함을 함께 확인해 주세요.",
               "We sent a verification code. Please check both your inbox and spam folder.",
             )}
           </p>
           <p className="mt-1 text-xs">
             {t(
               locale,
-              "硫붿씪 ?쒕퉬??蹂댄샇瑜??꾪빐 ?몄쬆 肄붾뱶??60珥??ㅼ뿉 ?ㅼ떆 蹂대궪 ???덉뒿?덈떎.",
+              "메일 서비스 보호를 위해 인증 코드는 60초 뒤에 다시 보낼 수 있습니다.",
               "For email delivery protection, you can resend the code after 60 seconds.",
             )}
           </p>
@@ -73,7 +73,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
       <form action={signupAction} className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="name" className="text-sm text-text-sub dark:text-text-sub">
-            {t(locale, "?대쫫", "Name")}
+            {t(locale, "이름", "Name")}
           </label>
           <Input
             id="name"
@@ -127,7 +127,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
             <p className="text-xs text-text-muted dark:text-text-muted">
               {t(
                 locale,
-                "?몄쬆 肄붾뱶瑜?諛쏆? ??鍮꾨?踰덊샇瑜??낅젰???뚯썝媛?낆쓣 ?꾨즺?⑸땲??",
+                "인증 코드를 받은 뒤 비밀번호를 입력해 회원가입을 완료합니다.",
                 "After receiving the code, enter your password to complete sign up.",
               )}
             </p>
@@ -141,7 +141,7 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
                 htmlFor="verificationCode"
                 className="text-sm text-text-sub dark:text-text-sub"
               >
-                {t(locale, "?몄쬆 肄붾뱶", "Verification Code")}
+                {t(locale, "인증 코드", "Verification Code")}
               </label>
             <Input
               id="verificationCode"
@@ -150,42 +150,42 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
               autoComplete="one-time-code"
               maxLength={8}
               pattern="\d{6,8}"
-              placeholder={t(locale, "?몄쬆 肄붾뱶 ?レ옄", "Verification code")}
+              placeholder={t(locale, "인증 코드 숫자", "Verification code")}
               required
               className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[var(--accent-primary)] dark:border-border-sub dark:bg-surface-sub dark:text-text-base"
             />
               <p className="text-xs text-text-muted dark:text-text-muted">
                 {t(
                   locale,
-                  "硫붿씪濡?諛쏆? ?몄쬆 肄붾뱶 ?レ옄瑜?洹몃?濡??낅젰??二쇱꽭??",
+                  "이메일로 받은 인증 코드 숫자를 그대로 입력해 주세요.",
                   "Enter the numeric verification code exactly as shown in the email.",
                 )}
               </p>
             </div>
 
             <SignupPasswordField
-              label={t(locale, "鍮꾨?踰덊샇", "Password")}
+              label={t(locale, "비밀번호", "Password")}
               title={t(
                 locale,
-                "鍮꾨?踰덊샇???곷Ц, ?レ옄, ?뱀닔臾몄옄瑜?紐⑤몢 ?ы븿??8???댁긽?댁뼱???⑸땲??",
+                "비밀번호는 영문, 숫자, 특수문자를 모두 포함한 8자 이상이어야 합니다.",
                 "Password must be at least 8 characters and include letters, numbers, and special characters.",
               )}
               helperText={t(
                 locale,
-                "?꾨옒 洹쒖튃??紐⑤몢 留뚯”?섎㈃ ?뚯썝媛?낆씠 媛?ν빀?덈떎.",
+                "아래 규칙을 모두 만족하면 회원가입이 가능합니다.",
                 "You can sign up once all of the rules below are satisfied.",
               )}
-              lengthText={t(locale, "8???댁긽", "At least 8 characters")}
-              letterText={t(locale, "?곷Ц ?ы븿", "Contains letters")}
-              numberText={t(locale, "?レ옄 ?ы븿", "Contains numbers")}
-              specialText={t(locale, "?뱀닔臾몄옄 ?ы븿", "Contains special characters")}
+              lengthText={t(locale, "8자 이상", "At least 8 characters")}
+              letterText={t(locale, "영문 포함", "Contains letters")}
+              numberText={t(locale, "숫자 포함", "Contains numbers")}
+              specialText={t(locale, "특수문자 포함", "Contains special characters")}
             />
 
             <button
               type="submit"
               className="rounded-full border border-[var(--accent-mid)] bg-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_20px_rgb(from_var(--accent-primary)_r_g_b_/_0.62)] hover:shadow-[0_0_24px_rgb(from_var(--accent-primary)_r_g_b_/_0.72)]"
             >
-              {t(locale, "?뚯썝媛???꾨즺", "Complete Sign up")}
+              {t(locale, "회원가입 완료", "Complete Sign up")}
             </button>
           </>
         ) : null}
