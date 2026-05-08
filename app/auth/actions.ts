@@ -5,6 +5,13 @@ import { changeMemberPassword, clearSession, completeSignupWithVerificationCode,
 import { getFormString } from "@/lib/form-utils";
 import { isRedirectError } from "@/lib/redirect-error";
 
+const SIGNUP_CODE_SEND_FAILED_MESSAGE = "인증 코드 전송에 실패했습니다.";
+const SIGNUP_FAILED_MESSAGE = "회원가입에 실패했습니다.";
+const SERVER_ERROR_MESSAGE = "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+const PROFILE_UPDATE_FAILED_MESSAGE = "회원정보 수정에 실패했습니다.";
+const PASSWORD_CHANGE_FAILED_MESSAGE = "비밀번호 변경에 실패했습니다.";
+const WITHDRAW_FAILED_MESSAGE = "회원 탈퇴에 실패했습니다.";
+
 function buildSignupQuery(params: Record<string, string | undefined>) {
   const search = new URLSearchParams();
 
@@ -42,7 +49,7 @@ export async function signupAction(formData: FormData) {
       if (!result.ok) {
         redirect(
           buildSignupQuery({
-            error: result.message ?? "?몄쬆 肄붾뱶 ?꾩넚???ㅽ뙣?덉뒿?덈떎.",
+            error: result.message ?? SIGNUP_CODE_SEND_FAILED_MESSAGE,
             id,
             name,
             email,
@@ -74,7 +81,7 @@ export async function signupAction(formData: FormData) {
     if (!result.ok) {
       redirect(
         buildSignupQuery({
-          error: result.message ?? "?뚯썝媛?낆뿉 ?ㅽ뙣?덉뒿?덈떎.",
+          error: result.message ?? SIGNUP_FAILED_MESSAGE,
           sent: "1",
           id,
           name,
@@ -91,7 +98,7 @@ export async function signupAction(formData: FormData) {
 
     redirect(
       buildSignupQuery({
-        error: "?쒕쾭 ?ㅻ쪟媛 諛쒖깮?덉뒿?덈떎. ?좎떆 ???ㅼ떆 ?쒕룄??二쇱꽭??",
+        error: SERVER_ERROR_MESSAGE,
         sent: "1",
       }),
     );
@@ -108,7 +115,7 @@ export async function updateProfileAction(formData: FormData) {
   const result = await updateMemberProfile(currentSession.userId, name);
 
   if (!result.ok) {
-    const message = encodeURIComponent(result.message ?? "회원정보 수정에 실패했습니다.");
+    const message = encodeURIComponent(result.message ?? PROFILE_UPDATE_FAILED_MESSAGE);
     redirect(`/guest/account?error=${message}`);
   }
 
@@ -126,7 +133,7 @@ export async function changePasswordAction(formData: FormData) {
 
   const result = await changeMemberPassword(currentSession.userId, currentPassword, newPassword);
   if (!result.ok) {
-    const message = encodeURIComponent(result.message ?? "비밀번호 변경에 실패했습니다.");
+    const message = encodeURIComponent(result.message ?? PASSWORD_CHANGE_FAILED_MESSAGE);
     redirect(`/guest/account?error=${message}`);
   }
 
@@ -143,7 +150,7 @@ export async function withdrawAction(formData: FormData) {
   const result = await deleteMemberAccount(currentSession.userId, password);
 
   if (!result.ok) {
-    const message = encodeURIComponent(result.message ?? "회원 탈퇴에 실패했습니다.");
+    const message = encodeURIComponent(result.message ?? WITHDRAW_FAILED_MESSAGE);
     redirect(`/guest/account?error=${message}`);
   }
 

@@ -14,10 +14,13 @@ type EditGuestPostPageProps = {
 };
 
 export default async function EditGuestPostPage({ params, searchParams }: EditGuestPostPageProps) {
-  const locale = await getLocale();
-  const session = await requireSession();
-  const { id } = await params;
-  const query = await searchParams;
+  const [locale, session, resolvedParams, query] = await Promise.all([
+    getLocale(),
+    requireSession(),
+    params,
+    searchParams,
+  ]);
+  const { id } = resolvedParams;
   const errorMessage = query.error ? safeDecodeURIComponent(query.error) : "";
   const postId = Number(id);
 

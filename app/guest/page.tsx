@@ -12,11 +12,13 @@ type GuestBoardPageProps = {
 };
 
 export default async function GuestBoardPage({ searchParams }: GuestBoardPageProps) {
-  const locale = await getLocale();
-  const session = await requireSession();
-  const guestBoardPosts = await getGuestPosts();
-  const members = await getMemberSummaries();
-  const params = await searchParams;
+  const [locale, session, guestBoardPosts, members, params] = await Promise.all([
+    getLocale(),
+    requireSession(),
+    getGuestPosts(),
+    getMemberSummaries(),
+    searchParams,
+  ]);
   const errorMessage = params.error ? safeDecodeURIComponent(params.error) : "";
   const memberNameById = new Map(members.map((member) => [member.id, member.name.trim()]));
 

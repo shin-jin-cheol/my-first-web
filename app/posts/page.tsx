@@ -6,10 +6,12 @@ import { getLocale, t } from "@/lib/i18n";
 import PostsSearchContent from "@/app/components/PostsSearchContent";
 
 export default async function PostsPage() {
-  const locale = await getLocale();
-  const posts = await getPosts();
-  const guestPosts = await getGuestPosts();
-  const members = await getMemberSummaries();
+  const [locale, posts, guestPosts, members] = await Promise.all([
+    getLocale(),
+    getPosts(),
+    getGuestPosts(),
+    getMemberSummaries(),
+  ]);
   const memberNameById = new Map(
     members
       .map((member) => [member.id, member.name.trim()] as const)
