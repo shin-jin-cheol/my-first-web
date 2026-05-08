@@ -15,7 +15,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const showSignupMessage = params.signup === "1";
 
   return (
-    <section className="mx-auto max-w-xl space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface dark:bg-surface-strong p-7 shadow-[0_0_24px_rgba(129,216,208,0.14)]">
+    <section className="mx-auto max-w-xl space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface dark:bg-surface-strong p-7 shadow-[0_0_24px_rgb(from_var(--accent-primary)_r_g_b_/_0.14)]">
       <header className="space-y-2">
         <p className="text-sm font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">Auth</p>
         <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">{t(locale, "로그인", "Login")}</h1>
@@ -29,13 +29,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       ) : null}
 
       {showWithdrawMessage ? (
-        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-2 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-accent-sub dark:shadow-none">
+        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-2 text-sm text-[var(--accent-dark)] shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.24)] dark:text-accent-sub dark:shadow-none">
           {t(locale, "회원 탈퇴가 완료되었습니다.", "Your account has been deleted.")}
         </p>
       ) : null}
 
       {showSignupMessage ? (
-        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-2 text-sm text-[#2f8f88] shadow-[0_0_12px_rgba(129,216,208,0.24)] dark:text-accent-sub dark:shadow-none">
+        <p className="rounded-xl border border-accent-border bg-accent-soft px-4 py-2 text-sm text-[var(--accent-dark)] shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.24)] dark:text-accent-sub dark:shadow-none">
           {t(locale, "이메일 인증이 완료되었습니다. 로그인해 주세요.", "Email verified. Please log in.")}
         </p>
       ) : null}
@@ -47,7 +47,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             id="id"
             name="id"
             required
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[var(--accent-primary)]"
           />
         </div>
         <div className="space-y-2">
@@ -57,13 +57,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             name="password"
             type="password"
             required
-            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[var(--accent-primary)]"
           />
         </div>
 
         <button
           type="submit"
-          className="rounded-full border border-[#74cfc6] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_20px_rgba(129,216,208,0.62)] hover:shadow-[0_0_24px_rgba(129,216,208,0.72)]"
+          className="rounded-full border border-[var(--accent-mid)] bg-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_20px_rgb(from_var(--accent-primary)_r_g_b_/_0.62)] hover:shadow-[0_0_24px_rgb(from_var(--accent-primary)_r_g_b_/_0.72)]"
         >
           {t(locale, "로그인", "Login")}
         </button>
@@ -71,7 +71,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
       <p className="text-sm text-text-muted dark:text-text-muted">
         {t(locale, "회원가입이 필요하면", "Need an account?")} {" "}
-        <Link href="/auth/signup" className="text-[#2f8f88] drop-shadow-[0_0_6px_rgba(129,216,208,0.35)] transition hover:underline hover:drop-shadow-[0_0_10px_rgba(129,216,208,0.5)] dark:text-[#8fe7df] dark:drop-shadow-none">
+        <Link href="/auth/signup" className="text-[var(--accent-dark)] drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.35)] transition hover:underline hover:drop-shadow-[0_0_10px_rgb(from_var(--accent-primary)_r_g_b_/_0.5)] dark:text-[var(--accent-light-sub)] dark:drop-shadow-none">
           {t(locale, "회원가입", "Sign up")}
         </Link>
       </p>

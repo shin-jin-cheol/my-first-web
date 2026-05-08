@@ -69,7 +69,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
             id="category"
             name="category"
             defaultValue={post.category}
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[var(--accent-primary)]"
           >
             {GUEST_POST_CATEGORIES.map((category) => (
               <option key={category} value={category}>
@@ -88,7 +88,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
             name="title"
             type="text"
             defaultValue={post.title}
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[var(--accent-primary)]"
           />
         </div>
 
@@ -102,7 +102,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
             required
             rows={10}
             defaultValue={post.content}
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-3 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-3 text-text-sub dark:text-text-base outline-none focus:border-[var(--accent-primary)]"
           />
         </div>
 
@@ -118,7 +118,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
             autoComplete="url"
             defaultValue={post.linkUrl ?? ""}
             placeholder="https://example.com"
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[var(--accent-primary)]"
           />
         </div>
 
@@ -134,7 +134,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
           />
           {post.fileName ? (
             <label className="inline-flex items-center gap-2 text-sm text-text-muted dark:text-text-muted">
-              <input type="checkbox" name="removeAttachment" className="h-4 w-4 accent-[#81d8d0]" />
+              <input type="checkbox" name="removeAttachment" className="h-4 w-4 accent-[var(--accent-primary)]" />
               {tk(locale, "removeExistingAttachment")}
             </label>
           ) : null}
@@ -143,7 +143,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
         <div className="flex items-center gap-3 pt-2">
           <button
             type="submit"
-            className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base"
+            className="rounded-full border border-[var(--accent-light)] bg-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-text-base"
           >
             {t(locale, "저장하기", "Save")}
           </button>
