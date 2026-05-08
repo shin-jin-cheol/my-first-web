@@ -71,10 +71,10 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
             id="category"
             name="category"
             defaultValue={post.category}
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[var(--accent-primary)]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[var(--accent-primary)] dark:[color-scheme:dark] dark:[&>option]:bg-surface-sub dark:[&>option]:text-text-base"
           >
             {GUEST_POST_CATEGORIES.map((category) => (
-              <option key={category} value={category}>
+              <option key={category} value={category} className="bg-surface-strong text-text-sub dark:bg-surface-sub dark:text-text-base">
                 {getCategoryLabel(category)}
               </option>
             ))}
@@ -120,7 +120,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
             autoComplete="url"
             defaultValue={post.linkUrl ?? ""}
             placeholder="https://example.com"
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[var(--accent-primary)] dark:[color-scheme:dark] dark:[&>option]:bg-surface-sub dark:[&>option]:text-text-base"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[var(--accent-primary)]"
           />
         </div>
 

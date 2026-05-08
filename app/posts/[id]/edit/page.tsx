@@ -67,7 +67,7 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
             className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[var(--accent-primary)] dark:[color-scheme:dark] dark:[&>option]:bg-surface-sub dark:[&>option]:text-text-base"
           >
             {categoryOptions.map((category) => (
-              <option key={category} value={category}>
+              <option key={category} value={category} className="bg-surface-strong text-text-sub dark:bg-surface-sub dark:text-text-base">
                 {getCategoryLabel(category)}
               </option>
             ))}
