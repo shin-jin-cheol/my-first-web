@@ -2,14 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { findCommentById } from "@/lib/comment-utils";
 import { getFormNumber, getFormString } from "@/lib/form-utils";
 import { getMemberProfile, requireSession } from "@/lib/auth";
 import { addGuestCommentById, addGuestPost, deleteGuestCommentById, deleteGuestPostById, getGuestPostById, getGuestPosts, updateGuestCommentById, updateGuestPostById } from "@/lib/guest-posts";
 import { isRedirectError } from "@/lib/redirect-error";
-import { canManageComment, canManagePost } from "@/lib/permissions";
+import { canManagePost } from "@/lib/permissions";
 import { normalizeAttachment, normalizeCategory } from "@/lib/utils";
 import { tk } from "@/lib/i18n";
+import { getRequiredCommentContent, getRequiredCommentId, requireManageableComment, revalidateCommentPaths } from "@/app/comment-action-utils";
 
 export async function createGuestPost(formData: FormData) {
   try {
@@ -103,11 +103,7 @@ export async function deleteGuestPostAction(postIdOrFormData: number | FormData)
 
 export async function addCommentAction(postId: number, formData: FormData) {
   const currentSessionPromise = requireSession();
-  const content = getFormString(formData, "comment");
-
-  if (!content) {
-    redirect(`/guest/${postId}?comment=empty`);
-  }
+  const content = getRequiredCommentContent(formData, "comment", `/guest/${postId}?comment=empty`);
 
   const [currentSession, currentPost] = await Promise.all([
     currentSessionPromise,
@@ -125,65 +121,41 @@ export async function addCommentAction(postId: number, formData: FormData) {
     content,
   });
 
-  revalidatePath(`/guest/${postId}`, "page");
-  revalidatePath("/guest", "page");
-  revalidatePath("/posts", "page");
+  revalidateCommentPaths(`/guest/${postId}`, ["/guest", "/posts"]);
   redirect(`/guest/${postId}?commented=${Date.now()}`);
 }
 
 export async function updateCommentAction(postId: number, formData: FormData) {
   const currentSessionPromise = requireSession();
-  const commentId = getFormNumber(formData, "commentId");
-  const content = getFormString(formData, "content");
-
-  if (!commentId || !content) {
-    redirect(`/guest/${postId}`);
-  }
+  const commentId = getRequiredCommentId(formData, `/guest/${postId}`);
+  const content = getRequiredCommentContent(formData, "content", `/guest/${postId}`);
 
   const [currentSession, currentPost] = await Promise.all([
     currentSessionPromise,
     getGuestPostById(postId),
   ]);
-  const targetComment = findCommentById(currentPost?.comments, commentId);
-  const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
-
-  if (!canManageCommentResult) {
-    redirect(`/guest/${postId}`);
-  }
+  requireManageableComment(currentSession, currentPost?.comments, commentId, `/guest/${postId}`);
 
   await updateGuestCommentById(postId, commentId, content);
-  revalidatePath(`/guest/${postId}`, "page");
-  revalidatePath("/guest", "page");
-  revalidatePath("/posts", "page");
+  revalidateCommentPaths(`/guest/${postId}`, ["/guest", "/posts"]);
   redirect(`/guest/${postId}?comment-updated=${Date.now()}`);
 }
 
 export async function deleteCommentAction(postId: number, formData: FormData) {
   const currentSessionPromise = requireSession();
-  const commentId = getFormNumber(formData, "commentId");
-
-  if (!commentId) {
-    redirect(`/guest/${postId}`);
-  }
+  const commentId = getRequiredCommentId(formData, `/guest/${postId}`);
 
   const [currentSession, currentPost] = await Promise.all([
     currentSessionPromise,
     getGuestPostById(postId),
   ]);
-  const targetComment = findCommentById(currentPost?.comments, commentId);
-  const canManageCommentResult = targetComment ? canManageComment(currentSession, targetComment) : false;
-
-  if (!canManageCommentResult) {
-    redirect(`/guest/${postId}`);
-  }
+  requireManageableComment(currentSession, currentPost?.comments, commentId, `/guest/${postId}`);
 
   const deleted = await deleteGuestCommentById(postId, commentId);
   if (!deleted) {
     redirect(`/guest/${postId}?error=${encodeURIComponent("댓글 삭제에 실패했습니다.")}`);
   }
-  revalidatePath(`/guest/${postId}`, "page");
-  revalidatePath("/guest", "page");
-  revalidatePath("/posts", "page");
+  revalidateCommentPaths(`/guest/${postId}`, ["/guest", "/posts"]);
   redirect(`/guest/${postId}?comment-deleted=${Date.now()}`);
 }
 
