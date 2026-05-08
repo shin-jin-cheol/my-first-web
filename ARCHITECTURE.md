@@ -25,9 +25,8 @@
 - `/guest/[id]/edit` : 게스트 글 수정 (Server Action)
 - `/auth/login` and `/auth/signup` : 인증 플로우
 - `/admin/members` : 관리자 멤버 목록 (owner 전용)
-- `/api/gemini` : 서버사이드 API 프록시
 
-환경 변수와 외부 API 키는 `lib/env.ts`에서 중앙화됩니다. `/api/gemini`는 서버사이드에서 외부 LLM 엔드포인트로 안전하게 프록시합니다.
+환경 변수는 `lib/env.ts`에서 중앙화됩니다.
 
 ---
 

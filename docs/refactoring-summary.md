@@ -99,7 +99,6 @@ export const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 - `lib/auth.ts`
 - `lib/posts.ts`
 - `lib/guest-posts.ts`
- - `app/api/gemini/route.ts` (PA_LM_API_URL, PA_LM_API_KEY 중앙화)
 
 **영향**: 🟢 기능 동일 (변수명/기본값 보존)
 
@@ -113,7 +112,6 @@ export const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 - `lib/auth.ts` — Supabase/Blob 읽기 실패 시
 - `lib/posts.ts` — Supabase/Blob 읽기 실패 시
 - `lib/guest-posts.ts` — Supabase/Blob 읽기 실패 시
-- `app/api/gemini/route.ts` — API 예외 처리
 
 **로깅 내용**:
 ```typescript

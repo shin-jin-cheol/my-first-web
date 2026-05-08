@@ -15,8 +15,6 @@ export const SUPABASE_GUEST_POST_COMMENTS_TABLE =
 export const SUPABASE_UPLOADS_BUCKET = process.env.SUPABASE_UPLOADS_BUCKET || "uploads";
 
 export const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
-export const PA_LM_API_URL = process.env.PA_LM_API_URL;
-export const PA_LM_API_KEY = process.env.PA_LM_API_KEY;
 export const SESSION_SECRET = process.env.SESSION_SECRET ?? "";
 export const OWNER_ID = process.env.OWNER_ID ?? "";
 export const OWNER_PASSWORD = process.env.OWNER_PASSWORD ?? "";

@@ -27,7 +27,6 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - `/guest`, `/guest/[id]`, `/guest/new`, `/guest/[id]/edit`, `/guest/account`: 게스트 게시판
 - `/auth/login`, `/auth/signup`: 인증
 - `/admin/members`: 관리자 회원 관리
-- `/api/gemini`: 서버 사이드 API 프록시
 
 ## 2. 기술 스택
 
