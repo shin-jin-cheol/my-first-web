@@ -4,6 +4,8 @@ import { requireSession } from "@/lib/auth";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
 import { getLocale, tk } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { createPost } from "@/app/posts/actions";
 
 type NewPostPageProps = {
@@ -25,7 +27,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
         <p className="text-sm font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">
           Write
         </p>
-        <h1 className="text-4xl font-extrabold text-text-sub dark:text-text-base drop-shadow-[0_0_6px_rgba(129,216,208,0.08)]">
+        <h1 className="text-4xl font-extrabold text-text-sub dark:text-text-base drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)]">
           {tk(locale, "writeBlogPost")}
         </h1>
       </header>
@@ -38,7 +40,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
 
       <form
         action={createPost}
-        className="space-y-5 rounded-2xl border border-border-base dark:border-border-base bg-surface dark:bg-surface-strong p-6 shadow-[0_0_12px_rgba(129,216,208,0.05)]"
+        className="space-y-5 rounded-2xl border border-border-base dark:border-border-base bg-surface dark:bg-surface-strong p-6 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]"
       >
         <div className="space-y-2">
           <label htmlFor="category" className="text-sm font-medium text-text-sub dark:text-text-sub">
@@ -48,7 +50,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             id="category"
             name="category"
             defaultValue="study"
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[var(--accent-primary)]"
           >
             {BLOG_POST_CATEGORIES.map((category) => (
               <option key={category} value={category}>
@@ -62,12 +64,12 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
           <label htmlFor="title" className="text-sm font-medium text-text-sub dark:text-text-sub">
             {tk(locale, "title")}
           </label>
-          <input
+          <Input
             id="title"
             name="title"
             type="text"
             placeholder={tk(locale, "enterTitle")}
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[var(--accent-primary)]"
           />
         </div>
 
@@ -75,13 +77,13 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
           <label htmlFor="author" className="text-sm font-medium text-text-sub dark:text-text-sub">
             {tk(locale, "author")}
           </label>
-          <input
+          <Input
             id="author"
             name="author"
             type="text"
             required
             placeholder={tk(locale, "enterAuthorName")}
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[var(--accent-primary)]"
           />
         </div>
 
@@ -95,7 +97,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             required
             rows={10}
             placeholder={tk(locale, "enterContent")}
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-3 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-3 text-text-sub dark:text-text-base outline-none transition focus:border-[var(--accent-primary)]"
           />
         </div>
 
@@ -103,14 +105,14 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
           <label htmlFor="linkUrl" className="text-sm font-medium text-text-sub dark:text-text-sub">
             {tk(locale, "linkUrlOptional")}
           </label>
-          <input
+          <Input
             id="linkUrl"
             name="linkUrl"
             type="text"
             inputMode="url"
             autoComplete="url"
             placeholder="https://example.com"
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[#81d8d0]"
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[var(--accent-primary)]"
           />
         </div>
 
@@ -118,7 +120,7 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
           <label htmlFor="attachment" className="text-sm font-medium text-text-sub dark:text-text-sub">
             {tk(locale, "uploadFileOptional")}
           </label>
-          <input
+          <Input
             id="attachment"
             name="attachment"
             type="file"
@@ -127,12 +129,12 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
         </div>
 
         <div className="flex items-center gap-3 pt-2">
-          <button
+          <Button
             type="submit"
-            className="rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_12px_rgba(129,216,208,0.18)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
+            className="rounded-full border border-[var(--accent-light)] bg-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.18)] transition hover:-translate-y-0.5 hover:bg-[var(--accent-light-sub)]"
           >
             {tk(locale, "publish")}
-          </button>
+          </Button>
           <Link
             href="/posts"
             className="rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-medium text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"

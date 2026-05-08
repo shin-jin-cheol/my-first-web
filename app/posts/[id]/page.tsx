@@ -4,6 +4,8 @@ import {
   getPostCommentsByPostId,
 } from "@/lib/posts";
 import { buildDownloadUrl } from "@/lib/download-url";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { getSession } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/post-categories";
 import { canManagePost, canManageComment } from "@/lib/permissions";
@@ -33,7 +35,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
   if (!post) {
     return (
-      <div className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgba(129,216,208,0.05)]">
+      <div className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]">
         <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">{tk(locale, "postDetailTitle")}</h1>
         <p className="text-text-muted dark:text-text-muted">{tk(locale, "postNotFound")}</p>
         <Link
@@ -47,7 +49,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   }
 
   return (
-    <article className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgba(129,216,208,0.05)]">
+    <article className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]">
       <header className="space-y-3">
         <p className="text-sm font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">Post Detail</p>
         <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">{post.title}</h1>
@@ -71,9 +73,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           href={post.linkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-accent-border bg-gradient-to-r from-surface-sub via-surface-muted to-surface-strong dark:from-surface dark:via-surface-sub dark:to-[#2b6661] px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_12px_rgba(129,216,208,0.08)] transition hover:-translate-y-0.5 hover:brightness-110"
+          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-accent-border bg-gradient-to-r from-surface-sub via-surface-muted to-surface-strong dark:from-surface dark:via-surface-sub dark:to-[var(--accent-dark)] px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] transition hover:-translate-y-0.5 hover:brightness-110"
         >
-          <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-accent-sub shadow-[0_0_6px_rgba(129,216,208,0.25)]" />
+          <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-accent-sub shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.25)]" />
           {tk(locale, "openLink")}
         </a>
       ) : null}
@@ -83,9 +85,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           href={fileDownloadUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-border-base/60 bg-surface-strong dark:bg-highlight-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_8px_rgba(129,216,208,0.08)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-surface-muted dark:hover:bg-highlight-soft"
+          className="inline-flex items-center gap-2 rounded-full border border-border-base dark:border-border-base/60 bg-surface-strong dark:bg-highlight-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base shadow-[0_0_8px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] backdrop-blur transition hover:-translate-y-0.5 hover:bg-surface-muted dark:hover:bg-highlight-soft"
         >
-          <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-text-sub shadow-[0_0_6px_rgba(129,216,208,0.25)]" />
+          <span className="inline-block h-2 w-2 rounded-full bg-surface-muted dark:bg-text-sub shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.25)]" />
           {post.fileName ?? tk(locale, "openFile")}
         </a>
       ) : null}
@@ -103,12 +105,12 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
             placeholder={tk(locale, "writeComment")}
             className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border placeholder:text-text-muted focus:ring"
           />
-          <button
+          <Button
             type="submit"
             className="inline-flex rounded-full border border-border-base dark:border-accent-border bg-surface-strong dark:bg-accent-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-accent-sub"
           >
             {tk(locale, "addComment")}
-          </button>
+          </Button>
         </form>
 
         {comments.length > 0 ? (
@@ -127,7 +129,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
                   {isCommentManageable ? (
                     <div className="mt-3 space-y-2">
                       <form action={boundUpdateCommentAction} className="space-y-2">
-                        <input type="hidden" name="commentId" value={comment.id} />
+                        <Input type="hidden" name="commentId" value={comment.id} className="hidden" />
                         <textarea
                           name="content"
                           defaultValue={comment.content}
@@ -137,22 +139,22 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
                           rows={3}
                           className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border focus:ring"
                         />
-                        <button
+                        <Button
                           type="submit"
                           className="rounded-full border border-border-base dark:border-accent-border bg-surface-strong dark:bg-accent-soft px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-accent-sub"
                         >
                           {tk(locale, "editComment")}
-                        </button>
+                        </Button>
                       </form>
 
                       <form action={boundDeleteCommentAction}>
-                        <input type="hidden" name="commentId" value={comment.id} />
-                        <button
+                        <Input type="hidden" name="commentId" value={comment.id} className="hidden" />
+                        <Button
                           type="submit"
                           className="rounded-full border border-border-base dark:border-danger-border bg-surface-strong dark:bg-danger-soft px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-danger-sub"
                         >
                           {tk(locale, "deleteComment")}
-                        </button>
+                        </Button>
                       </form>
                     </div>
                   ) : null}
@@ -175,19 +177,19 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         {canManagePostResult ? (
           <Link
             href={`/posts/${post.id}/edit`}
-            className="inline-flex rounded-full border border-[#b8ece7] bg-[#81d8d0] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_12px_rgba(129,216,208,0.12)] transition hover:-translate-y-0.5 hover:bg-[#96e1da]"
+            className="inline-flex rounded-full border border-[var(--accent-light)] bg-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.12)] transition hover:-translate-y-0.5 hover:bg-[var(--accent-light-sub)]"
           >
             {tk(locale, "edit")}
           </Link>
         ) : null}
         {canManagePostResult ? (
           <form action={boundDeletePostAction}>
-            <button
+            <Button
               type="submit"
               className="inline-flex rounded-full border border-border-base dark:border-danger-border bg-surface-strong dark:bg-danger-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-danger-sub transition hover:bg-surface-muted dark:hover:bg-danger-soft"
             >
               {tk(locale, "delete")}
-            </button>
+            </Button>
           </form>
         ) : null}
       </div>

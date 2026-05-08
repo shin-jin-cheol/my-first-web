@@ -3,6 +3,7 @@
 import { Fragment, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import SearchBar from "./SearchBar";
+import { Button } from "@/components/ui/button";
 import { filterByCategoryAndQuery, getCategoryFilterButtonClass } from "@/lib/search-filters";
 import type { CategoryOption } from "@/types/posts";
 
@@ -88,14 +89,14 @@ export default function SearchableList<TCategory extends string>({
           const active = selectedCategory === option.value;
 
           return (
-            <button
+            <Button
               key={option.value}
               type="button"
               onClick={() => setSelectedCategory(option.value)}
               className={getCategoryFilterButtonClass(active)}
             >
               {option.label}
-            </button>
+            </Button>
           );
         })}
       </div>

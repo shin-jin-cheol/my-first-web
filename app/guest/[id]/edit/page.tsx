@@ -4,6 +4,8 @@ import { getGuestPostById } from "@/lib/guest-posts";
 import { requireSession } from "@/lib/auth";
 import { getCategoryLabel, GUEST_POST_CATEGORIES } from "@/lib/post-categories";
 import { getLocale, t, tk } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { canManagePost } from "@/lib/permissions";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import { updateGuestPostAction } from "@/app/guest/actions";
@@ -83,7 +85,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
           <label htmlFor="title" className="text-sm font-medium text-text-sub dark:text-text-sub">
             {t(locale, "제목", "Title")}
           </label>
-          <input
+          <Input
             id="title"
             name="title"
             type="text"
@@ -110,7 +112,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
           <label htmlFor="linkUrl" className="text-sm font-medium text-text-sub dark:text-text-sub">
             {tk(locale, "linkUrlOptional")}
           </label>
-          <input
+          <Input
             id="linkUrl"
             name="linkUrl"
             type="text"
@@ -126,7 +128,7 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
           <label htmlFor="attachment" className="text-sm font-medium text-text-sub dark:text-text-sub">
             {tk(locale, "replaceFileOptional")}
           </label>
-          <input
+          <Input
             id="attachment"
             name="attachment"
             type="file"
@@ -134,19 +136,19 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
           />
           {post.fileName ? (
             <label className="inline-flex items-center gap-2 text-sm text-text-muted dark:text-text-muted">
-              <input type="checkbox" name="removeAttachment" className="h-4 w-4 accent-[var(--accent-primary)]" />
+              <Input type="checkbox" name="removeAttachment" className="h-4 w-4 accent-[var(--accent-primary)]" />
               {tk(locale, "removeExistingAttachment")}
             </label>
           ) : null}
         </div>
 
         <div className="flex items-center gap-3 pt-2">
-          <button
+          <Button
             type="submit"
             className="rounded-full border border-[var(--accent-light)] bg-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-text-base"
           >
             {t(locale, "저장하기", "Save")}
-          </button>
+          </Button>
           <Link
             href="/guest"
             className="rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-medium text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"

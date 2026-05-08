@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { logoutAction } from "@/app/auth/actions";
+import { Button } from "@/components/ui/button";
 import type { Session } from "@/lib/auth";
 import { t, type Locale } from "@/lib/i18n";
 import { NavMenuMobile } from "./NavMenuMobile";
@@ -38,12 +39,12 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
               </Link>
             ) : (
               <form action={logoutAction} className="inline-flex h-9 items-center">
-                <button
+                <Button
                   type="submit"
                   className="inline-flex h-9 items-center rounded-full border border-border-strong bg-surface-muted/92 px-3 text-xs font-semibold text-text-sub shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] transition hover:brightness-105 dark:border-border-strong dark:bg-surface-strong dark:text-text-base dark:shadow-none dark:hover:bg-surface-sub"
                 >
                   {t(locale, "\ub85c\uadf8\uc544\uc6c3", "Logout")}
-                </button>
+                </Button>
               </form>
             )}
             <NavMenuMobile
@@ -102,12 +103,12 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
               </>
             ) : (
               <form action={logoutAction} className="inline-flex h-9 items-center">
-                <button
+                <Button
                   type="submit"
                   className="inline-flex h-9 items-center rounded-full border border-border-strong bg-surface-muted/92 px-3 text-sm font-semibold text-text-base shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] transition hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-3px_6px_rgba(0,0,0,0.05),0_7px_15px_rgba(0,0,0,0.11)] dark:border-border-strong dark:bg-surface-strong dark:text-text-base dark:shadow-none dark:hover:bg-surface-sub"
                 >
                   {t(locale, "\ub85c\uadf8\uc544\uc6c3", "Logout")}
-                </button>
+                </Button>
               </form>
             )}
             <NavMenuMobile

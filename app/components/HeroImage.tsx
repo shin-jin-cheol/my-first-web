@@ -1,5 +1,3 @@
-"use client";
-
 import Image from "next/image";
 
 const imageClassName = "h-[460px] w-full object-cover";

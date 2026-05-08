@@ -1,5 +1,6 @@
 ﻿import Link from "next/link";
 import { getLocale, t } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SendCodeButton from "./SendCodeButton";
 import SignupPasswordField from "./SignupPasswordField";
@@ -181,12 +182,12 @@ export default async function SignupPage({ searchParams }: SignupPageProps) {
               specialText={t(locale, "특수문자 포함", "Contains special characters")}
             />
 
-            <button
+            <Button
               type="submit"
               className="rounded-full border border-[var(--accent-mid)] bg-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_20px_rgb(from_var(--accent-primary)_r_g_b_/_0.62)] hover:shadow-[0_0_24px_rgb(from_var(--accent-primary)_r_g_b_/_0.72)]"
             >
               {t(locale, "회원가입 완료", "Complete Sign up")}
-            </button>
+            </Button>
           </>
         ) : null}
       </form>

@@ -52,7 +52,7 @@ export default function SignupPasswordField({
         required
         value={value}
         onChange={(event) => setValue(event.target.value)}
-        className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[#81d8d0] dark:border-border-base dark:bg-surface-sub dark:text-text-base"
+        className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none focus:border-[var(--accent-primary)] dark:border-border-base dark:bg-surface-sub dark:text-text-base"
       />
       <p className="text-xs text-text-muted dark:text-text-muted">{helperText}</p>
       <ul className="grid gap-1 text-xs">

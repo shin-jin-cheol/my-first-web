@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const COOLDOWN_MS = 60_000;
 const STORAGE_KEY = "signup-send-code-cooldown-until";
@@ -68,15 +69,15 @@ export default function SendCodeButton({
   const isCoolingDown = remainingSeconds > 0;
 
   return (
-    <button
+    <Button
       type="submit"
       name="intent"
       value="send-code"
       formNoValidate
       disabled={isCoolingDown}
-      className="shrink-0 rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-sm font-semibold text-text-sub transition hover:border-[#81d8d0] hover:text-text-base disabled:cursor-not-allowed disabled:opacity-60 dark:border-border-base dark:bg-surface-sub dark:text-text-base dark:hover:border-[#81d8d0]"
+      className="shrink-0 rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-sm font-semibold text-text-sub transition hover:border-[var(--accent-primary)] hover:text-text-base disabled:cursor-not-allowed disabled:opacity-60 dark:border-border-base dark:bg-surface-sub dark:text-text-base dark:hover:border-[var(--accent-primary)]"
     >
       {isCoolingDown ? `${cooldownLabel} (${remainingSeconds}s)` : idleLabel}
-    </button>
+    </Button>
   );
 }

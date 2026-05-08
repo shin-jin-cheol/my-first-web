@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Menu } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
 import { useLocale } from '@/lib/i18n-client';
 import type { Session } from '@/lib/auth';
 
@@ -146,7 +147,7 @@ export function NavMenuMobile({
         ) : null}
 
         <form action={setLanguageAction} className="inline-flex items-center gap-1 rounded-full border border-border-base bg-surface-strong p-1 text-xs dark:border-border-base dark:bg-surface-strong/80">
-          <button
+          <Button
             type="submit"
             name="lang"
             value="ko"
@@ -154,8 +155,8 @@ export function NavMenuMobile({
             className={`rounded-full px-2 py-1 transition ${locale === 'ko' ? 'bg-surface-strong text-text-sub dark:bg-surface-strong dark:text-text-base' : 'text-text-muted hover:text-text-sub dark:text-text-subtle dark:hover:text-text-base'}`}
           >
             KO
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             name="lang"
             value="en"
@@ -163,7 +164,7 @@ export function NavMenuMobile({
             className={`rounded-full px-2 py-1 transition ${locale === 'en' ? 'bg-surface-strong text-text-sub dark:bg-surface-strong dark:text-text-base' : 'text-text-muted hover:text-text-sub dark:text-text-subtle dark:hover:text-text-base'}`}
           >
             EN
-          </button>
+          </Button>
         </form>
 
         <ThemeToggle />
