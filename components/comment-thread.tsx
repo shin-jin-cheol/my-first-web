@@ -12,6 +12,7 @@ export type CommentThreadItem = {
   dateTime: string;
   parentId?: number;
   canManage: boolean;
+  reactions?: Array<{ emoji: string; count: number; userReacted: boolean }>;
 };
 
 type CommentThreadLabels = {
@@ -37,6 +38,7 @@ type CommentThreadProps = {
   addReplyAction: (parentCommentId: number, formData: FormData) => Promise<void>;
   updateCommentAction: (formData: FormData) => Promise<void>;
   deleteCommentAction: (formData: FormData) => Promise<void>;
+  toggleCommentReactionAction?: (commentId: number, emoji: string, formData: FormData) => Promise<void>;
 };
 
 type CommentTreeNode = CommentThreadItem & {
@@ -93,11 +95,14 @@ export function CommentThread({
   addReplyAction,
   updateCommentAction,
   deleteCommentAction,
+  toggleCommentReactionAction,
 }: CommentThreadProps) {
+  const EMOJIS = ["❤️", "😂", "😮", "😢", "😡"];
   const tree = useMemo(() => buildTree(comments), [comments]);
   const [replyingCommentId, setReplyingCommentId] = useState<number | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [menuCommentId, setMenuCommentId] = useState<number | null>(null);
+  const [showEmojiPickerId, setShowEmojiPickerId] = useState<number | null>(null);
 
   const startReply = (commentId: number) => {
     setReplyingCommentId((current) => (current === commentId ? null : commentId));
@@ -199,6 +204,66 @@ export function CommentThread({
               <p className="whitespace-pre-wrap text-sm leading-6 text-text-sub">{comment.content}</p>
             )}
 
+            {/* 반응 UI */}
+            <div className="space-y-2">
+              {comment.reactions && comment.reactions.length > 0 ? (
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {comment.reactions.map((reaction) => (
+                    <button
+                      key={reaction.emoji}
+                      type="button"
+                      onClick={async () => {
+                        if (canInteract && toggleCommentReactionAction) {
+                          const formData = new FormData();
+                          await toggleCommentReactionAction(comment.id, reaction.emoji, formData);
+                        }
+                      }}
+                      className={`rounded-full px-2 py-1 text-xs font-semibold transition ${
+                        reaction.userReacted
+                          ? "bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] border border-[var(--accent-primary)]/50"
+                          : "bg-surface-muted text-text-sub border border-border-base hover:bg-surface-strong"
+                      }`}
+                    >
+                      {reaction.emoji} {reaction.count}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+
+              {canInteract ? (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowEmojiPickerId((current) => (current === comment.id ? null : comment.id))}
+                    className="rounded-full border border-border-base bg-surface-muted px-2 py-1 text-xs font-semibold text-text-sub transition hover:bg-surface-strong"
+                  >
+                    +
+                  </button>
+
+                  {showEmojiPickerId === comment.id ? (
+                    <div className="absolute left-0 top-8 z-10 flex flex-wrap gap-1 rounded-xl border border-border-base bg-surface-strong p-2 shadow-lg">
+                      {EMOJIS.map((emoji) => (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={async () => {
+                            if (toggleCommentReactionAction) {
+                              const formData = new FormData();
+                              await toggleCommentReactionAction(comment.id, emoji, formData);
+                              setShowEmojiPickerId(null);
+                            }
+                          }}
+                          className="rounded px-1 py-0.5 text-lg transition hover:bg-surface-muted"
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+
             {canInteract && isRoot ? (
               <div className="flex flex-wrap items-center gap-2">
                 <button
@@ -212,7 +277,7 @@ export function CommentThread({
             ) : null}
 
             {canInteract && isReplying ? (
-                <form action={addReplyAction.bind(null, comment.id)} className="space-y-3">
+              <form action={addReplyAction.bind(null, comment.id)} className="space-y-3">
                 <textarea
                   name="reply"
                   required

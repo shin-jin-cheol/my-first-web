@@ -1,5 +1,5 @@
 ﻿import Link from "next/link";
-import { getPostById, getPostCommentsByPostId } from "@/lib/posts";
+import { getPostById, getPostCommentsByPostId, getPostCommentReactions } from "@/lib/posts";
 import { buildDownloadUrl } from "@/lib/download-url";
 import { Button } from "@/components/ui/button";
 import { getSession } from "@/lib/auth";
@@ -12,6 +12,7 @@ import {
   deleteCommentAction,
   deletePostAction,
   updateCommentAction,
+  togglePostCommentReactionAction,
 } from "@/app/posts/actions";
 import { CommentThread, type CommentThreadItem } from "@/components/comment-thread";
 
@@ -32,9 +33,33 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const fileDownloadUrl = post?.fileUrl ? buildDownloadUrl(post.fileUrl, post.fileName) : undefined;
   const canInteract = Boolean(session);
 
+  // 각 댓글의 반응 데이터 조회
+  const commentReactionMap = new Map<number, Array<{ emoji: string; count: number; userReacted: boolean }>>();
+  for (const comment of comments) {
+    const reactions = await getPostCommentReactions(comment.id);
+    const reactionsByEmoji = new Map<string, { count: number; userReacted: boolean }>();
+    
+    for (const reaction of reactions) {
+      const existing = reactionsByEmoji.get(reaction.emoji) || { count: 0, userReacted: false };
+      reactionsByEmoji.set(reaction.emoji, {
+        count: existing.count + 1,
+        userReacted: reaction.memberId === session?.userId ? true : existing.userReacted,
+      });
+    }
+    
+    commentReactionMap.set(
+      comment.id,
+      Array.from(reactionsByEmoji.entries()).map(([emoji, data]) => ({
+        emoji,
+        ...data,
+      })),
+    );
+  }
+
   const commentItems: CommentThreadItem[] = comments.map((comment) => ({
     ...comment,
     canManage: canManageComment(session ?? null, comment),
+    reactions: commentReactionMap.get(comment.id),
   }));
 
   const boundDeletePostAction = deletePostAction.bind(null, postId);
@@ -42,6 +67,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const boundAddReplyAction = addReplyAction.bind(null, postId);
   const boundUpdateCommentAction = updateCommentAction.bind(null, postId);
   const boundDeleteCommentAction = deleteCommentAction.bind(null, postId);
+  const boundTogglePostCommentReactionAction = togglePostCommentReactionAction.bind(null, postId);
 
   if (!post) {
     return (
@@ -123,6 +149,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         addReplyAction={boundAddReplyAction}
         updateCommentAction={boundUpdateCommentAction}
         deleteCommentAction={boundDeleteCommentAction}
+        toggleCommentReactionAction={boundTogglePostCommentReactionAction}
       />
 
       <div className="flex items-center gap-3">

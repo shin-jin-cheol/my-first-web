@@ -1,6 +1,6 @@
 ﻿import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getGuestPostById } from "@/lib/guest-posts";
+import { getGuestPostById, getGuestCommentReactions } from "@/lib/guest-posts";
 import { buildDownloadUrl } from "@/lib/download-url";
 import { Button } from "@/components/ui/button";
 import { getLocale, t } from "@/lib/i18n";
@@ -13,6 +13,7 @@ import {
   deleteCommentAction,
   deleteGuestPostAction,
   updateCommentAction,
+  toggleGuestCommentReactionAction,
 } from "@/app/guest/actions";
 import { CommentThread, type CommentThreadItem } from "@/components/comment-thread";
 
@@ -42,9 +43,34 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   const fileDownloadUrl = post.fileUrl ? buildDownloadUrl(post.fileUrl, post.fileName) : undefined;
 
   const canManage = canManagePost(session, post);
+  
+  // 각 댓글의 반응 데이터 조회
+  const commentReactionMap = new Map<number, Array<{ emoji: string; count: number; userReacted: boolean }>>();
+  for (const comment of post.comments ?? []) {
+    const reactions = await getGuestCommentReactions(comment.id);
+    const reactionsByEmoji = new Map<string, { count: number; userReacted: boolean }>();
+    
+    for (const reaction of reactions) {
+      const existing = reactionsByEmoji.get(reaction.emoji) || { count: 0, userReacted: false };
+      reactionsByEmoji.set(reaction.emoji, {
+        count: existing.count + 1,
+        userReacted: reaction.memberId === session.userId ? true : existing.userReacted,
+      });
+    }
+    
+    commentReactionMap.set(
+      comment.id,
+      Array.from(reactionsByEmoji.entries()).map(([emoji, data]) => ({
+        emoji,
+        ...data,
+      })),
+    );
+  }
+  
   const commentItems: CommentThreadItem[] = (post.comments ?? []).map((comment) => ({
     ...comment,
     canManage: canManageComment(session, comment),
+    reactions: commentReactionMap.get(comment.id),
   }));
 
   const boundDeleteGuestPostAction = deleteGuestPostAction.bind(null, postId);
@@ -52,6 +78,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   const boundAddReplyAction = addReplyAction.bind(null, postId);
   const boundUpdateCommentAction = updateCommentAction.bind(null, postId);
   const boundDeleteCommentAction = deleteCommentAction.bind(null, postId);
+  const boundToggleGuestCommentReactionAction = toggleGuestCommentReactionAction.bind(null, postId);
 
   return (
     <article className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]">
@@ -116,6 +143,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
         addReplyAction={boundAddReplyAction}
         updateCommentAction={boundUpdateCommentAction}
         deleteCommentAction={boundDeleteCommentAction}
+        toggleCommentReactionAction={boundToggleGuestCommentReactionAction}
       />
 
       <div className="flex items-center gap-3">
