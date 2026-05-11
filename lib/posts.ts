@@ -105,7 +105,7 @@ type SupabasePostReactionRow = {
 
 type SupabasePostCommentReactionRow = {
   id: number;
-  post_comment_id: number;
+  comment_id: number;
   member_id: string;
   emoji: string;
   created_at: string;
@@ -384,7 +384,7 @@ function mapSupabaseRowToPostCommentReaction(
 ): PostCommentReaction {
   return {
     id: row.id,
-    commentId: row.post_comment_id,
+    commentId: row.comment_id,
     memberId: row.member_id,
     emoji: row.emoji,
     createdAt: row.created_at,
@@ -833,7 +833,7 @@ export async function removePostReaction(
   if (hasSupabaseStorage()) {
     const result = await requestSupabasePostReactions(
       "DELETE",
-      `?post_id=eq.${postId}&member_id=eq.${memberId}&emoji=eq.${encodeURIComponent(emoji)}`,
+      `?post_id=eq.${postId}&member_id=eq.${encodeURIComponent(memberId)}&emoji=eq.${encodeURIComponent(emoji)}`,
     );
     return result.ok;
   }
@@ -867,7 +867,7 @@ export async function addPostCommentReaction(
     const result = await requestSupabasePostCommentReactions<SupabasePostCommentReactionRow[]>(
       "POST",
       "",
-      [{ post_comment_id: commentId, member_id: memberId, emoji }],
+      [{ comment_id: commentId, member_id: memberId, emoji }],
       "return=representation",
     );
 
@@ -889,7 +889,7 @@ export async function removePostCommentReaction(
   if (hasSupabaseStorage()) {
     const result = await requestSupabasePostCommentReactions(
       "DELETE",
-      `?post_comment_id=eq.${commentId}&member_id=eq.${memberId}&emoji=eq.${encodeURIComponent(emoji)}`,
+      `?comment_id=eq.${commentId}&member_id=eq.${encodeURIComponent(memberId)}&emoji=eq.${encodeURIComponent(emoji)}`,
     );
     return result.ok;
   }
@@ -901,7 +901,7 @@ export async function getPostCommentReactions(commentId: number): Promise<PostCo
   if (hasSupabaseStorage()) {
     const result = await requestSupabasePostCommentReactions<SupabasePostCommentReactionRow[]>(
       "GET",
-      `?select=id,post_comment_id,member_id,emoji,created_at&post_comment_id=eq.${commentId}`,
+      `?select=id,comment_id,member_id,emoji,created_at&comment_id=eq.${commentId}`,
     );
 
     if (!result.ok || !Array.isArray(result.data)) {

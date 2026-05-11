@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getAvatarColorClass, getAvatarText } from "@/lib/avatar-utils";
 
+const EMOJIS = ["\u2764\uFE0F", "\uD83D\uDE02", "\uD83D\uDE2E", "\uD83D\uDE22", "\uD83D\uDE21"];
+
 export type CommentThreadItem = {
   id: number;
   authorId: string;
@@ -99,7 +101,6 @@ export function CommentThread({
   deleteCommentAction,
   toggleCommentReactionAction,
 }: CommentThreadProps) {
-  const EMOJIS = ["❤️", "😂", "😮", "😢", "😡"];
   const tree = useMemo(() => buildTree(comments), [comments]);
   const [replyingCommentId, setReplyingCommentId] = useState<number | null>(null);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
@@ -149,7 +150,7 @@ export function CommentThread({
                     aria-label={labels.edit}
                     className="rounded-full px-2 py-1 text-sm font-bold text-text-muted transition hover:bg-surface-muted hover:text-text-sub"
                   >
-                    ···
+                    ...
                   </button>
 
                   {isMenuOpen ? (
@@ -234,19 +235,13 @@ export function CommentThread({
                     aria-label="이모지 반응"
                     className="rounded-full border border-border-base bg-surface-muted px-2 py-1 text-xs font-semibold text-text-sub transition hover:bg-surface-strong"
                   >
-                    ❤️
+                    {"\u2764\uFE0F"}
                   </button>
 
                   {showEmojiPickerId === comment.id ? (
                     <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border-base bg-surface-strong p-1.5 shadow-lg">
                       {EMOJIS.map((emoji) => (
-                        <form
-                          key={emoji}
-                          action={async (formData) => {
-                            await toggleCommentReactionAction(formData);
-                            setShowEmojiPickerId(null);
-                          }}
-                        >
+                        <form key={emoji} action={toggleCommentReactionAction}>
                           <input type="hidden" name="postId" value={postId} />
                           <input type="hidden" name="commentId" value={comment.id} />
                           <input type="hidden" name="emoji" value={emoji} />

@@ -49,7 +49,10 @@ export async function requestSupabaseHttp<T>(
   });
 
   if (!response.ok) {
-    console.error(`requestSupabaseHttp(${endpoint}): response not ok ${response.status} ${response.statusText}`);
+    const errorBody = await response.text();
+    console.error(
+      `requestSupabaseHttp(${endpoint}): response not ok ${response.status} ${response.statusText} ${errorBody}`,
+    );
     return { ok: false, status: response.status, data: null };
   }
 

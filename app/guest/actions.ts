@@ -26,6 +26,12 @@ import { normalizeAttachment, normalizeCategory } from "@/lib/utils";
 import { tk } from "@/lib/i18n";
 import { getRequiredCommentContent, getRequiredCommentId, requireManageableComment, revalidateCommentPaths } from "@/app/comment-action-utils";
 
+function assertReactionMutation(succeeded: boolean, redirectPath: string) {
+  if (!succeeded) {
+    redirect(`${redirectPath}?error=${encodeURIComponent("reaction-save-failed")}`);
+  }
+}
+
 export async function createGuestPost(formData: FormData) {
   try {
     const session = await requireSession();
@@ -251,9 +257,11 @@ export async function toggleGuestPostReactionAction(formData: FormData) {
   );
 
   if (hasReaction) {
-    await removeGuestPostReaction(postId, currentSession.userId, emoji);
+    const removed = await removeGuestPostReaction(postId, currentSession.userId, emoji);
+    assertReactionMutation(removed, `/guest/${postId}`);
   } else {
-    await addGuestPostReaction(postId, currentSession.userId, emoji);
+    const added = await addGuestPostReaction(postId, currentSession.userId, emoji);
+    assertReactionMutation(Boolean(added), `/guest/${postId}`);
   }
 
   revalidatePath(`/guest/${postId}`, "page");
@@ -276,9 +284,11 @@ export async function toggleGuestCommentReactionAction(
   );
 
   if (hasReaction) {
-    await removeGuestCommentReaction(commentId, currentSession.userId, emoji);
+    const removed = await removeGuestCommentReaction(commentId, currentSession.userId, emoji);
+    assertReactionMutation(removed, `/guest/${postId}`);
   } else {
-    await addGuestCommentReaction(commentId, currentSession.userId, emoji);
+    const added = await addGuestCommentReaction(commentId, currentSession.userId, emoji);
+    assertReactionMutation(Boolean(added), `/guest/${postId}`);
   }
 
   revalidatePath(`/guest/${postId}`, "page");
