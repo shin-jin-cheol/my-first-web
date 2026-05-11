@@ -205,27 +205,31 @@ export function CommentThread({
             )}
 
             {/* 반응 UI */}
-            <div className="space-y-2">
+            <div className="space-y-3">
               {comment.reactions && comment.reactions.length > 0 ? (
                 <div className="flex flex-wrap items-center gap-1.5">
                   {comment.reactions.map((reaction) => (
-                    <button
+                    <form
                       key={reaction.emoji}
-                      type="button"
-                      onClick={async () => {
+                      onSubmit={async (e) => {
+                        e.preventDefault();
                         if (canInteract && toggleCommentReactionAction) {
                           const formData = new FormData();
                           await toggleCommentReactionAction(comment.id, reaction.emoji, formData);
                         }
                       }}
-                      className={`rounded-full px-2 py-1 text-xs font-semibold transition ${
-                        reaction.userReacted
-                          ? "bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] border border-[var(--accent-primary)]/50"
-                          : "bg-surface-muted text-text-sub border border-border-base hover:bg-surface-strong"
-                      }`}
                     >
-                      {reaction.emoji} {reaction.count}
-                    </button>
+                      <button
+                        type="submit"
+                        className={`rounded-full px-2 py-1 text-xs font-semibold transition ${
+                          reaction.userReacted
+                            ? "bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] border border-[var(--accent-primary)]/50"
+                            : "bg-surface-muted text-text-sub border border-border-base hover:bg-surface-strong"
+                        }`}
+                      >
+                        {reaction.emoji} {reaction.count}
+                      </button>
+                    </form>
                   ))}
                 </div>
               ) : null}
@@ -243,20 +247,24 @@ export function CommentThread({
                   {showEmojiPickerId === comment.id ? (
                     <div className="absolute left-0 top-8 z-10 flex flex-wrap gap-1 rounded-xl border border-border-base bg-surface-strong p-2 shadow-lg">
                       {EMOJIS.map((emoji) => (
-                        <button
+                        <form
                           key={emoji}
-                          type="button"
-                          onClick={async () => {
+                          onSubmit={async (e) => {
+                            e.preventDefault();
                             if (toggleCommentReactionAction) {
                               const formData = new FormData();
                               await toggleCommentReactionAction(comment.id, emoji, formData);
                               setShowEmojiPickerId(null);
                             }
                           }}
-                          className="rounded px-1 py-0.5 text-lg transition hover:bg-surface-muted"
                         >
-                          {emoji}
-                        </button>
+                          <button
+                            type="submit"
+                            className="rounded px-1 py-0.5 text-lg transition hover:bg-surface-muted"
+                          >
+                            {emoji}
+                          </button>
+                        </form>
                       ))}
                     </div>
                   ) : null}

@@ -1,8 +1,9 @@
 ﻿import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getGuestPostById, getGuestCommentReactions } from "@/lib/guest-posts";
+import { getGuestPostById, getGuestCommentReactions, getGuestPostReactions } from "@/lib/guest-posts";
 import { buildDownloadUrl } from "@/lib/download-url";
 import { Button } from "@/components/ui/button";
+import { PostReaction } from "@/components/post-reaction";
 import { getLocale, t } from "@/lib/i18n";
 import { requireSession } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/post-categories";
@@ -14,6 +15,7 @@ import {
   deleteGuestPostAction,
   updateCommentAction,
   toggleGuestCommentReactionAction,
+  toggleGuestPostReactionAction,
 } from "@/app/guest/actions";
 import { CommentThread, type CommentThreadItem } from "@/components/comment-thread";
 
@@ -32,10 +34,11 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
     redirect("/guest");
   }
 
-  const [locale, session, post] = await Promise.all([
+  const [locale, session, post, postReactions] = await Promise.all([
     localePromise,
     sessionPromise,
     getGuestPostById(postId),
+    getGuestPostReactions(postId),
   ]);
   if (!post) {
     redirect("/guest");
@@ -43,6 +46,20 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   const fileDownloadUrl = post.fileUrl ? buildDownloadUrl(post.fileUrl, post.fileName) : undefined;
 
   const canManage = canManagePost(session, post);
+
+  // 게시글 반응 데이터 집계
+  const postReactionMap = new Map<string, { count: number; userReacted: boolean }>();
+  for (const reaction of postReactions) {
+    const existing = postReactionMap.get(reaction.emoji) || { count: 0, userReacted: false };
+    postReactionMap.set(reaction.emoji, {
+      count: existing.count + 1,
+      userReacted: reaction.memberId === session.userId ? true : existing.userReacted,
+    });
+  }
+  const postReactionsList = Array.from(postReactionMap.entries()).map(([emoji, data]) => ({
+    emoji,
+    ...data,
+  }));
   
   // 각 댓글의 반응 데이터 조회
   const commentReactionMap = new Map<number, Array<{ emoji: string; count: number; userReacted: boolean }>>();
@@ -121,6 +138,13 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
           {post.fileName ?? t(locale, "파일 열기", "Open File")}
         </a>
       ) : null}
+
+      {/* 게시글 공감 기능 */}
+      <PostReaction
+        reactions={postReactionsList}
+        canInteract={true}
+        togglePostReactionAction={toggleGuestPostReactionAction.bind(null, postId)}
+      />
 
       <CommentThread
         comments={commentItems}

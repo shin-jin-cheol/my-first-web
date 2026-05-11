@@ -1,7 +1,8 @@
 ﻿import Link from "next/link";
-import { getPostById, getPostCommentsByPostId, getPostCommentReactions } from "@/lib/posts";
+import { getPostById, getPostCommentsByPostId, getPostCommentReactions, getPostReactions } from "@/lib/posts";
 import { buildDownloadUrl } from "@/lib/download-url";
 import { Button } from "@/components/ui/button";
+import { PostReaction } from "@/components/post-reaction";
 import { getSession } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/post-categories";
 import { canManagePost, canManageComment } from "@/lib/permissions";
@@ -13,6 +14,7 @@ import {
   deletePostAction,
   updateCommentAction,
   togglePostCommentReactionAction,
+  togglePostReactionAction,
 } from "@/app/posts/actions";
 import { CommentThread, type CommentThreadItem } from "@/components/comment-thread";
 
@@ -24,14 +26,29 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const [locale, resolvedParams] = await Promise.all([getLocale(), params]);
   const { id } = resolvedParams;
   const postId = Number(id);
-  const [post, session, comments] = await Promise.all([
+  const [post, session, comments, postReactions] = await Promise.all([
     getPostById(postId),
     getSession(),
     getPostCommentsByPostId(postId),
+    getPostReactions(postId),
   ]);
   const canManagePostResult = canManagePost(session ?? null, post ?? { authorId: undefined });
   const fileDownloadUrl = post?.fileUrl ? buildDownloadUrl(post.fileUrl, post.fileName) : undefined;
   const canInteract = Boolean(session);
+
+  // 게시글 반응 데이터 집계
+  const postReactionMap = new Map<string, { count: number; userReacted: boolean }>();
+  for (const reaction of postReactions) {
+    const existing = postReactionMap.get(reaction.emoji) || { count: 0, userReacted: false };
+    postReactionMap.set(reaction.emoji, {
+      count: existing.count + 1,
+      userReacted: reaction.memberId === session?.userId ? true : existing.userReacted,
+    });
+  }
+  const postReactionsList = Array.from(postReactionMap.entries()).map(([emoji, data]) => ({
+    emoji,
+    ...data,
+  }));
 
   // 각 댓글의 반응 데이터 조회
   const commentReactionMap = new Map<number, Array<{ emoji: string; count: number; userReacted: boolean }>>();
@@ -127,6 +144,13 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           {post.fileName ?? tk(locale, "openFile")}
         </a>
       ) : null}
+
+      {/* 게시글 공감 기능 */}
+      <PostReaction
+        reactions={postReactionsList}
+        canInteract={canInteract}
+        togglePostReactionAction={togglePostReactionAction.bind(null, postId)}
+      />
 
       <CommentThread
         comments={commentItems}
