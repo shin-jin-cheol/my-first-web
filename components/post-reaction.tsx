@@ -22,21 +22,16 @@ export function PostReaction({
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {reactions.map((reaction) => (
-        <form key={reaction.emoji} action={togglePostReactionAction}>
-          <input type="hidden" name="postId" value={postId} />
-          <input type="hidden" name="emoji" value={reaction.emoji} />
-          <button
-            type="submit"
-            disabled={!canInteract}
-            className={`rounded-full border px-2 py-1 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
-              reaction.userReacted
-                ? "border-[var(--accent-primary)]/50 bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]"
-                : "border-border-base bg-surface-muted text-text-sub hover:bg-surface-strong"
-            }`}
-          >
-            {reaction.emoji} {reaction.count}
-          </button>
-        </form>
+        <span
+          key={reaction.emoji}
+          className={`rounded-full border px-2 py-1 text-xs font-semibold ${
+            reaction.userReacted
+              ? "border-[var(--accent-primary)]/50 bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]"
+              : "border-border-base bg-surface-muted text-text-sub"
+          }`}
+        >
+          {reaction.emoji} {reaction.count}
+        </span>
       ))}
 
       {canInteract ? (
