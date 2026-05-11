@@ -29,6 +29,23 @@ export type GuestComment = {
   authorName: string;
   content: string;
   dateTime: string;
+  parentId?: number;
+};
+
+export type GuestPostReaction = {
+  id: number;
+  postId: number;
+  memberId: string;
+  emoji: string;
+  createdAt: string;
+};
+
+export type GuestCommentReaction = {
+  id: number;
+  commentId: number;
+  memberId: string;
+  emoji: string;
+  createdAt: string;
 };
 
 type NewGuestPostInput = {
@@ -81,6 +98,23 @@ type SupabaseGuestCommentRow = {
   author_id: string | null;
   author_name: string;
   content: string;
+  created_at: string;
+  parent_id?: number | null;
+};
+
+type SupabaseGuestPostReactionRow = {
+  id: number;
+  guest_post_id: number;
+  member_id: string;
+  emoji: string;
+  created_at: string;
+};
+
+type SupabaseGuestCommentReactionRow = {
+  id: number;
+  guest_post_comment_id: number;
+  member_id: string;
+  emoji: string;
   created_at: string;
 };
 
@@ -216,6 +250,7 @@ function mapSupabaseRowToGuestComment(row: SupabaseGuestCommentRow): GuestCommen
     authorName: row.author_name,
     content: row.content,
     dateTime: formatGuestCommentDateTime(row.created_at),
+    parentId: row.parent_id ?? undefined,
   };
 }
 
@@ -226,6 +261,29 @@ function mapGuestCommentToSupabaseRow(postId: number, comment: Omit<GuestComment
     author_name: comment.authorName,
     content: comment.content,
     created_at: new Date().toISOString(),
+    parent_id: comment.parentId ?? null,
+  };
+}
+
+function mapSupabaseRowToGuestPostReaction(row: SupabaseGuestPostReactionRow): GuestPostReaction {
+  return {
+    id: row.id,
+    postId: row.guest_post_id,
+    memberId: row.member_id,
+    emoji: row.emoji,
+    createdAt: row.created_at,
+  };
+}
+
+function mapSupabaseRowToGuestCommentReaction(
+  row: SupabaseGuestCommentReactionRow,
+): GuestCommentReaction {
+  return {
+    id: row.id,
+    commentId: row.guest_post_comment_id,
+    memberId: row.member_id,
+    emoji: row.emoji,
+    createdAt: row.created_at,
   };
 }
 
@@ -505,7 +563,7 @@ export async function updateGuestPostById(
 
 export async function addGuestCommentById(
   postId: number,
-  input: { authorId: string; authorName: string; content: string },
+  input: { authorId: string; authorName: string; content: string; parentId?: number },
 ): Promise<GuestComment | undefined> {
   if (hasSupabaseStorage()) {
     const comment: Omit<GuestComment, "id"> = {
@@ -513,6 +571,7 @@ export async function addGuestCommentById(
       authorName: input.authorName,
       content: input.content,
       dateTime: getKstDateTimeString(),
+      parentId: input.parentId,
     };
 
     const result = await requestSupabaseGuestComments<SupabaseGuestCommentRow[]>(
@@ -546,6 +605,7 @@ export async function addGuestCommentById(
     authorName: input.authorName,
     content: input.content,
     dateTime: getKstDateTimeString(),
+    parentId: input.parentId,
   };
 
   posts[index] = {
@@ -565,7 +625,7 @@ export async function updateGuestCommentById(
   if (hasSupabaseStorage()) {
     const result = await requestSupabaseGuestComments<SupabaseGuestCommentRow[]>(
       "PATCH",
-      `?guest_post_id=eq.${postId}&id=eq.${commentId}&select=id,guest_post_id,author_id,author_name,content,created_at`,
+      `?guest_post_id=eq.${postId}&id=eq.${commentId}&select=id,guest_post_id,author_id,author_name,content,created_at,parent_id`,
       { content },
       "return=representation",
     );
@@ -643,4 +703,162 @@ export async function deleteGuestCommentById(postId: number, commentId: number):
 
   await writeGuestPosts(posts);
   return true;
+}
+
+// Emoji Reaction Functions
+
+function getSupabaseGuestPostReactionsEndpoint(query = "") {
+  if (!SUPABASE_URL) {
+    return "";
+  }
+  const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/guest_post_reactions`;
+  return `${base}${query}`;
+}
+
+function getSupabaseGuestCommentReactionsEndpoint(query = "") {
+  if (!SUPABASE_URL) {
+    return "";
+  }
+  const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/guest_comment_reactions`;
+  return `${base}${query}`;
+}
+
+async function requestSupabaseGuestPostReactions<T>(
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  query: string,
+  body?: unknown,
+  prefer?: string,
+): Promise<{ ok: boolean; status: number; data: T | null }> {
+  return requestSupabaseHttp<T>(getSupabaseGuestPostReactionsEndpoint(query), {
+    method,
+    body,
+    prefer,
+    parseMode: "text",
+  });
+}
+
+async function requestSupabaseGuestCommentReactions<T>(
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  query: string,
+  body?: unknown,
+  prefer?: string,
+): Promise<{ ok: boolean; status: number; data: T | null }> {
+  return requestSupabaseHttp<T>(getSupabaseGuestCommentReactionsEndpoint(query), {
+    method,
+    body,
+    prefer,
+    parseMode: "text",
+  });
+}
+
+export async function addGuestPostReaction(
+  postId: number,
+  memberId: string,
+  emoji: string,
+): Promise<GuestPostReaction | undefined> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabaseGuestPostReactions<SupabaseGuestPostReactionRow[]>(
+      "POST",
+      "",
+      [{ guest_post_id: postId, member_id: memberId, emoji }],
+      "return=representation",
+    );
+
+    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+      return undefined;
+    }
+
+    return mapSupabaseRowToGuestPostReaction(result.data[0]);
+  }
+
+  return undefined;
+}
+
+export async function removeGuestPostReaction(
+  postId: number,
+  memberId: string,
+  emoji: string,
+): Promise<boolean> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabaseGuestPostReactions(
+      "DELETE",
+      `?guest_post_id=eq.${postId}&member_id=eq.${memberId}&emoji=eq.${encodeURIComponent(emoji)}`,
+    );
+    return result.ok;
+  }
+
+  return false;
+}
+
+export async function getGuestPostReactions(postId: number): Promise<GuestPostReaction[]> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabaseGuestPostReactions<SupabaseGuestPostReactionRow[]>(
+      "GET",
+      `?select=id,guest_post_id,member_id,emoji,created_at&guest_post_id=eq.${postId}`,
+    );
+
+    if (!result.ok || !Array.isArray(result.data)) {
+      return [];
+    }
+
+    return result.data.map(mapSupabaseRowToGuestPostReaction);
+  }
+
+  return [];
+}
+
+export async function addGuestCommentReaction(
+  commentId: number,
+  memberId: string,
+  emoji: string,
+): Promise<GuestCommentReaction | undefined> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabaseGuestCommentReactions<SupabaseGuestCommentReactionRow[]>(
+      "POST",
+      "",
+      [{ guest_post_comment_id: commentId, member_id: memberId, emoji }],
+      "return=representation",
+    );
+
+    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+      return undefined;
+    }
+
+    return mapSupabaseRowToGuestCommentReaction(result.data[0]);
+  }
+
+  return undefined;
+}
+
+export async function removeGuestCommentReaction(
+  commentId: number,
+  memberId: string,
+  emoji: string,
+): Promise<boolean> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabaseGuestCommentReactions(
+      "DELETE",
+      `?guest_post_comment_id=eq.${commentId}&member_id=eq.${memberId}&emoji=eq.${encodeURIComponent(emoji)}`,
+    );
+    return result.ok;
+  }
+
+  return false;
+}
+
+export async function getGuestCommentReactions(commentId: number): Promise<GuestCommentReaction[]> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabaseGuestCommentReactions<SupabaseGuestCommentReactionRow[]>(
+      "GET",
+      `?select=id,guest_post_comment_id,member_id,emoji,created_at&guest_post_comment_id=eq.${commentId}`,
+    );
+
+    if (!result.ok || !Array.isArray(result.data)) {
+      return [];
+    }
+
+    return result.data.map(mapSupabaseRowToGuestCommentReaction);
+  }
+
+  return [];
 }

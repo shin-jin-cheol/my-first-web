@@ -29,6 +29,23 @@ export type PostComment = {
   authorName: string;
   content: string;
   dateTime: string;
+  parentId?: number;
+};
+
+export type PostReaction = {
+  id: number;
+  postId: number;
+  memberId: string;
+  emoji: string;
+  createdAt: string;
+};
+
+export type PostCommentReaction = {
+  id: number;
+  commentId: number;
+  memberId: string;
+  emoji: string;
+  createdAt: string;
 };
 
 type NewPostInput = {
@@ -75,6 +92,23 @@ type SupabasePostCommentRow = {
   author_name: string;
   content: string;
   date_time: string;
+  parent_id?: number | null;
+};
+
+type SupabasePostReactionRow = {
+  id: number;
+  post_id: number;
+  member_id: string;
+  emoji: string;
+  created_at: string;
+};
+
+type SupabasePostCommentReactionRow = {
+  id: number;
+  post_comment_id: number;
+  member_id: string;
+  emoji: string;
+  created_at: string;
 };
 
 // SUPABASE_* constants are centralized in lib/env.ts
@@ -320,6 +354,7 @@ function mapSupabaseRowToPostComment(row: SupabasePostCommentRow): PostComment {
     authorName: row.author_name,
     content: row.content,
     dateTime: row.date_time,
+    parentId: row.parent_id ?? undefined,
   };
 }
 
@@ -330,6 +365,29 @@ function mapPostCommentToSupabaseRow(comment: Omit<PostComment, "id">) {
     author_name: comment.authorName,
     content: comment.content,
     date_time: comment.dateTime,
+    parent_id: comment.parentId ?? null,
+  };
+}
+
+function mapSupabaseRowToPostReaction(row: SupabasePostReactionRow): PostReaction {
+  return {
+    id: row.id,
+    postId: row.post_id,
+    memberId: row.member_id,
+    emoji: row.emoji,
+    createdAt: row.created_at,
+  };
+}
+
+function mapSupabaseRowToPostCommentReaction(
+  row: SupabasePostCommentReactionRow,
+): PostCommentReaction {
+  return {
+    id: row.id,
+    commentId: row.post_comment_id,
+    memberId: row.member_id,
+    emoji: row.emoji,
+    createdAt: row.created_at,
   };
 }
 
@@ -337,7 +395,7 @@ export async function getPostCommentsByPostId(postId: number): Promise<PostComme
   if (hasSupabaseStorage()) {
     const result = await requestSupabasePostComments<SupabasePostCommentRow[]>(
       "GET",
-      `?select=id,post_id,author_id,author_name,content,date_time&post_id=eq.${postId}&order=id.asc`,
+      `?select=id,post_id,author_id,author_name,content,date_time,parent_id&post_id=eq.${postId}&order=id.asc`,
     );
 
     if (!result.ok || !Array.isArray(result.data)) {
@@ -354,7 +412,7 @@ export async function getPostCommentsByPostId(postId: number): Promise<PostComme
 
 export async function addPostCommentByPostId(
   postId: number,
-  input: { authorId: string; authorName: string; content: string },
+  input: { authorId: string; authorName: string; content: string; parentId?: number },
 ): Promise<PostComment | undefined> {
   if (hasSupabaseStorage()) {
     const comment: Omit<PostComment, "id"> = {
@@ -363,6 +421,7 @@ export async function addPostCommentByPostId(
       authorName: input.authorName,
       content: input.content,
       dateTime: getKstDateTimeString(),
+      parentId: input.parentId,
     };
 
     const result = await requestSupabasePostComments<SupabasePostCommentRow[]>(
@@ -395,6 +454,7 @@ export async function addPostCommentByPostId(
     authorName: input.authorName,
     content: input.content,
     dateTime: getKstDateTimeString(),
+    parentId: input.parentId,
   };
 
   posts[index] = {
@@ -414,7 +474,7 @@ export async function updatePostCommentById(
   if (hasSupabaseStorage()) {
     const result = await requestSupabasePostComments<SupabasePostCommentRow[]>(
       "PATCH",
-      `?post_id=eq.${postId}&id=eq.${commentId}&select=id,post_id,author_id,author_name,content,date_time`,
+      `?post_id=eq.${postId}&id=eq.${commentId}&select=id,post_id,author_id,author_name,content,date_time,parent_id`,
       { content },
       "return=representation",
     );
@@ -694,4 +754,162 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
   posts[index] = updatedPost;
   await writePosts(posts);
   return updatedPost;
+}
+
+// Emoji Reaction Functions
+
+function getSupabasePostReactionsEndpoint(query = "") {
+  if (!SUPABASE_URL) {
+    return "";
+  }
+  const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/post_reactions`;
+  return `${base}${query}`;
+}
+
+function getSupabasePostCommentReactionsEndpoint(query = "") {
+  if (!SUPABASE_URL) {
+    return "";
+  }
+  const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/post_comment_reactions`;
+  return `${base}${query}`;
+}
+
+async function requestSupabasePostReactions<T>(
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  query: string,
+  body?: unknown,
+  prefer?: string,
+): Promise<{ ok: boolean; status: number; data: T | null }> {
+  return requestSupabaseHttp<T>(getSupabasePostReactionsEndpoint(query), {
+    method,
+    body,
+    prefer,
+    parseMode: "text",
+  });
+}
+
+async function requestSupabasePostCommentReactions<T>(
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  query: string,
+  body?: unknown,
+  prefer?: string,
+): Promise<{ ok: boolean; status: number; data: T | null }> {
+  return requestSupabaseHttp<T>(getSupabasePostCommentReactionsEndpoint(query), {
+    method,
+    body,
+    prefer,
+    parseMode: "text",
+  });
+}
+
+export async function addPostReaction(
+  postId: number,
+  memberId: string,
+  emoji: string,
+): Promise<PostReaction | undefined> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabasePostReactions<SupabasePostReactionRow[]>(
+      "POST",
+      "",
+      [{ post_id: postId, member_id: memberId, emoji }],
+      "return=representation",
+    );
+
+    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+      return undefined;
+    }
+
+    return mapSupabaseRowToPostReaction(result.data[0]);
+  }
+
+  return undefined;
+}
+
+export async function removePostReaction(
+  postId: number,
+  memberId: string,
+  emoji: string,
+): Promise<boolean> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabasePostReactions(
+      "DELETE",
+      `?post_id=eq.${postId}&member_id=eq.${memberId}&emoji=eq.${encodeURIComponent(emoji)}`,
+    );
+    return result.ok;
+  }
+
+  return false;
+}
+
+export async function getPostReactions(postId: number): Promise<PostReaction[]> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabasePostReactions<SupabasePostReactionRow[]>(
+      "GET",
+      `?select=id,post_id,member_id,emoji,created_at&post_id=eq.${postId}`,
+    );
+
+    if (!result.ok || !Array.isArray(result.data)) {
+      return [];
+    }
+
+    return result.data.map(mapSupabaseRowToPostReaction);
+  }
+
+  return [];
+}
+
+export async function addPostCommentReaction(
+  commentId: number,
+  memberId: string,
+  emoji: string,
+): Promise<PostCommentReaction | undefined> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabasePostCommentReactions<SupabasePostCommentReactionRow[]>(
+      "POST",
+      "",
+      [{ post_comment_id: commentId, member_id: memberId, emoji }],
+      "return=representation",
+    );
+
+    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+      return undefined;
+    }
+
+    return mapSupabaseRowToPostCommentReaction(result.data[0]);
+  }
+
+  return undefined;
+}
+
+export async function removePostCommentReaction(
+  commentId: number,
+  memberId: string,
+  emoji: string,
+): Promise<boolean> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabasePostCommentReactions(
+      "DELETE",
+      `?post_comment_id=eq.${commentId}&member_id=eq.${memberId}&emoji=eq.${encodeURIComponent(emoji)}`,
+    );
+    return result.ok;
+  }
+
+  return false;
+}
+
+export async function getPostCommentReactions(commentId: number): Promise<PostCommentReaction[]> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabasePostCommentReactions<SupabasePostCommentReactionRow[]>(
+      "GET",
+      `?select=id,post_comment_id,member_id,emoji,created_at&post_comment_id=eq.${commentId}`,
+    );
+
+    if (!result.ok || !Array.isArray(result.data)) {
+      return [];
+    }
+
+    return result.data.map(mapSupabaseRowToPostCommentReaction);
+  }
+
+  return [];
 }

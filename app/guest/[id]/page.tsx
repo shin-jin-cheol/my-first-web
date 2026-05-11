@@ -1,16 +1,20 @@
 ﻿import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  getGuestPostById,
-} from "@/lib/guest-posts";
+import { getGuestPostById } from "@/lib/guest-posts";
 import { buildDownloadUrl } from "@/lib/download-url";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { getLocale, t } from "@/lib/i18n";
 import { requireSession } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/post-categories";
 import { canManagePost, canManageComment } from "@/lib/permissions";
-import { addCommentAction, deleteCommentAction, deleteGuestPostAction, updateCommentAction } from "@/app/guest/actions";
+import {
+  addCommentAction,
+  addReplyAction,
+  deleteCommentAction,
+  deleteGuestPostAction,
+  updateCommentAction,
+} from "@/app/guest/actions";
+import { CommentThread, type CommentThreadItem } from "@/components/comment-thread";
 
 type GuestPostDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -38,9 +42,14 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   const fileDownloadUrl = post.fileUrl ? buildDownloadUrl(post.fileUrl, post.fileName) : undefined;
 
   const canManage = canManagePost(session, post);
+  const commentItems: CommentThreadItem[] = (post.comments ?? []).map((comment) => ({
+    ...comment,
+    canManage: canManageComment(session, comment),
+  }));
 
   const boundDeleteGuestPostAction = deleteGuestPostAction.bind(null, postId);
   const boundAddCommentAction = addCommentAction.bind(null, postId);
+  const boundAddReplyAction = addReplyAction.bind(null, postId);
   const boundUpdateCommentAction = updateCommentAction.bind(null, postId);
   const boundDeleteCommentAction = deleteCommentAction.bind(null, postId);
 
@@ -86,76 +95,28 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
         </a>
       ) : null}
 
-      <section className="space-y-4 rounded-2xl border border-border-base dark:border-border-sub/80 bg-surface-strong/70 dark:bg-surface/40 p-5">
-        <h2 className="text-lg font-bold text-text-sub dark:text-text-base">{t(locale, "댓글", "Comments")}</h2>
-
-        <form action={boundAddCommentAction} className="space-y-3">
-          <textarea
-            name="comment"
-            required
-            minLength={1}
-            maxLength={500}
-            rows={4}
-            placeholder={t(locale, "댓글을 입력해 주세요.", "Write a comment")}
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border placeholder:text-text-muted focus:ring"
-          />
-          <Button
-            type="submit"
-            className="inline-flex rounded-full border border-border-base dark:border-accent-border bg-surface-strong dark:bg-accent-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-accent-sub"
-          >
-            {t(locale, "댓글 작성", "Add Comment")}
-          </Button>
-        </form>
-
-        {post.comments && post.comments.length > 0 ? (
-          <ul className="space-y-3">
-            {post.comments.map((comment) => (
-                <li key={comment.id} className="rounded-xl border border-border-base dark:border-border-base bg-surface-sub/90 dark:bg-surface-strong/80 p-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-text-muted dark:text-text-subtle">
-                    <p className="font-semibold text-text-sub dark:text-text-sub">{comment.authorName}</p>
-                  <p>{comment.dateTime}</p>
-                </div>
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-text-sub dark:text-text-muted">{comment.content}</p>
-
-                {canManageComment(session, comment) ? (
-                  <div className="mt-3 space-y-2">
-                    <form action={boundUpdateCommentAction} className="space-y-2">
-                      <Input type="hidden" name="commentId" value={comment.id} className="hidden" />
-                      <textarea
-                        name="content"
-                        defaultValue={comment.content}
-                        required
-                        minLength={1}
-                        maxLength={500}
-                        rows={3}
-                        className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-3 py-2 text-sm text-text-sub dark:text-text-base outline-none ring-accent-border focus:ring"
-                      />
-                      <Button
-                        type="submit"
-                        className="rounded-full border border-border-base dark:border-accent-border bg-surface-strong dark:bg-accent-soft px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-accent-sub"
-                      >
-                        {t(locale, "댓글 수정", "Edit Comment")}
-                      </Button>
-                    </form>
-
-                    <form action={boundDeleteCommentAction}>
-                      <Input type="hidden" name="commentId" value={comment.id} className="hidden" />
-                      <Button
-                        type="submit"
-                        className="rounded-full border border-border-base dark:border-danger-border bg-surface-strong dark:bg-danger-soft px-4 py-1.5 text-sm font-semibold text-text-sub dark:text-danger-sub"
-                      >
-                        {t(locale, "댓글 삭제", "Delete Comment")}
-                      </Button>
-                    </form>
-                  </div>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-text-muted dark:text-text-subtle">{t(locale, "아직 댓글이 없습니다.", "No comments yet.")}</p>
-        )}
-      </section>
+      <CommentThread
+        comments={commentItems}
+        canInteract={true}
+        labels={{
+          title: t(locale, "댓글", "Comments"),
+          prompt: t(locale, "댓글을 입력해 주세요.", "Write a comment"),
+          submit: t(locale, "댓글 작성", "Add Comment"),
+          reply: t(locale, "답글 달기", "Reply"),
+          replyPlaceholder: t(locale, "답글을 입력해 주세요.", "Write a reply"),
+          replySubmit: t(locale, "답글 게시", "Post Reply"),
+          edit: t(locale, "댓글 수정", "Edit Comment"),
+          delete: t(locale, "댓글 삭제", "Delete Comment"),
+          save: t(locale, "저장하기", "Save"),
+          cancel: t(locale, "취소", "Cancel"),
+          noComments: t(locale, "아직 댓글이 없습니다.", "No comments yet."),
+          loginToComment: t(locale, "댓글을 작성할 수 있는 권한이 없습니다.", "You are not allowed to comment."),
+        }}
+        addCommentAction={boundAddCommentAction}
+        addReplyAction={boundAddReplyAction}
+        updateCommentAction={boundUpdateCommentAction}
+        deleteCommentAction={boundDeleteCommentAction}
+      />
 
       <div className="flex items-center gap-3">
         <Link

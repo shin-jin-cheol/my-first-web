@@ -4,7 +4,22 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getFormNumber, getFormString } from "@/lib/form-utils";
 import { getMemberProfile, requireSession } from "@/lib/auth";
-import { addGuestCommentById, addGuestPost, deleteGuestCommentById, deleteGuestPostById, getGuestPostById, getGuestPosts, updateGuestCommentById, updateGuestPostById } from "@/lib/guest-posts";
+import {
+  addGuestCommentById,
+  addGuestPost,
+  deleteGuestCommentById,
+  deleteGuestPostById,
+  getGuestPostById,
+  getGuestPosts,
+  updateGuestCommentById,
+  updateGuestPostById,
+  addGuestPostReaction,
+  removeGuestPostReaction,
+  getGuestPostReactions,
+  addGuestCommentReaction,
+  removeGuestCommentReaction,
+  getGuestCommentReactions,
+} from "@/lib/guest-posts";
 import { isRedirectError } from "@/lib/redirect-error";
 import { canManagePost } from "@/lib/permissions";
 import { normalizeAttachment, normalizeCategory } from "@/lib/utils";
@@ -197,4 +212,66 @@ export async function updateGuestPostAction(postId: number, formData: FormData) 
   revalidatePath("/guest", "page");
   revalidatePath("/posts", "page");
   redirect(`/guest?updated=${Date.now()}`);
+}
+
+export async function addReplyAction(postId: number, parentCommentId: number, formData: FormData) {
+  const currentSession = await requireSession();
+  const content = getRequiredCommentContent(formData, "reply", `/guest/${postId}`);
+
+  const currentPost = await getGuestPostById(postId);
+  if (!currentPost) {
+    redirect("/guest");
+  }
+
+  const profile = await getMemberProfile(currentSession.userId);
+  const authorName = profile?.name?.trim() || currentSession.userName?.trim() || currentSession.userId;
+
+  await addGuestCommentById(postId, {
+    authorId: currentSession.userId,
+    authorName,
+    content,
+    parentId: parentCommentId,
+  });
+
+  revalidateCommentPaths(`/guest/${postId}`, ["/guest", "/posts"]);
+  redirect(`/guest/${postId}?replied=${Date.now()}`);
+}
+
+export async function toggleGuestPostReactionAction(postId: number, emoji: string, formData: FormData) {
+  void formData;
+  const currentSession = await requireSession();
+  const currentReactions = await getGuestPostReactions(postId);
+  const hasReaction = currentReactions.some(
+    (r) => r.memberId === currentSession.userId && r.emoji === emoji,
+  );
+
+  if (hasReaction) {
+    await removeGuestPostReaction(postId, currentSession.userId, emoji);
+  } else {
+    await addGuestPostReaction(postId, currentSession.userId, emoji);
+  }
+
+  revalidatePath(`/guest/${postId}`, "page");
+}
+
+export async function toggleGuestCommentReactionAction(
+  postId: number,
+  commentId: number,
+  emoji: string,
+  formData: FormData,
+) {
+  void formData;
+  const currentSession = await requireSession();
+  const currentReactions = await getGuestCommentReactions(commentId);
+  const hasReaction = currentReactions.some(
+    (r) => r.memberId === currentSession.userId && r.emoji === emoji,
+  );
+
+  if (hasReaction) {
+    await removeGuestCommentReaction(commentId, currentSession.userId, emoji);
+  } else {
+    await addGuestCommentReaction(commentId, currentSession.userId, emoji);
+  }
+
+  revalidatePath(`/guest/${postId}`, "page");
 }

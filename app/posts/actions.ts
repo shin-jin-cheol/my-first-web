@@ -4,7 +4,22 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getFormString } from "@/lib/form-utils";
 import { getSession, requireSession } from "@/lib/auth";
-import { addPost, addPostCommentByPostId, deletePostById, deletePostCommentById, getPostById, getPostCommentsByPostId, updatePostById, updatePostCommentById } from "@/lib/posts";
+import {
+  addPost,
+  addPostCommentByPostId,
+  deletePostById,
+  deletePostCommentById,
+  getPostById,
+  getPostCommentsByPostId,
+  updatePostById,
+  updatePostCommentById,
+  addPostReaction,
+  removePostReaction,
+  getPostReactions,
+  addPostCommentReaction,
+  removePostCommentReaction,
+  getPostCommentReactions,
+} from "@/lib/posts";
 import { isRedirectError } from "@/lib/redirect-error";
 import { canManagePost } from "@/lib/permissions";
 import { normalizeAttachment, normalizeCategory } from "@/lib/utils";
@@ -176,4 +191,65 @@ export async function updatePostAction(postId: number, formData: FormData) {
   revalidatePath("/posts", "page");
   revalidatePath(`/posts/${postId}`, "page");
   redirect(`/posts/${postId}?updated=${Date.now()}`);
+}
+
+export async function addReplyAction(postId: number, parentCommentId: number, formData: FormData) {
+  const currentSession = await requireSession();
+  const content = getRequiredCommentContent(formData, "reply", `/posts/${postId}`);
+
+  const currentPost = await getPostById(postId);
+  if (!currentPost) {
+    redirect("/posts");
+  }
+
+  const authorName = currentSession.userName?.trim() || currentSession.userId;
+
+  await addPostCommentByPostId(postId, {
+    authorId: currentSession.userId,
+    authorName,
+    content,
+    parentId: parentCommentId,
+  });
+
+  revalidateCommentPaths(`/posts/${postId}`, ["/posts"]);
+  redirect(`/posts/${postId}?replied=${Date.now()}`);
+}
+
+export async function togglePostReactionAction(postId: number, emoji: string, formData: FormData) {
+  void formData;
+  const currentSession = await requireSession();
+  const currentReactions = await getPostReactions(postId);
+  const hasReaction = currentReactions.some(
+    (r) => r.memberId === currentSession.userId && r.emoji === emoji,
+  );
+
+  if (hasReaction) {
+    await removePostReaction(postId, currentSession.userId, emoji);
+  } else {
+    await addPostReaction(postId, currentSession.userId, emoji);
+  }
+
+  revalidatePath(`/posts/${postId}`, "page");
+}
+
+export async function togglePostCommentReactionAction(
+  postId: number,
+  commentId: number,
+  emoji: string,
+  formData: FormData,
+) {
+  void formData;
+  const currentSession = await requireSession();
+  const currentReactions = await getPostCommentReactions(commentId);
+  const hasReaction = currentReactions.some(
+    (r) => r.memberId === currentSession.userId && r.emoji === emoji,
+  );
+
+  if (hasReaction) {
+    await removePostCommentReaction(commentId, currentSession.userId, emoji);
+  } else {
+    await addPostCommentReaction(commentId, currentSession.userId, emoji);
+  }
+
+  revalidatePath(`/posts/${postId}`, "page");
 }
