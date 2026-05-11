@@ -19,6 +19,14 @@ export function PostReaction({
 }: PostReactionProps) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
+  const handleReaction = async (emoji: string) => {
+    const formData = new FormData();
+    formData.append("postId", String(postId));
+    formData.append("emoji", emoji);
+    await togglePostReactionAction(formData);
+    setShowEmojiPicker(false);
+  };
+
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {reactions.map((reaction) => (
@@ -48,13 +56,14 @@ export function PostReaction({
           {showEmojiPicker ? (
             <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border-base bg-surface-strong p-1.5 shadow-lg">
               {EMOJIS.map((emoji) => (
-                <form key={emoji} action={togglePostReactionAction}>
-                  <input type="hidden" name="postId" value={postId} />
-                  <input type="hidden" name="emoji" value={emoji} />
-                  <button type="submit" className="rounded px-1 py-0.5 text-lg transition hover:bg-surface-muted">
-                    {emoji}
-                  </button>
-                </form>
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => handleReaction(emoji)}
+                  className="rounded px-1 py-0.5 text-lg transition hover:bg-surface-muted"
+                >
+                  {emoji}
+                </button>
               ))}
             </div>
           ) : null}

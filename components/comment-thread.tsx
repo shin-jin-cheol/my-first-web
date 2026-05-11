@@ -124,6 +124,19 @@ export function CommentThread({
     setReplyingCommentId(null);
   };
 
+  const handleReaction = async (commentId: number, emoji: string) => {
+    if (!toggleCommentReactionAction) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("postId", String(postId));
+    formData.append("commentId", String(commentId));
+    formData.append("emoji", emoji);
+    await toggleCommentReactionAction(formData);
+    setShowEmojiPickerId(null);
+  };
+
   const renderComment = (comment: CommentTreeNode, depth = 0) => {
     const isEditing = editingCommentId === comment.id;
     const isReplying = replyingCommentId === comment.id;
@@ -235,17 +248,14 @@ export function CommentThread({
                   {showEmojiPickerId === comment.id ? (
                     <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border-base bg-surface-strong p-1.5 shadow-lg">
                       {EMOJIS.map((emoji) => (
-                        <form key={emoji} action={toggleCommentReactionAction}>
-                          <input type="hidden" name="postId" value={postId} />
-                          <input type="hidden" name="commentId" value={comment.id} />
-                          <input type="hidden" name="emoji" value={emoji} />
-                          <button
-                            type="submit"
-                            className="rounded px-1 py-0.5 text-lg transition hover:bg-surface-muted"
-                          >
-                            {emoji}
-                          </button>
-                        </form>
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => handleReaction(comment.id, emoji)}
+                          className="rounded px-1 py-0.5 text-lg transition hover:bg-surface-muted"
+                        >
+                          {emoji}
+                        </button>
                       ))}
                     </div>
                   ) : null}
