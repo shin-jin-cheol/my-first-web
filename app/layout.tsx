@@ -65,7 +65,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="ko" className={cn("dark", "font-sans", geist.variable)} suppressHydrationWarning>
+    <html lang="ko" className={cn("font-sans", geist.variable)} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col bg-surface-muted text-text-base shadow-[inset_0_140px_140px_-120px_rgb(from_var(--accent-primary)_r_g_b_/_0.2)] dark:bg-surface dark:text-text-base dark:shadow-[inset_0_120px_120px_-120px_rgb(from_var(--accent-primary)_r_g_b_/_0.22)] pb-24">
         <ClientLayout>
         <Header session={session} locale={locale} setLanguageAction={setLanguageAction} />
