@@ -5,7 +5,7 @@ import { useState } from "react";
 type PostReactionProps = {
   reactions: Array<{ emoji: string; count: number; userReacted: boolean }>;
   canInteract: boolean;
-  togglePostReactionAction: (emoji: string, formData: FormData) => Promise<void>;
+  togglePostReactionAction: (formData: FormData) => Promise<void>;
 };
 
 export function PostReaction({
@@ -21,19 +21,12 @@ export function PostReaction({
       {reactions.length > 0 ? (
         <div className="flex flex-wrap items-center gap-1.5">
           {reactions.map((reaction) => (
-            <form
-              key={reaction.emoji}
-              onSubmit={async (e) => {
-                e.preventDefault();
-                if (canInteract) {
-                  const formData = new FormData();
-                  await togglePostReactionAction(reaction.emoji, formData);
-                }
-              }}
-            >
+            <form key={reaction.emoji} action={togglePostReactionAction}>
+              <input type="hidden" name="emoji" value={reaction.emoji} />
               <button
                 type="submit"
-                className={`rounded-full px-2 py-1 text-xs font-semibold transition ${
+                disabled={!canInteract}
+                className={`rounded-full px-2 py-1 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
                   reaction.userReacted
                     ? "bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] border border-[var(--accent-primary)]/50"
                     : "bg-surface-muted text-text-sub border border-border-base hover:bg-surface-strong"
@@ -61,13 +54,12 @@ export function PostReaction({
               {EMOJIS.map((emoji) => (
                 <form
                   key={emoji}
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    const formData = new FormData();
-                    await togglePostReactionAction(emoji, formData);
+                  action={async (formData) => {
+                    await togglePostReactionAction(formData);
                     setShowEmojiPicker(false);
                   }}
                 >
+                  <input type="hidden" name="emoji" value={emoji} />
                   <button type="submit" className="rounded px-1 py-0.5 text-lg transition hover:bg-surface-muted">
                     {emoji}
                   </button>

@@ -237,8 +237,12 @@ export async function addReplyAction(postId: number, parentCommentId: number, fo
   redirect(`/guest/${postId}?replied=${Date.now()}`);
 }
 
-export async function toggleGuestPostReactionAction(postId: number, emoji: string, formData: FormData) {
-  void formData;
+export async function toggleGuestPostReactionAction(postId: number, formData: FormData) {
+  const emoji = getFormString(formData, "emoji");
+  if (!emoji) {
+    redirect(`/guest/${postId}`);
+  }
+
   const currentSession = await requireSession();
   const currentReactions = await getGuestPostReactions(postId);
   const hasReaction = currentReactions.some(
@@ -256,11 +260,14 @@ export async function toggleGuestPostReactionAction(postId: number, emoji: strin
 
 export async function toggleGuestCommentReactionAction(
   postId: number,
-  commentId: number,
-  emoji: string,
   formData: FormData,
 ) {
-  void formData;
+  const commentId = getFormNumber(formData, "commentId");
+  const emoji = getFormString(formData, "emoji");
+  if (!commentId || !emoji) {
+    redirect(`/guest/${postId}`);
+  }
+
   const currentSession = await requireSession();
   const currentReactions = await getGuestCommentReactions(commentId);
   const hasReaction = currentReactions.some(

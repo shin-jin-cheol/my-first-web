@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { getFormString } from "@/lib/form-utils";
+import { getFormNumber, getFormString } from "@/lib/form-utils";
 import { getSession, requireSession } from "@/lib/auth";
 import {
   addPost,
@@ -215,8 +215,12 @@ export async function addReplyAction(postId: number, parentCommentId: number, fo
   redirect(`/posts/${postId}?replied=${Date.now()}`);
 }
 
-export async function togglePostReactionAction(postId: number, emoji: string, formData: FormData) {
-  void formData;
+export async function togglePostReactionAction(postId: number, formData: FormData) {
+  const emoji = getFormString(formData, "emoji");
+  if (!emoji) {
+    redirect(`/posts/${postId}`);
+  }
+
   const currentSession = await requireSession();
   const currentReactions = await getPostReactions(postId);
   const hasReaction = currentReactions.some(
@@ -234,11 +238,14 @@ export async function togglePostReactionAction(postId: number, emoji: string, fo
 
 export async function togglePostCommentReactionAction(
   postId: number,
-  commentId: number,
-  emoji: string,
   formData: FormData,
 ) {
-  void formData;
+  const commentId = getFormNumber(formData, "commentId");
+  const emoji = getFormString(formData, "emoji");
+  if (!commentId || !emoji) {
+    redirect(`/posts/${postId}`);
+  }
+
   const currentSession = await requireSession();
   const currentReactions = await getPostCommentReactions(commentId);
   const hasReaction = currentReactions.some(

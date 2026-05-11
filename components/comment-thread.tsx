@@ -38,7 +38,7 @@ type CommentThreadProps = {
   addReplyAction: (parentCommentId: number, formData: FormData) => Promise<void>;
   updateCommentAction: (formData: FormData) => Promise<void>;
   deleteCommentAction: (formData: FormData) => Promise<void>;
-  toggleCommentReactionAction?: (commentId: number, emoji: string, formData: FormData) => Promise<void>;
+  toggleCommentReactionAction?: (formData: FormData) => Promise<void>;
 };
 
 type CommentTreeNode = CommentThreadItem & {
@@ -205,23 +205,17 @@ export function CommentThread({
             )}
 
             {/* 반응 UI */}
-            <div className="space-y-3">
+            <div className="flex flex-col items-start gap-2">
               {comment.reactions && comment.reactions.length > 0 ? (
                 <div className="flex flex-wrap items-center gap-1.5">
                   {comment.reactions.map((reaction) => (
-                    <form
-                      key={reaction.emoji}
-                      onSubmit={async (e) => {
-                        e.preventDefault();
-                        if (canInteract && toggleCommentReactionAction) {
-                          const formData = new FormData();
-                          await toggleCommentReactionAction(comment.id, reaction.emoji, formData);
-                        }
-                      }}
-                    >
+                    <form key={reaction.emoji} action={toggleCommentReactionAction}>
+                      <input type="hidden" name="commentId" value={comment.id} />
+                      <input type="hidden" name="emoji" value={reaction.emoji} />
                       <button
                         type="submit"
-                        className={`rounded-full px-2 py-1 text-xs font-semibold transition ${
+                        disabled={!canInteract || !toggleCommentReactionAction}
+                        className={`rounded-full px-2 py-1 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
                           reaction.userReacted
                             ? "bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] border border-[var(--accent-primary)]/50"
                             : "bg-surface-muted text-text-sub border border-border-base hover:bg-surface-strong"
@@ -234,7 +228,7 @@ export function CommentThread({
                 </div>
               ) : null}
 
-              {canInteract ? (
+              {canInteract && toggleCommentReactionAction ? (
                 <div className="relative">
                   <button
                     type="button"
@@ -249,15 +243,13 @@ export function CommentThread({
                       {EMOJIS.map((emoji) => (
                         <form
                           key={emoji}
-                          onSubmit={async (e) => {
-                            e.preventDefault();
-                            if (toggleCommentReactionAction) {
-                              const formData = new FormData();
-                              await toggleCommentReactionAction(comment.id, emoji, formData);
-                              setShowEmojiPickerId(null);
-                            }
+                          action={async (formData) => {
+                            await toggleCommentReactionAction(formData);
+                            setShowEmojiPickerId(null);
                           }}
                         >
+                          <input type="hidden" name="commentId" value={comment.id} />
+                          <input type="hidden" name="emoji" value={emoji} />
                           <button
                             type="submit"
                             className="rounded px-1 py-0.5 text-lg transition hover:bg-surface-muted"
