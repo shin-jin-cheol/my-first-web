@@ -84,7 +84,6 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const boundAddReplyAction = addReplyAction.bind(null, postId);
   const boundUpdateCommentAction = updateCommentAction.bind(null, postId);
   const boundDeleteCommentAction = deleteCommentAction.bind(null, postId);
-  const boundTogglePostCommentReactionAction = togglePostCommentReactionAction.bind(null, postId);
 
   if (!post) {
     return (
@@ -147,12 +146,14 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
 
       {/* 게시글 공감 기능 */}
       <PostReaction
+        postId={postId}
         reactions={postReactionsList}
         canInteract={canInteract}
-        togglePostReactionAction={togglePostReactionAction.bind(null, postId)}
+        togglePostReactionAction={togglePostReactionAction}
       />
 
       <CommentThread
+        postId={postId}
         comments={commentItems}
         canInteract={canInteract}
         labels={{
@@ -173,7 +174,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         addReplyAction={boundAddReplyAction}
         updateCommentAction={boundUpdateCommentAction}
         deleteCommentAction={boundDeleteCommentAction}
-        toggleCommentReactionAction={boundTogglePostCommentReactionAction}
+        toggleCommentReactionAction={togglePostCommentReactionAction}
       />
 
       <div className="flex items-center gap-3">

@@ -215,10 +215,11 @@ export async function addReplyAction(postId: number, parentCommentId: number, fo
   redirect(`/posts/${postId}?replied=${Date.now()}`);
 }
 
-export async function togglePostReactionAction(postId: number, formData: FormData) {
+export async function togglePostReactionAction(formData: FormData) {
+  const postId = getFormNumber(formData, "postId");
   const emoji = getFormString(formData, "emoji");
-  if (!emoji) {
-    redirect(`/posts/${postId}`);
+  if (!postId || !emoji) {
+    redirect("/posts");
   }
 
   const currentSession = await requireSession();
@@ -237,13 +238,13 @@ export async function togglePostReactionAction(postId: number, formData: FormDat
 }
 
 export async function togglePostCommentReactionAction(
-  postId: number,
   formData: FormData,
 ) {
+  const postId = getFormNumber(formData, "postId");
   const commentId = getFormNumber(formData, "commentId");
   const emoji = getFormString(formData, "emoji");
-  if (!commentId || !emoji) {
-    redirect(`/posts/${postId}`);
+  if (!postId || !commentId || !emoji) {
+    redirect("/posts");
   }
 
   const currentSession = await requireSession();

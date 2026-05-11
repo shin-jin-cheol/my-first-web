@@ -95,7 +95,6 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   const boundAddReplyAction = addReplyAction.bind(null, postId);
   const boundUpdateCommentAction = updateCommentAction.bind(null, postId);
   const boundDeleteCommentAction = deleteCommentAction.bind(null, postId);
-  const boundToggleGuestCommentReactionAction = toggleGuestCommentReactionAction.bind(null, postId);
 
   return (
     <article className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]">
@@ -141,12 +140,14 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
 
       {/* 게시글 공감 기능 */}
       <PostReaction
+        postId={postId}
         reactions={postReactionsList}
         canInteract={true}
-        togglePostReactionAction={toggleGuestPostReactionAction.bind(null, postId)}
+        togglePostReactionAction={toggleGuestPostReactionAction}
       />
 
       <CommentThread
+        postId={postId}
         comments={commentItems}
         canInteract={true}
         labels={{
@@ -167,7 +168,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
         addReplyAction={boundAddReplyAction}
         updateCommentAction={boundUpdateCommentAction}
         deleteCommentAction={boundDeleteCommentAction}
-        toggleCommentReactionAction={boundToggleGuestCommentReactionAction}
+        toggleCommentReactionAction={toggleGuestCommentReactionAction}
       />
 
       <div className="flex items-center gap-3">

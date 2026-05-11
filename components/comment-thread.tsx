@@ -31,6 +31,7 @@ type CommentThreadLabels = {
 };
 
 type CommentThreadProps = {
+  postId: number;
   comments: CommentThreadItem[];
   canInteract: boolean;
   labels: CommentThreadLabels;
@@ -88,6 +89,7 @@ function buildTree(comments: CommentThreadItem[]): CommentTreeNode[] {
 }
 
 export function CommentThread({
+  postId,
   comments,
   canInteract,
   labels,
@@ -204,42 +206,39 @@ export function CommentThread({
               <p className="whitespace-pre-wrap text-sm leading-6 text-text-sub">{comment.content}</p>
             )}
 
-            {/* 반응 UI */}
-            <div className="flex flex-col items-start gap-2">
-              {comment.reactions && comment.reactions.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-1.5">
-                  {comment.reactions.map((reaction) => (
-                    <form key={reaction.emoji} action={toggleCommentReactionAction}>
-                      <input type="hidden" name="commentId" value={comment.id} />
-                      <input type="hidden" name="emoji" value={reaction.emoji} />
-                      <button
-                        type="submit"
-                        disabled={!canInteract || !toggleCommentReactionAction}
-                        className={`rounded-full px-2 py-1 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                          reaction.userReacted
-                            ? "bg-[var(--accent-primary)]/20 text-[var(--accent-primary)] border border-[var(--accent-primary)]/50"
-                            : "bg-surface-muted text-text-sub border border-border-base hover:bg-surface-strong"
-                        }`}
-                      >
-                        {reaction.emoji} {reaction.count}
-                      </button>
-                    </form>
-                  ))}
-                </div>
-              ) : null}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {comment.reactions?.map((reaction) => (
+                <form key={reaction.emoji} action={toggleCommentReactionAction}>
+                  <input type="hidden" name="postId" value={postId} />
+                  <input type="hidden" name="commentId" value={comment.id} />
+                  <input type="hidden" name="emoji" value={reaction.emoji} />
+                  <button
+                    type="submit"
+                    disabled={!canInteract || !toggleCommentReactionAction}
+                    className={`rounded-full border px-2 py-1 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                      reaction.userReacted
+                        ? "border-[var(--accent-primary)]/50 bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]"
+                        : "border-border-base bg-surface-muted text-text-sub hover:bg-surface-strong"
+                    }`}
+                  >
+                    {reaction.emoji} {reaction.count}
+                  </button>
+                </form>
+              ))}
 
               {canInteract && toggleCommentReactionAction ? (
-                <div className="relative">
+                <>
                   <button
                     type="button"
                     onClick={() => setShowEmojiPickerId((current) => (current === comment.id ? null : comment.id))}
+                    aria-label="이모지 반응"
                     className="rounded-full border border-border-base bg-surface-muted px-2 py-1 text-xs font-semibold text-text-sub transition hover:bg-surface-strong"
                   >
-                    +
+                    ❤️
                   </button>
 
                   {showEmojiPickerId === comment.id ? (
-                    <div className="absolute left-0 top-8 z-10 flex flex-wrap gap-1 rounded-xl border border-border-base bg-surface-strong p-2 shadow-lg">
+                    <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border-base bg-surface-strong p-1.5 shadow-lg">
                       {EMOJIS.map((emoji) => (
                         <form
                           key={emoji}
@@ -248,6 +247,7 @@ export function CommentThread({
                             setShowEmojiPickerId(null);
                           }}
                         >
+                          <input type="hidden" name="postId" value={postId} />
                           <input type="hidden" name="commentId" value={comment.id} />
                           <input type="hidden" name="emoji" value={emoji} />
                           <button
@@ -260,7 +260,7 @@ export function CommentThread({
                       ))}
                     </div>
                   ) : null}
-                </div>
+                </>
               ) : null}
             </div>
 
