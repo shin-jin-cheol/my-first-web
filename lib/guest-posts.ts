@@ -229,9 +229,36 @@ function mapGuestPostToSupabaseRow(post: GuestPost) {
   };
 }
 
+function mapGuestPostToSupabaseInsertRow(post: Omit<GuestPost, "id">) {
+  return {
+    title: post.title,
+    content: post.content,
+    author_id: post.authorId,
+    author_name: post.authorName ?? null,
+    category: post.category,
+    date: post.date,
+    link_url: post.linkUrl ?? null,
+    file_url: post.fileUrl ?? null,
+    file_name: post.fileName ?? null,
+  };
+}
+
 function mapGuestPostToSupabaseLegacyRow(post: GuestPost) {
   return {
     id: post.id,
+    title: post.title,
+    content: post.content,
+    author_id: post.authorId,
+    author_name: post.authorName ?? null,
+    date: post.date,
+    link_url: post.linkUrl ?? null,
+    file_url: post.fileUrl ?? null,
+    file_name: post.fileName ?? null,
+  };
+}
+
+function mapGuestPostToSupabaseLegacyInsertRow(post: Omit<GuestPost, "id">) {
+  return {
     title: post.title,
     content: post.content,
     author_id: post.authorId,
@@ -413,15 +440,6 @@ async function syncGuestPostsToSupabase(posts: GuestPost[]) {
   }
 }
 
-async function getNextSupabaseGuestPostId() {
-  const result = await requestSupabase<SupabaseGuestPostRow[]>("GET", "?select=id&order=id.desc&limit=1");
-  if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
-    return 1;
-  }
-
-  return result.data[0].id + 1;
-}
-
 async function readGuestPostsFromLegacyStorage(): Promise<GuestPost[]> {
   return readJsonStorage({
     blobKey: GUEST_POSTS_BLOB_KEY,
@@ -513,12 +531,8 @@ export async function getGuestPostById(id: number): Promise<GuestPost | undefine
 
 export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost> {
   const attachment = await saveFile(input.attachmentFile);
-  const nextPostId = hasSupabaseStorage()
-    ? await getNextSupabaseGuestPostId()
-    : (await readGuestPosts()).reduce((maxId, post) => Math.max(maxId, post.id), 0) + 1;
 
-  const post: GuestPost = {
-    id: nextPostId,
+  const postInput: Omit<GuestPost, "id"> = {
     title: input.title,
     content: input.content,
     authorId: input.authorId,
@@ -534,7 +548,7 @@ export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost>
     const result = await requestSupabase<SupabaseGuestPostRow[]>(
       "POST",
       "",
-      [mapGuestPostToSupabaseRow(post)],
+      [mapGuestPostToSupabaseInsertRow(postInput)],
       "return=representation",
     );
 
@@ -542,14 +556,14 @@ export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost>
       return mapSupabaseRowToGuestPost(result.data[0]);
     }
 
-    if (post.category !== "study") {
+    if (postInput.category !== "study") {
       throw new Error(CATEGORY_SCHEMA_MESSAGE);
     }
 
     const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
       "POST",
       "",
-      [mapGuestPostToSupabaseLegacyRow(post)],
+      [mapGuestPostToSupabaseLegacyInsertRow(postInput)],
       "return=representation",
     );
 
@@ -561,6 +575,11 @@ export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost>
   }
 
   const posts = await readGuestPosts();
+  const post: GuestPost = {
+    id: posts.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1,
+    ...postInput,
+  };
+
   posts.unshift(post);
   await writeGuestPosts(posts);
   return post;

@@ -226,9 +226,36 @@ function mapPostToSupabaseRow(post: Post) {
   };
 }
 
+function mapPostToSupabaseInsertRow(post: Omit<Post, "id">) {
+  return {
+    title: post.title,
+    content: post.content,
+    author: post.author,
+    author_id: post.authorId ?? null,
+    category: post.category,
+    date: post.date,
+    link_url: post.linkUrl ?? null,
+    file_url: post.fileUrl ?? null,
+    file_name: post.fileName ?? null,
+  };
+}
+
 function mapPostToSupabaseLegacyRow(post: Post) {
   return {
     id: post.id,
+    title: post.title,
+    content: post.content,
+    author: post.author,
+    author_id: post.authorId ?? null,
+    date: post.date,
+    link_url: post.linkUrl ?? null,
+    file_url: post.fileUrl ?? null,
+    file_name: post.fileName ?? null,
+  };
+}
+
+function mapPostToSupabaseLegacyInsertRow(post: Omit<Post, "id">) {
+  return {
     title: post.title,
     content: post.content,
     author: post.author,
@@ -286,15 +313,6 @@ async function upsertPostsToSupabase(posts: Post[]) {
       "resolution=merge-duplicates,return=minimal",
     );
   }
-}
-
-async function getNextSupabasePostId() {
-  const result = await requestSupabase<SupabasePostRow[]>("GET", "?select=id&order=id.desc&limit=1");
-  if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
-    return 1;
-  }
-
-  return result.data[0].id + 1;
 }
 
 async function readPostsFromLegacyStorage(): Promise<Post[]> {
@@ -584,12 +602,7 @@ export async function getPostById(id: number): Promise<Post | undefined> {
 export async function addPost(input: NewPostInput): Promise<Post> {
   const attachment = await saveFile(input.attachmentFile);
 
-  const nextPostId = hasSupabaseStorage()
-    ? await getNextSupabasePostId()
-    : (await readPosts()).reduce((maxId, post) => Math.max(maxId, post.id), 0) + 1;
-
-  const post: Post = {
-    id: nextPostId,
+  const postInput: Omit<Post, "id"> = {
     title: input.title,
     content: input.content,
     author: input.author,
@@ -605,7 +618,7 @@ export async function addPost(input: NewPostInput): Promise<Post> {
     const result = await requestSupabase<SupabasePostRow[]>(
       "POST",
       "",
-      [mapPostToSupabaseRow(post)],
+      [mapPostToSupabaseInsertRow(postInput)],
       "return=representation",
     );
 
@@ -613,14 +626,14 @@ export async function addPost(input: NewPostInput): Promise<Post> {
       return mapSupabaseRowToPost(result.data[0]);
     }
 
-    if (post.category !== "study") {
+    if (postInput.category !== "study") {
       throw new Error(CATEGORY_SCHEMA_MESSAGE);
     }
 
     const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
       "POST",
       "",
-      [mapPostToSupabaseLegacyRow(post)],
+      [mapPostToSupabaseLegacyInsertRow(postInput)],
       "return=representation",
     );
 
@@ -632,6 +645,11 @@ export async function addPost(input: NewPostInput): Promise<Post> {
   }
 
   const posts = await readPosts();
+  const post: Post = {
+    id: posts.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1,
+    ...postInput,
+  };
+
   posts.unshift(post);
   await writePosts(posts);
   return post;
