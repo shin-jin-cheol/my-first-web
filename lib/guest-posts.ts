@@ -381,44 +381,45 @@ async function readGuestPostsFromSupabase(): Promise<GuestPost[]> {
 async function syncGuestPostsToSupabase(posts: GuestPost[]) {
   const rows = posts.map(mapGuestPostToSupabaseRow);
 
-  let didSync = false;
-  if (rows.length > 0) {
-    const result = await requestSupabase(
-      "POST",
-      "?on_conflict=id",
-      rows,
-      "resolution=merge-duplicates,return=minimal",
-    );
-
-    if (result.ok) {
-      didSync = true;
-    } else {
-      const hasNonStudyCategory = posts.some((post) => post.category !== "study");
-      if (hasNonStudyCategory) {
-        throw new Error(CATEGORY_SCHEMA_MESSAGE);
-      }
-
-      const legacyResult = await requestSupabase(
-        "POST",
-        "?on_conflict=id",
-        posts.map(mapGuestPostToSupabaseLegacyRow),
-        "resolution=merge-duplicates,return=minimal",
-      );
-      didSync = legacyResult.ok;
-    }
-  }
-
   if (rows.length === 0) {
-    await requestSupabase("DELETE", "?id=gt.0");
     return;
   }
 
-  if (!didSync) {
-    throw new Error("Failed to sync guest posts to Supabase.");
+  const result = await requestSupabase(
+    "POST",
+    "?on_conflict=id",
+    rows,
+    "resolution=merge-duplicates,return=minimal",
+  );
+
+  if (result.ok) {
+    return;
   }
 
-  const keepIds = rows.map((row) => row.id).join(",");
-  await requestSupabase("DELETE", `?id=not.in.(${keepIds})`);
+  const hasNonStudyCategory = posts.some((post) => post.category !== "study");
+  if (hasNonStudyCategory) {
+    throw new Error(CATEGORY_SCHEMA_MESSAGE);
+  }
+
+  const legacyResult = await requestSupabase(
+    "POST",
+    "?on_conflict=id",
+    posts.map(mapGuestPostToSupabaseLegacyRow),
+    "resolution=merge-duplicates,return=minimal",
+  );
+
+  if (!legacyResult.ok) {
+    throw new Error("Failed to sync guest posts to Supabase.");
+  }
+}
+
+async function getNextSupabaseGuestPostId() {
+  const result = await requestSupabase<SupabaseGuestPostRow[]>("GET", "?select=id&order=id.desc&limit=1");
+  if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+    return 1;
+  }
+
+  return result.data[0].id + 1;
 }
 
 async function readGuestPostsFromLegacyStorage(): Promise<GuestPost[]> {
@@ -476,14 +477,45 @@ export async function getGuestPosts(): Promise<GuestPost[]> {
 }
 
 export async function getGuestPostById(id: number): Promise<GuestPost | undefined> {
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabase<SupabaseGuestPostRow[]>(
+      "GET",
+      `?select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name&id=eq.${id}&limit=1`,
+    );
+
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+      const commentsByPostId = await readGuestCommentsFromSupabase(id);
+      return {
+        ...mapSupabaseRowToGuestPost(result.data[0]),
+        comments: commentsByPostId?.get(id) ?? [],
+      };
+    }
+
+    const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
+      "GET",
+      `?select=id,title,content,author_id,author_name,date,link_url,file_url,file_name&id=eq.${id}&limit=1`,
+    );
+
+    if (!legacyResult.ok || !Array.isArray(legacyResult.data) || legacyResult.data.length === 0) {
+      return undefined;
+    }
+
+    const commentsByPostId = await readGuestCommentsFromSupabase(id);
+    return {
+      ...mapSupabaseRowToGuestPost(legacyResult.data[0]),
+      comments: commentsByPostId?.get(id) ?? [],
+    };
+  }
+
   const posts = await readGuestPosts();
   return posts.find((post) => post.id === id);
 }
 
 export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost> {
-  const posts = await readGuestPosts();
-  const nextPostId = posts.reduce((maxId, post) => Math.max(maxId, post.id), 0) + 1;
   const attachment = await saveFile(input.attachmentFile);
+  const nextPostId = hasSupabaseStorage()
+    ? await getNextSupabaseGuestPostId()
+    : (await readGuestPosts()).reduce((maxId, post) => Math.max(maxId, post.id), 0) + 1;
 
   const post: GuestPost = {
     id: nextPostId,
@@ -498,12 +530,72 @@ export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost>
     fileName: attachment?.fileName,
   };
 
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabase<SupabaseGuestPostRow[]>(
+      "POST",
+      "",
+      [mapGuestPostToSupabaseRow(post)],
+      "return=representation",
+    );
+
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+      return mapSupabaseRowToGuestPost(result.data[0]);
+    }
+
+    if (post.category !== "study") {
+      throw new Error(CATEGORY_SCHEMA_MESSAGE);
+    }
+
+    const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
+      "POST",
+      "",
+      [mapGuestPostToSupabaseLegacyRow(post)],
+      "return=representation",
+    );
+
+    if (!legacyResult.ok || !Array.isArray(legacyResult.data) || legacyResult.data.length === 0) {
+      throw new Error("Failed to create guest post in Supabase.");
+    }
+
+    return mapSupabaseRowToGuestPost(legacyResult.data[0]);
+  }
+
+  const posts = await readGuestPosts();
   posts.unshift(post);
   await writeGuestPosts(posts);
   return post;
 }
 
 export async function deleteGuestPostById(id: number): Promise<boolean> {
+  if (hasSupabaseStorage()) {
+    const targetPost = await getGuestPostById(id);
+    const result = await requestSupabase<SupabaseGuestPostRow[]>(
+      "DELETE",
+      `?id=eq.${id}&select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name`,
+      undefined,
+      "return=representation",
+    );
+
+    if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
+      const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
+        "DELETE",
+        `?id=eq.${id}&select=id,title,content,author_id,author_name,date,link_url,file_url,file_name`,
+        undefined,
+        "return=representation",
+      );
+
+      if (!legacyResult.ok || !Array.isArray(legacyResult.data) || legacyResult.data.length === 0) {
+        return false;
+      }
+
+      await deleteFile(targetPost?.fileUrl);
+      return true;
+    }
+
+    await deleteFile(targetPost?.fileUrl);
+    return true;
+  }
+
   const posts = await readGuestPosts();
   const targetPost = posts.find((post) => post.id === id);
   const filtered = posts.filter((post) => post.id !== id);
@@ -521,14 +613,11 @@ export async function updateGuestPostById(
   id: number,
   input: UpdateGuestPostInput,
 ): Promise<GuestPost | undefined> {
-  const posts = await readGuestPosts();
-  const index = posts.findIndex((post) => post.id === id);
-
-  if (index === -1) {
+  const currentPost = await getGuestPostById(id);
+  if (!currentPost) {
     return undefined;
   }
 
-  const currentPost = posts[index];
   const attachment = await saveFile(input.attachmentFile);
 
   let nextFileUrl = currentPost.fileUrl;
@@ -555,6 +644,50 @@ export async function updateGuestPostById(
     fileUrl: nextFileUrl,
     fileName: nextFileName,
   };
+
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabase<SupabaseGuestPostRow[]>(
+      "PATCH",
+      `?id=eq.${id}&select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name`,
+      mapGuestPostToSupabaseRow(updatedPost),
+      "return=representation",
+    );
+
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+      const commentsByPostId = await readGuestCommentsFromSupabase(id);
+      return {
+        ...mapSupabaseRowToGuestPost(result.data[0]),
+        comments: commentsByPostId?.get(id) ?? [],
+      };
+    }
+
+    if (updatedPost.category !== "study") {
+      throw new Error(CATEGORY_SCHEMA_MESSAGE);
+    }
+
+    const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
+      "PATCH",
+      `?id=eq.${id}&select=id,title,content,author_id,author_name,date,link_url,file_url,file_name`,
+      mapGuestPostToSupabaseLegacyRow(updatedPost),
+      "return=representation",
+    );
+
+    if (!legacyResult.ok || !Array.isArray(legacyResult.data) || legacyResult.data.length === 0) {
+      return undefined;
+    }
+
+    const commentsByPostId = await readGuestCommentsFromSupabase(id);
+    return {
+      ...mapSupabaseRowToGuestPost(legacyResult.data[0]),
+      comments: commentsByPostId?.get(id) ?? [],
+    };
+  }
+
+  const posts = await readGuestPosts();
+  const index = posts.findIndex((post) => post.id === id);
+  if (index === -1) {
+    return undefined;
+  }
 
   posts[index] = updatedPost;
   await writeGuestPosts(posts);
