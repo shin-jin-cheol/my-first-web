@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { Session } from "@/lib/auth/session";
 import { OWNER_ID, OWNER_NAME, OWNER_PASSWORD } from "@/lib/env";
 import {
@@ -7,6 +8,10 @@ import {
   signInMemberWithSupabase,
 } from "@/lib/auth/core";
 
+function hashPassword(password: string) {
+  return createHash("sha256").update(password).digest("hex");
+}
+
 export async function login(id: string, password: string): Promise<Session | null> {
   const normalizedId = id.trim();
   const normalizedPassword = password.trim();
@@ -15,7 +20,7 @@ export async function login(id: string, password: string): Promise<Session | nul
     return null;
   }
 
-  if (normalizedId === OWNER_ID && normalizedPassword === OWNER_PASSWORD) {
+  if (normalizedId === OWNER_ID && hashPassword(normalizedPassword) === OWNER_PASSWORD) {
     return {
       userId: OWNER_ID,
       role: "owner",
