@@ -1,5 +1,6 @@
 'use client';
 
+import Script from 'next/script';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark' | 'system';
@@ -98,7 +99,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeContext.Provider value={value}>
-      <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      <Script id="theme-init" strategy="beforeInteractive">
+        {themeScript}
+      </Script>
       {children}
     </ThemeContext.Provider>
   );

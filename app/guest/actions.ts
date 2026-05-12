@@ -114,7 +114,7 @@ export async function deleteGuestPostAction(postIdOrFormData: number | FormData)
 
   const deleted = await deleteGuestPostById(postId);
   if (!deleted) {
-    redirect(`/guest/${postId}?error=${encodeURIComponent("방명록 삭제에 실패했습니다.")}`);
+    redirect(`/guest/${postId}?error=${encodeURIComponent(tk("ko", "guestPostDeleteFailed"))}`);
   }
 
   revalidatePath("/guest", "page");
@@ -174,7 +174,7 @@ export async function deleteCommentAction(postId: number, formData: FormData) {
 
   const deleted = await deleteGuestCommentById(postId, commentId);
   if (!deleted) {
-    redirect(`/guest/${postId}?error=${encodeURIComponent("댓글 삭제에 실패했습니다.")}`);
+    redirect(`/guest/${postId}?error=${encodeURIComponent(tk("ko", "commentDeleteFailed"))}`);
   }
   revalidateCommentPaths(`/guest/${postId}`, ["/guest", "/posts"]);
   redirect(`/guest/${postId}?comment-deleted=${Date.now()}`);
@@ -197,12 +197,12 @@ export async function updateGuestPostAction(postId: number, formData: FormData) 
   const removeAttachment = formData.get("removeAttachment") === "on";
 
   if (!title) {
-    const message = encodeURIComponent("제목을 입력해 주세요.");
+    const message = encodeURIComponent(tk("ko", "titleRequired"));
     redirect(`/guest/${postId}/edit?error=${message}`);
   }
 
   if (!content) {
-    const message = encodeURIComponent("내용을 입력해 주세요.");
+    const message = encodeURIComponent(tk("ko", "contentRequired"));
     redirect(`/guest/${postId}/edit?error=${message}`);
   }
 
