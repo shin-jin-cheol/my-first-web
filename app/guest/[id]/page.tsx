@@ -1,6 +1,11 @@
 ﻿import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getGuestPostById, getGuestCommentReactions, getGuestPostReactions } from "@/lib/guest-posts";
+import {
+  getGuestPostById,
+  getGuestCommentReactions,
+  getGuestPostReactions,
+  incrementGuestPostViews,
+} from "@/lib/guest-posts";
 import { buildDownloadUrl } from "@/lib/download-url";
 import { Button } from "@/components/ui/button";
 import { PostReaction } from "@/components/post-reaction";
@@ -25,7 +30,6 @@ type GuestPostDetailPageProps = {
 
 export default async function GuestPostDetailPage({ params }: GuestPostDetailPageProps) {
   const localePromise = getLocale();
-  const sessionPromise = requireSession();
   const resolvedParams = await params;
   const { id } = resolvedParams;
   const postId = Number(id);
@@ -34,6 +38,9 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
     redirect("/guest");
   }
 
+  await incrementGuestPostViews(postId);
+
+  const sessionPromise = requireSession();
   const [locale, session, post, postReactions] = await Promise.all([
     localePromise,
     sessionPromise,
@@ -110,6 +117,9 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
           </p>
           <p>
             <strong>{t(locale, "날짜", "Date")}:</strong> {post.date}
+          </p>
+          <p>
+            <strong>{t(locale, "조회수", "Views")}:</strong> {post.views}
           </p>
         </div>
       </header>

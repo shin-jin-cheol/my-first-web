@@ -1,0 +1,2 @@
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS views integer DEFAULT 0;
+ALTER TABLE guest_posts ADD COLUMN IF NOT EXISTS views integer DEFAULT 0;

@@ -31,6 +31,7 @@ export default async function PostsPage() {
     category: post.category,
     categoryLabel: getCategoryLabel(post.category),
     detailHref: `/posts/${post.id}`,
+    views: post.views,
   }));
 
   const memberBlogItems = memberBlogPosts.map((post) => {
@@ -47,6 +48,7 @@ export default async function PostsPage() {
       category,
       categoryLabel: getCategoryLabel(category),
       sourceLabel: t(locale, "회원 블로그", "Member Blog"),
+      views: post.views,
     };
   });
 
@@ -64,6 +66,7 @@ export default async function PostsPage() {
       category,
       categoryLabel: getCategoryLabel(category),
       sourceLabel: t(locale, "게스트 게시글", "Guest Post"),
+      views: post.views,
     };
   });
 
@@ -97,6 +100,7 @@ export default async function PostsPage() {
           author: t(locale, "작성자", "Author"),
           date: t(locale, "날짜", "Date"),
           category: t(locale, "카테고리", "Category"),
+          views: t(locale, "조회수", "Views"),
         }}
       />
     </div>

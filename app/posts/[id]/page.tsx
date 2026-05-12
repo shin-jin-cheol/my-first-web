@@ -1,5 +1,11 @@
 ﻿import Link from "next/link";
-import { getPostById, getPostCommentsByPostId, getPostCommentReactions, getPostReactions } from "@/lib/posts";
+import {
+  getPostById,
+  getPostCommentsByPostId,
+  getPostCommentReactions,
+  getPostReactions,
+  incrementPostViews,
+} from "@/lib/posts";
 import { buildDownloadUrl } from "@/lib/download-url";
 import { Button } from "@/components/ui/button";
 import { PostReaction } from "@/components/post-reaction";
@@ -26,6 +32,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const [locale, resolvedParams] = await Promise.all([getLocale(), params]);
   const { id } = resolvedParams;
   const postId = Number(id);
+
+  await incrementPostViews(postId);
+
   const [post, session, comments, postReactions] = await Promise.all([
     getPostById(postId),
     getSession(),
@@ -114,6 +123,9 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           </p>
           <p>
             <strong>{tk(locale, "date")}:</strong> {post.date}
+          </p>
+          <p>
+            <strong>{t(locale, "조회수", "Views")}:</strong> {post.views}
           </p>
         </div>
       </header>

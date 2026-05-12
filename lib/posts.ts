@@ -20,6 +20,7 @@ export type Post = {
   linkUrl?: string;
   fileUrl?: string;
   fileName?: string;
+  views: number;
 };
 
 export type PostComment = {
@@ -79,10 +80,12 @@ type SupabasePostRow = {
   link_url: string | null;
   file_url: string | null;
   file_name: string | null;
+  views: number | null;
 };
 
-type SupabaseLegacyPostRow = Omit<SupabasePostRow, "category"> & {
+type SupabaseLegacyPostRow = Omit<SupabasePostRow, "category" | "views"> & {
   category?: string | null;
+  views?: number | null;
 };
 
 type SupabasePostCommentRow = {
@@ -124,6 +127,7 @@ const initialPosts: Post[] = [
     author: "신진철",
     category: "study",
     date: "2026-04-05",
+    views: 0,
   },
   {
     id: 2,
@@ -133,6 +137,7 @@ const initialPosts: Post[] = [
     author: "신진철",
     category: "study",
     date: "2026-04-03",
+    views: 0,
   },
   {
     id: 3,
@@ -142,6 +147,7 @@ const initialPosts: Post[] = [
     author: "신진철",
     category: "study",
     date: "2026-03-31",
+    views: 0,
   },
 ];
 
@@ -208,6 +214,7 @@ function mapSupabaseRowToPost(row: SupabasePostRow | SupabaseLegacyPostRow): Pos
     linkUrl: row.link_url ?? undefined,
     fileUrl: row.file_url ?? undefined,
     fileName: row.file_name ?? undefined,
+    views: row.views ?? 0,
   };
 }
 
@@ -223,6 +230,7 @@ function mapPostToSupabaseRow(post: Post) {
     link_url: post.linkUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
+    views: post.views,
   };
 }
 
@@ -237,6 +245,7 @@ function mapPostToSupabaseInsertRow(post: Omit<Post, "id">) {
     link_url: post.linkUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
+    views: post.views,
   };
 }
 
@@ -267,17 +276,20 @@ function mapPostToSupabaseLegacyInsertRow(post: Omit<Post, "id">) {
   };
 }
 
-function normalizePostRecord(post: Omit<Post, "category"> & { category?: string }): Post {
+function normalizePostRecord(
+  post: Omit<Post, "category" | "views"> & { category?: string; views?: number },
+): Post {
   return {
     ...post,
     category: normalizeBlogPostCategory(post.category),
+    views: post.views ?? 0,
   };
 }
 
 async function readPostsFromSupabase(): Promise<Post[]> {
   const result = await requestSupabase<SupabasePostRow[]>(
     "GET",
-    "?select=id,title,content,author,author_id,category,date,link_url,file_url,file_name&order=id.desc",
+    "?select=id,title,content,author,author_id,category,date,link_url,file_url,file_name,views&order=id.desc",
   );
 
   if (result.ok && Array.isArray(result.data)) {
@@ -320,7 +332,7 @@ async function readPostsFromLegacyStorage(): Promise<Post[]> {
     localFileName: "posts.json",
     tmpFileName: "my-first-web-posts.json",
     seedData: initialPosts,
-    normalize: (posts: Array<Omit<Post, "category"> & { category?: string }>) =>
+    normalize: (posts: Array<Omit<Post, "category" | "views"> & { category?: string; views?: number }>) =>
       (posts ?? []).map(normalizePostRecord),
   });
 }
@@ -576,7 +588,7 @@ export async function getPostById(id: number): Promise<Post | undefined> {
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabasePostRow[]>(
       "GET",
-      `?select=id,title,content,author,author_id,category,date,link_url,file_url,file_name&id=eq.${id}&limit=1`,
+      `?select=id,title,content,author,author_id,category,date,link_url,file_url,file_name,views&id=eq.${id}&limit=1`,
     );
 
     if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
@@ -599,6 +611,39 @@ export async function getPostById(id: number): Promise<Post | undefined> {
   return posts.find((post) => post.id === id);
 }
 
+export async function incrementPostViews(postId: number): Promise<void> {
+  if (!Number.isFinite(postId) || postId <= 0) {
+    return;
+  }
+
+  if (hasSupabaseStorage()) {
+    const currentPost = await getPostById(postId);
+    if (!currentPost) {
+      return;
+    }
+
+    await requestSupabase(
+      "PATCH",
+      `?id=eq.${postId}`,
+      { views: currentPost.views + 1 },
+      "return=minimal",
+    );
+    return;
+  }
+
+  const posts = await readPosts();
+  const index = posts.findIndex((post) => post.id === postId);
+  if (index === -1) {
+    return;
+  }
+
+  posts[index] = {
+    ...posts[index],
+    views: posts[index].views + 1,
+  };
+  await writePosts(posts);
+}
+
 export async function addPost(input: NewPostInput): Promise<Post> {
   const attachment = await saveFile(input.attachmentFile);
 
@@ -612,6 +657,7 @@ export async function addPost(input: NewPostInput): Promise<Post> {
     linkUrl: normalizeLinkUrl(input.linkUrl),
     fileUrl: attachment?.fileUrl,
     fileName: attachment?.fileName,
+    views: 0,
   };
 
   if (hasSupabaseStorage()) {
@@ -660,7 +706,7 @@ export async function deletePostById(id: number): Promise<boolean> {
     const targetPost = await getPostById(id);
     const result = await requestSupabase<SupabasePostRow[]>(
       "DELETE",
-      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,file_url,file_name`,
+      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,file_url,file_name,views`,
       undefined,
       "return=representation",
     );
@@ -736,7 +782,7 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabasePostRow[]>(
       "PATCH",
-      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,file_url,file_name`,
+      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,file_url,file_name,views`,
       mapPostToSupabaseRow(updatedPost),
       "return=representation",
     );

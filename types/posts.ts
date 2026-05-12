@@ -10,6 +10,7 @@ export type OwnerPostItem = {
   category: BlogPostCategory;
   categoryLabel: string;
   detailHref: string;
+  views: number;
 };
 
 export type CommunityPostItem = {
@@ -22,6 +23,7 @@ export type CommunityPostItem = {
   category: BlogPostCategory;
   categoryLabel: string;
   sourceLabel: string;
+  views: number;
 };
 
 export type GuestPostItem = {

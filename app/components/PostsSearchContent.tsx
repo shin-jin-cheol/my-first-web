@@ -18,6 +18,7 @@ type PostsSearchContentProps = {
     author: string;
     date: string;
     category: string;
+    views: string;
   };
 };
 
@@ -73,6 +74,9 @@ export default function PostsSearchContent({
                   </p>
                   <p>
                     <strong>{labels.category}:</strong> {post.categoryLabel}
+                  </p>
+                  <p>
+                    <strong>{labels.views}:</strong> {post.views}
                   </p>
                 </div>
               </article>
@@ -133,6 +137,9 @@ export default function PostsSearchContent({
                 </p>
                 <p>
                   <strong>{labels.category}:</strong> {post.categoryLabel}
+                </p>
+                <p>
+                  <strong>{labels.views}:</strong> {post.views}
                 </p>
               </div>
             </article>
