@@ -2,12 +2,13 @@
 
 ## 1. 개요
 
-이 프로젝트는 개인 블로그와 회원 기반 게스트 커뮤니티 기능을 포함한 Next.js 웹 애플리케이션입니다.
+이 프로젝트는 개인 블로그와 회원 기반 게스트 커뮤니티 기능을 함께 제공하는 Next.js 애플리케이션입니다.
 
 - Frontend: Next.js 16.2.1 App Router, React 19.2.4
 - Styling: Tailwind CSS 4, CSS variables, shadcn/ui
-- Backend: Supabase REST/Auth/Storage
-- File Storage: Supabase Storage, Vercel Blob, Local fallback
+- Backend: Supabase HTTP client pattern
+- Auth: 자체 세션 쿠키 + 이메일 OTP
+- File Storage: Supabase Storage, Vercel Blob, local fallback
 - Deployment: Vercel
 
 기본 방향은 Server Component 우선 구조입니다. 상태, 이벤트 핸들러, 브라우저 API가 필요한 UI만 Client Component로 분리합니다.
@@ -27,19 +28,34 @@
 - `/guest/[id]/edit`: 게스트 글 수정
 - `/guest/account`: 회원 프로필 수정, 비밀번호 변경, 회원 탈퇴
 - `/auth/login`: 로그인
-- `/auth/signup`: 이메일 인증 코드 기반 회원가입
+- `/auth/signup`: 이메일 OTP 기반 회원가입
 - `/admin/members`: Owner 전용 회원 관리
 
-서버 동작은 App Router의 Server Actions로 처리하며, 이동은 `redirect`, 화면 동기화는 `revalidatePath`를 사용합니다.
+서버 동작은 App Router와 Server Actions로 처리하며, 이동은 `redirect`, 화면 동기화는 `revalidatePath`를 사용합니다.
 
 ---
 
-## 3. 주요 모듈
+## 3. 보호 라우트
+
+Next.js 16 기준으로 `middleware.ts`는 사용하지 않고 루트의 `proxy.ts`를 사용합니다.
+
+`proxy.ts`는 `sjc-session` 자체 세션 쿠키를 확인합니다. 세션 쿠키가 없으면 아래 보호 라우트 접근 시 `/auth/login`으로 리다이렉트합니다.
+
+- `/posts/new`
+- `/guest/new`
+- `/guest/account`
+- `/admin/:path*`
+
+`export const config`의 matcher 설정으로 보호 라우트를 제한합니다.
+
+---
+
+## 4. 주요 모듈
 
 ### Layout/UI
 
 - `app/layout.tsx`: 루트 레이아웃
-- `app/components/ClientLayout.tsx`: 클라이언트 전용 전역 UI 래퍼
+- `app/components/ClientLayout.tsx`: 클라이언트 전용 전역 UI wrapper
 - `app/components/Header.tsx`: 네비게이션
 - `app/components/ThemeProvider.tsx`, `ThemeToggle.tsx`: 테마 전환
 - `app/components/BgmPlayer.tsx`: BGM 플레이어
@@ -62,18 +78,19 @@
 
 ### Auth
 
-- `lib/auth/core.ts`: 회원 저장소, Supabase Auth 요청, 회원 정규화
+- `lib/auth/core.ts`: 회원 저장소, 회원 정규화, 공통 인증 로직
 - `lib/auth/login.ts`: 로그인 및 Owner 비밀번호 해시 비교
-- `lib/auth/signup.ts`: 이메일 인증 코드 회원가입
-- `lib/auth/session.ts`: 세션 서명/쿠키 처리
+- `lib/auth/signup.ts`: 이메일 OTP 기반 회원가입
+- `lib/auth/session.ts`: 자체 세션 서명/쿠키 처리
 - `lib/auth/account.ts`: 프로필 수정, 비밀번호 변경, 회원 탈퇴
 - `lib/auth/admin.ts`: Owner용 회원 조회
 - `app/auth/actions.ts`: 인증 Server Actions
+- `proxy.ts`: 보호 라우트 세션 쿠키 확인 및 로그인 리다이렉트
 
 ### Shared Utilities
 
-- `lib/env.ts`: 환경변수 중앙화
-- `lib/storage.ts`: Supabase Storage, Vercel Blob, 로컬 파일 fallback
+- `lib/env.ts`: 환경 변수 중앙화
+- `lib/storage.ts`: Supabase Storage, Vercel Blob, local file fallback
 - `lib/supabase/http.ts`: Supabase REST 공통 요청
 - `lib/permissions.ts`: 게시글/댓글 관리 권한
 - `lib/date.ts`: KST 날짜/시간
@@ -84,18 +101,19 @@
 
 ---
 
-## 4. 데이터 흐름
+## 5. 데이터 흐름
 
 1. 사용자가 폼 제출 또는 반응 버튼 클릭
-2. Server Action에서 세션, 권한, 입력값 검증
-3. `lib/posts.ts`, `lib/guest-posts.ts`, `lib/auth/*` 저장소 함수 호출
-4. Supabase 사용 가능 시 Supabase REST/Auth/Storage 요청
-5. Supabase 설정이 부족하면 Vercel Blob 또는 로컬 JSON fallback 사용
-6. 변경 성공 후 `revalidatePath`와 `redirect`로 화면 갱신
+2. 보호 라우트는 `proxy.ts`에서 자체 세션 쿠키를 먼저 확인
+3. Server Action에서 세션, 권한, 입력값 검증
+4. `lib/posts.ts`, `lib/guest-posts.ts`, `lib/auth/*` 저장소 함수 호출
+5. Supabase 사용 가능 시 Supabase HTTP/Storage 요청
+6. Supabase 또는 Blob 설정이 부족한 환경에서는 기존 local fallback 흐름 사용
+7. 변경 성공 후 `revalidatePath`와 `redirect`로 화면 갱신
 
 ---
 
-## 5. 데이터 모델
+## 6. 데이터 모델
 
 ### members
 
@@ -104,10 +122,9 @@
 - `password`
 - `email`
 - `email_verified`
-- `auth_user_id`
 - `created_at`
 
-회원 비밀번호는 Supabase Auth 사용 시 Auth API로 검증하고, 로컬/레거시 fallback에서는 기존 `password` 필드를 사용합니다. Owner 계정은 `OWNER_PASSWORD` 해시값과 입력 비밀번호 해시를 비교합니다.
+회원 인증은 Supabase Auth가 아니라 자체 세션 쿠키와 이메일 OTP 흐름을 기준으로 합니다. Owner 계정은 `OWNER_PASSWORD` 해시값과 입력 비밀번호의 SHA-256 해시를 비교합니다.
 
 ### posts
 
@@ -134,7 +151,7 @@
 - `link_url`
 - `file_url`
 - `file_name`
-- `comments` (레거시 호환용 JSONB)
+- `comments` (legacy 호환용 JSONB)
 
 ### post_comments
 
@@ -160,67 +177,46 @@
 
 `parent_id` 구조는 블로그 댓글과 동일합니다.
 
-### post_reactions
+### reactions
 
-- `id` (PK)
-- `post_id`
-- `member_id`
-- `emoji`
-- `created_at`
+- `post_reactions`
+- `post_comment_reactions`
+- `guest_post_reactions`
+- `guest_comment_reactions`
 
-### post_comment_reactions
-
-- `id` (PK)
-- `comment_id`
-- `member_id`
-- `emoji`
-- `created_at`
-
-### guest_post_reactions
-
-- `id` (PK)
-- `guest_post_id`
-- `member_id`
-- `emoji`
-- `created_at`
-
-### guest_comment_reactions
-
-- `id` (PK)
-- `comment_id`
-- `member_id`
-- `emoji`
-- `created_at`
+각 반응 테이블은 대상 id, `member_id`, `emoji`, 생성 시각을 저장합니다.
 
 ---
 
-## 6. 저장 전략
+## 7. 저장 전략
 
-- 게시글/댓글/반응: Supabase REST 우선, 레거시/개발 환경에서는 JSON fallback
-- 첨부 파일: Supabase Storage 우선, Vercel Blob 또는 로컬 fallback
-- 회원: Supabase 테이블/Auth 우선, 레거시 저장소 fallback
-- 환경변수: `lib/env.ts`에서 중앙 관리
+- 게시글/댓글/반응: Supabase REST 우선, local JSON fallback 유지
+- 첨부 파일: Supabase Storage 우선, Vercel Blob 또는 local fallback
+- 회원: 자체 회원 저장소와 세션 쿠키 흐름 유지
+- 환경 변수: `lib/env.ts`에서 중앙 관리
 
 ---
 
-## 7. 권한 모델
+## 8. 권한 모델
 
 - Owner: 블로그/게스트 게시글과 댓글 관리 가능, 회원 관리 페이지 접근 가능
 - Member: 본인이 작성한 게스트 게시글과 댓글 관리 가능
-- 비회원: 공개 목록/상세 조회 중심
+- 비회원: 공개 목록/상세 조회 중심, 보호 라우트 접근 시 `/auth/login`으로 이동
 - 게시글/댓글 관리 권한은 `lib/permissions.ts`에서 공통 처리
 
 ---
 
-## 8. 구현 완료 기능
+## 9. 구현 완료 기능
 
 - 블로그 게시글 CRUD
 - 게스트 게시글 CRUD
 - 댓글 CRUD
 - `parent_id` 기반 대댓글
 - 게시글/댓글 이모지 반응
-- 로그인/회원가입/세션
-- 이메일 인증 코드 흐름
+- 자체 세션 쿠키 기반 로그인
+- 이메일 OTP 흐름
+- `proxy.ts` 보호 라우트
+- 비로그인 사용자 `/auth/login` 리다이렉트
 - 회원 프로필 수정
 - 회원 비밀번호 변경
 - 회원 탈퇴
@@ -229,10 +225,12 @@
 - 파일/링크 첨부
 - 테마 전환
 - 이름 기반 아바타
+- `.agent/rules/project.md` 생성
+- Next.js 16 기준 `middleware.ts` 제거 및 `proxy.ts` 전환
 
 ---
 
-## 9. 미구현 기능
+## 10. 미구현 기능
 
 - 실시간 채팅
 - 친구/팔로우 기능
@@ -241,12 +239,14 @@
 
 ---
 
-## 10. 설계 원칙
+## 11. 설계 원칙
 
 - App Router만 사용
 - Server Component 우선
 - Server Action 흐름 유지
-- 환경변수는 `lib/env.ts` 기준
+- 환경 변수는 `lib/env.ts` 기준
 - Supabase HTTP 요청은 `lib/supabase/http.ts` 패턴 사용
+- 인증은 자체 세션 쿠키 + 이메일 OTP 구조 유지
+- Next.js 16 기준 `proxy.ts` 사용
 - 입력값과 권한 검증 제거 금지
-- Tailwind 기본 색상 직접 사용 대신 CSS variables 우선
+- Tailwind 기본 색상 직접 사용 지양, CSS variables 우선

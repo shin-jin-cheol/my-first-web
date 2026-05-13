@@ -22,34 +22,37 @@
 
 ### 인증/회원
 
-- [x] 로그인
-- [x] 이메일 인증 코드 기반 회원가입
-- [x] Supabase Auth 연동
+- [x] 자체 세션 쿠키 기반 로그인
+- [x] 이메일 OTP 기반 회원가입/로그인 흐름
 - [x] 세션 쿠키 서명
 - [x] 회원 프로필 수정
 - [x] 회원 비밀번호 변경
 - [x] 회원 탈퇴
 - [x] Owner 전용 회원 관리
 - [x] Owner 비밀번호 해시 비교
+- [x] `proxy.ts` 보호 라우트 추가
+- [x] 비로그인 사용자 `/auth/login` 리다이렉트
 
 ### UI/UX
 
-- [x] 다크/라이트/시스템 테마
-- [x] 반응형 레이아웃
+- [x] 다크/라이트 시스템 테마
+- [x] 반응 UI 레이아웃
 - [x] 모바일 네비게이션
-- [x] 다국어 라벨
+- [x] 다국어 텍스트 처리
 - [x] BGM 플레이어
 - [x] 라이브 시계
 
-### 안정성/구조
+### 안정화/구조
 
-- [x] 환경변수 중앙화
+- [x] 환경 변수 중앙화
 - [x] Supabase HTTP 요청 공통화
-- [x] Supabase Storage/Blob/로컬 fallback 저장 전략
+- [x] Supabase Storage/Blob/local fallback 저장 전략
 - [x] 안전한 JSON 파싱
 - [x] 권한 체크 공통화
 - [x] KST 날짜 유틸
 - [x] FormData 유틸
+- [x] Next.js 16 기준 `middleware.ts` 제거 및 `proxy.ts` 전환
+- [x] `.agent/rules/project.md` 생성
 
 ---
 

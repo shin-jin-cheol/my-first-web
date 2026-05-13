@@ -13,11 +13,13 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - 블로그 게시글 CRUD
 - 게스트 게시판 CRUD
 - 회원가입, 로그인, 회원 관리
+- 자체 세션 쿠키 인증
+- 이메일 OTP 회원가입/로그인
 - 댓글 기능
 - 카테고리 시스템
 - 파일 업로드
 - 다국어 텍스트 처리
-- Supabase, Vercel Blob, Local fallback 기반 데이터 및 파일 저장
+- Supabase HTTP client pattern, Supabase Storage, Vercel Blob, local fallback 기반 데이터 및 파일 저장
 - Vercel 프로덕션 배포
 
 주요 라우트는 App Router 기반입니다.
@@ -28,14 +30,24 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - `/auth/login`, `/auth/signup`: 인증
 - `/admin/members`: 관리자 회원 관리
 
+보호 라우트는 루트의 `proxy.ts`에서 자체 세션 쿠키를 확인합니다.
+
+- `/posts/new`
+- `/guest/new`
+- `/guest/account`
+- `/admin/:path*`
+
+비로그인 사용자는 보호 라우트 접근 시 `/auth/login`으로 리다이렉트됩니다.
+
 ## 2. 기술 스택
 
 - Framework: Next.js 16.2.1, App Router only
 - UI: React 19.2.4
 - Styling: Tailwind CSS 4, CSS variables
 - UI Components: shadcn/ui under `components/ui/`
-- Backend: Supabase
-- File Storage: Supabase Storage, Vercel Blob, Local fallback
+- Backend: Supabase HTTP client pattern
+- Auth: 자체 세션 쿠키 + 이메일 OTP
+- File Storage: Supabase Storage, Vercel Blob, local fallback
 - Deployment: Vercel
 - Language: TypeScript
 - Lint: ESLint 9, `eslint-config-next` 16.2.1
@@ -47,19 +59,22 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - `ARCHITECTURE.md`
 - `context.md`
 - `.github/copilot-instructions.md`
+- `.agent/rules/project.md`
 - 작업 주제와 관련된 `node_modules/next/dist/docs/` 문서
 
-작업 내용이 Supabase, storage, hydration, Server Actions, routing, cache, config와 관련되면 반드시 해당 Next.js 로컬 문서를 먼저 확인합니다.
+작업 내용이 Supabase, storage, hydration, Server Actions, routing, cache, config, proxy와 관련되면 반드시 해당 Next.js 로컬 문서를 먼저 확인합니다.
 
 ## 4. 코딩 컨벤션
 
 - App Router만 사용합니다. `pages/` Router API를 사용하지 않습니다.
+- Next.js 16 기준 보호 라우트 처리는 `middleware.ts`가 아니라 `proxy.ts`를 사용합니다.
 - 기본은 Server Component입니다.
 - `"use client"`는 브라우저 API, 상태, 이벤트 핸들러가 필요한 경우에만 추가합니다.
 - 데이터 처리와 Server Action은 `async/await` 기반으로 작성합니다.
 - Server Action 흐름과 반환 구조를 임의로 변경하지 않습니다.
 - 환경 변수는 `lib/env.ts`에서 중앙 관리합니다.
 - Supabase HTTP 요청은 기존 `lib/supabase/http.ts` 패턴을 따릅니다.
+- 인증은 Supabase Auth가 아니라 자체 세션 쿠키와 이메일 OTP 흐름을 유지합니다.
 - FormData 문자열/숫자 처리는 `lib/form-utils.ts`를 우선 사용합니다.
 - 저장소 및 파일 fallback 처리는 `lib/storage.ts`와 `lib/attachment-utils.ts`의 기존 흐름을 유지합니다.
 - 날짜 처리는 `lib/date.ts`의 KST 유틸을 사용합니다.
@@ -75,6 +90,7 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 
 - `next/router` 사용 금지
 - Pages Router API 사용 금지: `getServerSideProps`, `getStaticProps`, `getInitialProps`
+- `middleware.ts` 재도입 금지
 - 불필요한 `"use client"` 추가 금지
 - Server Action 흐름 임의 변경 금지
 - 기존 API 응답 구조 또는 함수 반환값 임의 변경 금지
@@ -82,6 +98,7 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - Tailwind 기본 색상 직접 사용 금지
 - 하드코딩된 사용자 입력 신뢰 금지
 - 인증/권한 검증 제거 금지
+- Supabase Auth 전제의 인증 구조로 변경 금지
 - 환경 변수를 각 파일에 흩어놓는 변경 금지
 - 새 의존성 임의 추가 금지
 - 사용자가 요청하지 않은 리팩터링 금지
@@ -136,6 +153,7 @@ fix: Server Actions body 크기 제한 10MB로 설정
 refactor: storage 전략 통합
 refactor: FormData 공통 유틸 추출 및 i18n 텍스트 처리
 fix: ThemeToggle hydration mismatch 및 BGM 버튼 아이콘 이모지 방지 수정
+docs: Ch9 완료 기준 프로젝트 문서 갱신
 ```
 
 사용자가 커밋 메시지를 지정한 경우에는 지정된 메시지를 그대로 사용합니다.
