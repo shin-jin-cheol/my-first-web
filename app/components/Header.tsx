@@ -20,7 +20,7 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
   const writeLabel =
     session?.role === "owner"
       ? t(locale, "\uc0c8 \uae00 \uc4f0\uae30", "Write")
-      : t(locale, "\uac8c\uc2a4\ud2b8 \uae00 \uc4f0\uae30", "Write Guest Post");
+      : t(locale, "\uc0c8 \uae00 \uc4f0\uae30", "Write");
   const profileName = session?.userName || session?.userId || "";
   const profileHref = session ? `/profile/${encodeURIComponent(session.userId)}` : "";
   const profileAvatarText = getAvatarText(profileName);
@@ -84,14 +84,9 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
           ) : null}
           <div className="ml-auto inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap">
             {!session ? (
-              <>
-                <Link href="/auth/login" className="inline-flex h-9 items-center text-sm font-medium text-text-sub transition hover:text-text-base dark:text-text-muted dark:hover:text-highlight">
-                  {t(locale, "\ub85c\uadf8\uc778", "Login")}
-                </Link>
-                <Link href="/auth/signup" className="inline-flex h-9 items-center text-sm font-medium text-text-sub transition hover:text-text-base dark:text-text-muted dark:hover:text-highlight">
-                  {t(locale, "\ud68c\uc6d0\uac00\uc785", "Sign up")}
-                </Link>
-              </>
+              <Link href="/auth/login" className="inline-flex h-9 items-center text-sm font-medium text-text-sub transition hover:text-text-base dark:text-text-muted dark:hover:text-highlight">
+                {t(locale, "\ub85c\uadf8\uc778", "Login")}
+              </Link>
             ) : (
               <form action={logoutAction} className="inline-flex h-9 items-center">
                 <Button

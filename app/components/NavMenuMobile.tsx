@@ -102,20 +102,12 @@ export function NavMenuMobile({
         </Link>
 
         {!session ? (
-          <>
-            <Link
-              href="/auth/login"
-              className="block rounded-lg px-2 py-1.5 text-text-sub transition hover:bg-surface-sub hover:text-text-base dark:text-text-sub dark:hover:bg-surface-strong dark:hover:text-text-base"
-            >
-              {t('로그인', 'Login')}
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="block rounded-lg px-2 py-1.5 text-text-sub transition hover:bg-surface-sub hover:text-text-base dark:text-text-sub dark:hover:bg-surface-strong dark:hover:text-text-base"
-            >
-              {t('회원가입', 'Sign up')}
-            </Link>
-          </>
+          <Link
+            href="/auth/login"
+            className="block rounded-lg px-2 py-1.5 text-text-sub transition hover:bg-surface-sub hover:text-text-base dark:text-text-sub dark:hover:bg-surface-strong dark:hover:text-text-base"
+          >
+            {t('로그인', 'Login')}
+          </Link>
         ) : null}
 
         <div className="my-1 h-px bg-border-base/70 dark:bg-border-sub" />
