@@ -2,8 +2,10 @@ import Link from "next/link";
 import { logoutAction } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
 import type { Session } from "@/lib/auth";
+import { getAvatarColorClass, getAvatarText } from "@/lib/avatar-utils";
 import { t, type Locale } from "@/lib/i18n";
 import { NavMenuMobile } from "./NavMenuMobile";
+import { PostsMenu } from "./PostsMenu";
 
 const siteTitle = "\uacf5\uc778\uc7ac \uc2e0\uc9c4\ucca0\uc758 \uc0dd\uc874\uc77c\uae30";
 
@@ -19,6 +21,10 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
     session?.role === "owner"
       ? t(locale, "\uc0c8 \uae00 \uc4f0\uae30", "Write")
       : t(locale, "\uac8c\uc2a4\ud2b8 \uae00 \uc4f0\uae30", "Write Guest Post");
+  const profileName = session?.userName || session?.userId || "";
+  const profileHref = session ? `/profile/${encodeURIComponent(session.userId)}` : "";
+  const profileAvatarText = getAvatarText(profileName);
+  const profileAvatarColor = getAvatarColorClass(profileName);
 
   return (
     <nav className="border-b border-border-strong bg-surface-muted text-text-base shadow-[0_0_16px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] dark:border-border-base dark:bg-surface dark:text-text-base dark:shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]">
@@ -29,9 +35,14 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
           </span>
           <div className="flex h-9 shrink-0 items-center gap-2">
             {session ? (
-              <span className="inline-flex h-9 items-center rounded-full border border-accent-border bg-accent-soft px-2.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--accent-dark)] shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] dark:border-accent-border dark:bg-accent-soft dark:text-accent-sub dark:shadow-none">
-                {session.role}
-              </span>
+              <Link
+                href={profileHref}
+                aria-label={t(locale, "\ud504\ub85c\ud544", "Profile")}
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border-base text-xs font-bold text-[var(--surface)] shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] transition hover:brightness-105"
+                style={{ backgroundColor: profileAvatarColor }}
+              >
+                {profileAvatarText}
+              </Link>
             ) : null}
             {!session ? (
               <Link href="/auth/login" className="inline-flex h-9 items-center rounded-full border border-border-strong bg-surface-muted/92 px-3 text-xs font-semibold text-text-sub shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] transition hover:brightness-105 dark:border-border-strong dark:bg-surface-strong dark:text-text-base dark:shadow-none dark:hover:bg-surface-sub">
@@ -62,12 +73,7 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
           <Link href="/" className="hidden h-9 shrink-0 items-center text-sm font-medium text-text-sub transition hover:text-text-base hover:drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.18)] dark:text-text-muted dark:hover:text-highlight dark:hover:drop-shadow-[0_0_8px_rgb(from_var(--accent-primary)_r_g_b_/_0.18)] lg:inline-flex">
             {t(locale, "\ud648", "Home")}
           </Link>
-          <Link href="/posts" className="hidden h-9 shrink-0 items-center text-sm font-medium text-text-sub transition hover:text-text-base hover:drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.18)] dark:text-text-muted dark:hover:text-highlight dark:hover:drop-shadow-[0_0_8px_rgb(from_var(--accent-primary)_r_g_b_/_0.18)] lg:inline-flex">
-            {t(locale, "\ube14\ub85c\uadf8", "Blog")}
-          </Link>
-          <Link href="/guest" className="hidden h-9 shrink-0 items-center text-sm font-medium text-text-sub transition hover:text-text-base hover:drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.18)] dark:text-text-muted dark:hover:text-highlight dark:hover:drop-shadow-[0_0_8px_rgb(from_var(--accent-primary)_r_g_b_/_0.18)] lg:inline-flex">
-            {t(locale, "\uac8c\uc2a4\ud2b8 \uac8c\uc2dc\ud310", "Guest Board")}
-          </Link>
+          <PostsMenu serverLocale={locale} />
           {session ? (
             <Link
               href={writeHref}
@@ -75,21 +81,6 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
             >
               {writeLabel}
             </Link>
-          ) : null}
-          {session?.role === "owner" ? (
-            <Link href="/admin/members" className="hidden h-9 shrink-0 items-center text-sm font-medium text-text-sub transition hover:text-text-base dark:text-text-muted dark:hover:text-highlight xl:inline-flex">
-              {t(locale, "\ud68c\uc6d0\uad00\ub9ac", "Members")}
-            </Link>
-          ) : null}
-          {session?.role === "member" ? (
-            <Link href="/guest/account" className="hidden h-9 shrink-0 items-center text-sm font-medium text-text-sub transition hover:text-text-base dark:text-text-muted dark:hover:text-highlight xl:inline-flex">
-              {t(locale, "\ud68c\uc6d0\uc815\ubcf4", "Account")}
-            </Link>
-          ) : null}
-          {session ? (
-            <span className="hidden h-9 shrink-0 items-center rounded-full border border-accent-border bg-accent-soft px-3 text-xs font-semibold uppercase tracking-wide text-[var(--accent-dark)] shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] dark:border-accent-border dark:bg-accent-soft dark:text-accent-sub dark:shadow-none xl:inline-flex">
-              {session.role}
-            </span>
           ) : null}
           <div className="ml-auto inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap">
             {!session ? (

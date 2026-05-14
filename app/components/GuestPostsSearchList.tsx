@@ -41,7 +41,10 @@ export default function GuestPostsSearchList({
           categoryMatches: (post: GuestPostItem, currentCategory: "all" | GuestPostCategory) =>
             currentCategory === "all" ? true : post.category === currentCategory,
           queryFields: (post: GuestPostItem) => [post.title, post.content, post.authorDisplay, post.date],
-          renderItem: (post: GuestPostItem) => (
+          renderItem: (post: GuestPostItem) => {
+            const authorHref = `/profile/${encodeURIComponent(post.authorId)}`;
+
+            return (
             <article
               key={String(post.id)}
               className="space-y-3 rounded-2xl border border-border-strong bg-surface-muted p-5 transition hover:bg-surface-strong dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong"
@@ -59,7 +62,10 @@ export default function GuestPostsSearchList({
               <p className="text-text-sub dark:text-text-sub">{post.content}</p>
               <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-text-sub dark:text-text-muted">
                 <p>
-                  {labels.author}: {post.authorDisplay}
+                  {labels.author}:{" "}
+                  <Link href={authorHref} className="font-semibold transition hover:text-accent-sub">
+                    {post.authorDisplay}
+                  </Link>
                 </p>
                 <p>{labels.date}: {post.date}</p>
               </div>
@@ -91,7 +97,8 @@ export default function GuestPostsSearchList({
                 </div>
               ) : null}
             </article>
-          ),
+            );
+          },
         }),
       ]}
     />

@@ -5,6 +5,7 @@ export type OwnerPostItem = {
   id: number;
   title: string;
   content: string;
+  authorId: string;
   author: string;
   date: string;
   category: BlogPostCategory;
@@ -17,6 +18,7 @@ export type CommunityPostItem = {
   id: string;
   title: string;
   content: string;
+  authorId: string;
   authorDisplay: string;
   date: string;
   detailHref: string;

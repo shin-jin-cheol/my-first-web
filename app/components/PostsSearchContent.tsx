@@ -48,9 +48,14 @@ export default function PostsSearchContent({
           categoryMatches: (post: OwnerPostItem, currentCategory: "all" | BlogPostCategory) =>
             currentCategory === "all" ? true : post.category === currentCategory,
           queryFields: (post: OwnerPostItem) => [post.title, post.content, post.author, post.date],
-          renderItem: (post: OwnerPostItem) => (
-            <Link key={post.id} href={post.detailHref}>
-              <article className="block h-full min-h-64 cursor-pointer rounded-2xl border border-border-strong bg-surface-muted p-7 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)] transition hover:border-[var(--accent-primary)] hover:bg-surface-strong hover:shadow-[0_0_16px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong">
+          renderItem: (post: OwnerPostItem) => {
+            const authorHref = `/profile/${encodeURIComponent(post.authorId)}`;
+
+            return (
+              <article
+                key={post.id}
+                className="h-full min-h-64 rounded-2xl border border-border-strong bg-surface-muted p-7 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)] transition hover:border-[var(--accent-primary)] hover:bg-surface-strong hover:shadow-[0_0_16px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong"
+              >
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   <p className="text-xs font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">
                     {labels.ownerSectionTitle}
@@ -60,14 +65,19 @@ export default function PostsSearchContent({
                   </span>
                 </div>
                 <h3 className="mb-3 text-xl font-bold text-text-base dark:text-text-base">
-                  {post.title}
+                  <Link href={post.detailHref} className="transition hover:text-accent-sub">
+                    {post.title}
+                  </Link>
                 </h3>
                 <p className="mb-5 line-clamp-4 text-base leading-7 text-text-sub dark:text-text-sub">
                   {post.content}
                 </p>
                 <div className="space-y-2 text-sm text-text-sub dark:text-text-muted">
                   <p>
-                    <strong>{labels.author}:</strong> {post.author}
+                    <strong>{labels.author}:</strong>{" "}
+                    <Link href={authorHref} className="font-semibold transition hover:text-accent-sub">
+                      {post.author}
+                    </Link>
                   </p>
                   <p>
                     <strong>{labels.date}:</strong> {post.date}
@@ -80,8 +90,8 @@ export default function PostsSearchContent({
                   </p>
                 </div>
               </article>
-            </Link>
-          ),
+            );
+          },
         }),
         createSearchableListSection({
           key: "community-posts",
@@ -107,7 +117,10 @@ export default function PostsSearchContent({
             post.date,
             post.sourceLabel,
           ],
-          renderItem: (post: CommunityPostItem) => (
+          renderItem: (post: CommunityPostItem) => {
+            const authorHref = `/profile/${encodeURIComponent(post.authorId)}`;
+
+            return (
             <article
               key={post.id}
               className="h-full min-h-56 rounded-2xl border border-border-strong bg-surface-muted p-7 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)] transition hover:border-accent-border hover:bg-surface-strong dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong"
@@ -130,7 +143,10 @@ export default function PostsSearchContent({
               </p>
               <div className="space-y-2 text-sm text-text-sub dark:text-text-muted">
                 <p>
-                  <strong>{labels.author}:</strong> {post.authorDisplay}
+                  <strong>{labels.author}:</strong>{" "}
+                  <Link href={authorHref} className="font-semibold transition hover:text-accent-sub">
+                    {post.authorDisplay}
+                  </Link>
                 </p>
                 <p>
                   <strong>{labels.date}:</strong> {post.date}
@@ -143,7 +159,8 @@ export default function PostsSearchContent({
                 </p>
               </div>
             </article>
-          ),
+            );
+          },
         }),
       ]}
     />
