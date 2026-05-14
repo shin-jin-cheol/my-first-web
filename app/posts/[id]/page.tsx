@@ -10,6 +10,7 @@ import { buildDownloadUrl } from "@/lib/download-url";
 import { Button } from "@/components/ui/button";
 import { PostReaction } from "@/components/post-reaction";
 import { getSession } from "@/lib/auth";
+import { ownerAccount } from "@/lib/auth/core";
 import { getCategoryLabel } from "@/lib/post-categories";
 import { canManagePost, canManageComment } from "@/lib/permissions";
 import { getLocale, tk, t } from "@/lib/i18n";
@@ -109,6 +110,8 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     );
   }
 
+  const authorProfileHref = `/profile/${encodeURIComponent(post.authorId ?? ownerAccount.id)}`;
+
   return (
     <article className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]">
       <header className="space-y-3">
@@ -116,7 +119,10 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">{post.title}</h1>
         <div className="flex flex-wrap gap-4 text-sm text-text-muted dark:text-text-subtle">
           <p>
-            <strong>{tk(locale, "author")}:</strong> {post.author}
+            <strong>{tk(locale, "author")}:</strong>{" "}
+            <Link href={authorProfileHref} className="font-semibold transition hover:text-accent-sub">
+              {post.author}
+            </Link>
           </p>
           <p>
             <strong>{tk(locale, "category")}:</strong> {getCategoryLabel(post.category)}

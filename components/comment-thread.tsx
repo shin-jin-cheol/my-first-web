@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getAvatarColorClass, getAvatarText } from "@/lib/avatar-utils";
@@ -142,16 +143,24 @@ export function CommentThread({
     const isReplying = replyingCommentId === comment.id;
     const isMenuOpen = menuCommentId === comment.id;
     const isRoot = depth === 0;
+    const authorProfileHref = `/profile/${encodeURIComponent(comment.authorId)}`;
 
     return (
       <div key={comment.id} className={depth === 0 ? "rounded-2xl border border-border-base bg-surface-sub/90 p-4" : "rounded-xl border border-border-sub/60 bg-surface/70 p-3"}>
         <div className="flex items-start gap-3">
-          <CommentAvatar name={comment.authorName} />
+          <Link href={authorProfileHref} aria-label={comment.authorName} className="shrink-0">
+            <CommentAvatar name={comment.authorName} />
+          </Link>
 
           <div className="min-w-0 flex-1 space-y-2">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-text-sub">{comment.authorName}</p>
+                <Link
+                  href={authorProfileHref}
+                  className="block truncate text-sm font-semibold text-text-sub transition hover:text-accent-sub"
+                >
+                  {comment.authorName}
+                </Link>
                 <p className="text-xs text-text-muted">{comment.dateTime}</p>
               </div>
 

@@ -1,5 +1,5 @@
 import { getGuestPosts } from "@/lib/guest-posts";
-import { getMemberSummaries } from "@/lib/auth";
+import { getMemberSummaries, ownerAccount } from "@/lib/auth";
 import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
 import { getPosts } from "@/lib/posts";
 import { getLocale, t } from "@/lib/i18n";
@@ -26,6 +26,7 @@ export default async function PostsPage() {
     id: post.id,
     title: post.title,
     content: post.content,
+    authorId: post.authorId ?? ownerAccount.id,
     author: post.author,
     date: post.date,
     category: post.category,
@@ -42,6 +43,7 @@ export default async function PostsPage() {
       id: `member-blog-${post.id}`,
       title: post.title,
       content: post.content,
+      authorId: post.authorId ?? "",
       authorDisplay: memberNameById.get(post.authorId ?? "") || post.author,
       date: post.date,
       detailHref: `/posts/${post.id}`,
@@ -60,6 +62,7 @@ export default async function PostsPage() {
       id: `guest-board-${post.id}`,
       title: post.title,
       content: post.content,
+      authorId: post.authorId,
       authorDisplay: post.authorName || memberNameById.get(post.authorId) || post.authorId,
       date: post.date,
       detailHref: `/guest/${post.id}`,

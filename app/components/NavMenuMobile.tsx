@@ -129,6 +129,15 @@ export function NavMenuMobile({
           </Link>
         ) : null}
 
+        {session ? (
+          <Link
+            href={`/profile/${encodeURIComponent(session.userId)}`}
+            className="block rounded-lg px-2 py-1.5 text-text-muted transition hover:bg-surface-sub hover:text-text-sub dark:text-text-subtle dark:hover:bg-surface-strong dark:hover:text-text-base"
+          >
+            {t('프로필', 'Profile')}
+          </Link>
+        ) : null}
+
         {session?.role === 'owner' ? (
           <Link
             href="/admin/members"

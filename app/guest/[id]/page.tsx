@@ -102,6 +102,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   const boundAddReplyAction = addReplyAction.bind(null, postId);
   const boundUpdateCommentAction = updateCommentAction.bind(null, postId);
   const boundDeleteCommentAction = deleteCommentAction.bind(null, postId);
+  const authorProfileHref = `/profile/${encodeURIComponent(post.authorId)}`;
 
   return (
     <article className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]">
@@ -110,7 +111,10 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
         <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">{post.title}</h1>
         <div className="flex flex-wrap gap-4 text-sm text-text-muted dark:text-text-subtle">
           <p>
-            <strong>{t(locale, "작성자", "Author")}:</strong> {post.authorName || post.authorId}
+            <strong>{t(locale, "작성자", "Author")}:</strong>{" "}
+            <Link href={authorProfileHref} className="font-semibold transition hover:text-accent-sub">
+              {post.authorName || post.authorId}
+            </Link>
           </p>
           <p>
             <strong>{t(locale, "카테고리", "Category")}:</strong> {getCategoryLabel(post.category)}
