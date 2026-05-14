@@ -55,7 +55,7 @@ function CommentAvatar({ name }: { name: string }) {
 
   return (
     <div
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-[var(--surface)]"
       style={{ backgroundColor: avatarColor }}
     >
       {avatarText}

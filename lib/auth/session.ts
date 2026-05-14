@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { SESSION_SECRET } from "@/lib/env";
+import { NODE_ENV, SESSION_SECRET } from "@/lib/env";
 import { safeJsonParse } from "@/lib/safe-json";
 
 export type UserRole = "owner" | "member";
@@ -80,7 +80,7 @@ export async function setSession(session: Session) {
   store.set(SESSION_COOKIE, encodeSession(session), {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: NODE_ENV === "production",
     path: "/",
     maxAge: 60 * 60 * 24 * 7,
   });

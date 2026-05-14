@@ -10,6 +10,7 @@ import "./globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 import { getFormString } from "@/lib/form-utils";
+import { NODE_ENV } from "@/lib/env";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -57,7 +58,7 @@ export default async function RootLayout({
     store.set("lang", nextLang === "en" ? "en" : "ko", {
       path: "/",
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: NODE_ENV === "production",
     });
 
     const referer = requestHeaders.get("referer");

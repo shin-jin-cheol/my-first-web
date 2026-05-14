@@ -3,6 +3,7 @@ import path from "node:path";
 import { list, put } from "@vercel/blob";
 import {
   BLOB_READ_WRITE_TOKEN,
+  IS_VERCEL,
   SUPABASE_SERVICE_ROLE_KEY,
   SUPABASE_UPLOADS_BUCKET,
   SUPABASE_URL,
@@ -38,7 +39,7 @@ export function hasSupabaseStorage() {
 }
 
 export function resolveDataFilePath(localFileName: string, tmpFileName: string) {
-  if (process.env.VERCEL) {
+  if (IS_VERCEL) {
     return path.join("/tmp", tmpFileName);
   }
 
