@@ -150,6 +150,7 @@ export function NavMenuMobile({
         <form action={setLanguageAction} className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface p-1 text-xs dark:border-border-strong dark:bg-surface-muted">
           <Button
             type="submit"
+            variant="ghost"
             name="lang"
             value="ko"
             aria-label={t('한국어 선택', 'Select Korean')}
@@ -159,6 +160,7 @@ export function NavMenuMobile({
           </Button>
           <Button
             type="submit"
+            variant="ghost"
             name="lang"
             value="en"
             aria-label={t('영어 선택', 'Select English')}
