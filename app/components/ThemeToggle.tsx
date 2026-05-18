@@ -15,8 +15,8 @@ type ThemeOption = {
 };
 
 const baseButtonClass = 'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition';
-const defaultButtonClass = `${baseButtonClass} bg-surface text-text-muted hover:bg-surface-sub dark:bg-surface-sub dark:text-text-subtle dark:hover:bg-surface-strong`;
-const selectedButtonClass = `${baseButtonClass} bg-surface-sub text-text-muted ring-1 ring-border-base dark:bg-surface-strong dark:text-text-muted dark:ring-border-strong`;
+const defaultButtonClass = `${baseButtonClass} bg-surface text-text-sub hover:bg-surface-sub hover:text-text-base dark:bg-surface-sub dark:text-text-sub dark:hover:bg-surface-strong dark:hover:text-text-base`;
+const selectedButtonClass = `${baseButtonClass} bg-surface-sub text-text-base ring-1 ring-border-base dark:bg-surface-strong dark:text-text-base dark:ring-border-strong`;
 
 export function ThemeToggle() {
   const locale = useLocale();
@@ -58,4 +58,3 @@ export function ThemeToggle() {
     </div>
   );
 }
-
