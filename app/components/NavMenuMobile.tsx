@@ -153,7 +153,7 @@ export function NavMenuMobile({
             name="lang"
             value="ko"
             aria-label={t('한국어 선택', 'Select Korean')}
-            className={`rounded-full px-2 py-1 transition ${locale === 'ko' ? 'bg-surface-strong text-text-sub dark:bg-surface-strong dark:text-text-base' : 'text-text-muted hover:text-text-sub dark:text-text-subtle dark:hover:text-text-base'}`}
+            className={`rounded-full px-2 py-1 transition ${locale === 'ko' ? 'bg-surface-muted text-text-base ring-1 ring-border-strong dark:bg-surface-sub dark:text-text-base dark:ring-border-strong' : 'text-text-sub hover:text-text-base dark:text-text-sub dark:hover:text-text-base'}`}
           >
             KO
           </Button>
@@ -162,7 +162,7 @@ export function NavMenuMobile({
             name="lang"
             value="en"
             aria-label={t('영어 선택', 'Select English')}
-            className={`rounded-full px-2 py-1 transition ${locale === 'en' ? 'bg-surface-strong text-text-sub dark:bg-surface-strong dark:text-text-base' : 'text-text-muted hover:text-text-sub dark:text-text-subtle dark:hover:text-text-base'}`}
+            className={`rounded-full px-2 py-1 transition ${locale === 'en' ? 'bg-surface-muted text-text-base ring-1 ring-border-strong dark:bg-surface-sub dark:text-text-base dark:ring-border-strong' : 'text-text-sub hover:text-text-base dark:text-text-sub dark:hover:text-text-base'}`}
           >
             EN
           </Button>
