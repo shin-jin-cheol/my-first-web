@@ -147,13 +147,13 @@ export function NavMenuMobile({
           </Link>
         ) : null}
 
-        <form action={setLanguageAction} className="inline-flex items-center gap-1 rounded-full border border-border-base bg-surface-strong p-1 text-xs dark:border-border-base dark:bg-surface-strong/80">
+        <form action={setLanguageAction} className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface p-1 text-xs dark:border-border-strong dark:bg-surface-muted">
           <Button
             type="submit"
             name="lang"
             value="ko"
             aria-label={t('한국어 선택', 'Select Korean')}
-            className={`rounded-full px-2 py-1 transition ${locale === 'ko' ? 'bg-surface-muted text-text-base ring-1 ring-border-strong dark:bg-surface-sub dark:text-text-base dark:ring-border-strong' : 'text-text-sub hover:text-text-base dark:text-text-sub dark:hover:text-text-base'}`}
+            className={`rounded-full px-2 py-1 transition ${locale === 'ko' ? 'bg-surface-strong text-text-base ring-1 ring-border-strong dark:bg-surface-strong dark:text-highlight dark:ring-border-strong' : 'text-text-base hover:text-highlight dark:text-text-base dark:hover:text-highlight'}`}
           >
             KO
           </Button>
@@ -162,7 +162,7 @@ export function NavMenuMobile({
             name="lang"
             value="en"
             aria-label={t('영어 선택', 'Select English')}
-            className={`rounded-full px-2 py-1 transition ${locale === 'en' ? 'bg-surface-muted text-text-base ring-1 ring-border-strong dark:bg-surface-sub dark:text-text-base dark:ring-border-strong' : 'text-text-sub hover:text-text-base dark:text-text-sub dark:hover:text-text-base'}`}
+            className={`rounded-full px-2 py-1 transition ${locale === 'en' ? 'bg-surface-strong text-text-base ring-1 ring-border-strong dark:bg-surface-strong dark:text-highlight dark:ring-border-strong' : 'text-text-base hover:text-highlight dark:text-text-base dark:hover:text-highlight'}`}
           >
             EN
           </Button>
