@@ -10,6 +10,11 @@
 - [x] 검색 기능
 - [x] 파일 첨부
 - [x] 링크 첨부
+- [x] Ch10 게시글 CRUD 완료
+- [x] `/posts` 목록 Supabase 또는 local fallback 연결
+- [x] `/posts/[id]` 상세 연결
+- [x] `/posts/new` 작성 연결
+- [x] 작성자에게만 수정/삭제 UI 표시
 
 ### 댓글/반응
 
@@ -37,10 +42,22 @@
 
 - [x] 다크/라이트 시스템 테마
 - [x] 반응 UI 레이아웃
-- [x] 모바일 네비게이션
+- [x] 모바일 내비게이션
 - [x] 다국어 텍스트 처리
 - [x] BGM 플레이어
 - [x] 라이브 시계
+- [x] 스크롤 애니메이션 (`ScrollReveal`)
+- [x] 네비게이션 바 간결화
+- [x] `PostsMenu.tsx` 게시글 드롭다운
+- [x] 글쓰기 버튼 텍스트 "새 글 쓰기" 통일
+
+### 프로필
+
+- [x] 프로필 페이지 (`/profile/[id]`)
+- [x] owner 프로필 블로그 게시글 목록 표시
+- [x] member 프로필 게스트 게시글 목록 표시
+- [x] nav 아바타, 게시글 작성자, 댓글 작성자 프로필 링크
+- [x] `NavMenuMobile` 프로필 링크 추가
 
 ### 안정화/구조
 
@@ -53,6 +70,17 @@
 - [x] FormData 유틸
 - [x] Next.js 16 기준 `middleware.ts` 제거 및 `proxy.ts` 전환
 - [x] `.agent/rules/project.md` 생성
+- [x] 규칙 위반 코드 수정 (env 중앙화, CSS variables)
+- [x] `lib/env.ts`에 `NODE_ENV`, `IS_VERCEL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 추가
+- [x] `lib/auth/session.ts`, `lib/storage.ts`, `lib/supabase/client.ts`, `app/layout.tsx` env 중앙화
+- [x] `components/comment-thread.tsx` `text-white`를 `text-[var(--surface)]`로 수정
+
+### 검증/배포
+
+- [x] `npm run build` 통과
+- [x] `npm run lint` 통과
+- [x] GitHub push 완료
+- [x] Vercel 배포 완료
 
 ---
 

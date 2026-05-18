@@ -33,10 +33,15 @@
 
 - 블로그 게시글 CRUD
 - 게스트 게시글 CRUD
+- `/posts` 목록 Supabase 또는 local fallback 연결
+- `/posts/[id]` 상세 연결
+- `/posts/new` 작성 연결
+- 작성자에게만 수정/삭제 UI 표시
 - 카테고리 분류
 - 검색
 - 파일 첨부
 - 링크 첨부
+- 조회수
 - KST 날짜/시간 처리
 
 ### 댓글/반응
@@ -47,6 +52,7 @@
 - 게시글 이모지 반응
 - 댓글 이모지 반응
 - 이름 기반 댓글 아바타
+- 댓글 작성자 프로필 링크
 
 ### 인증/회원
 
@@ -69,14 +75,35 @@
 
 비로그인 사용자는 보호 라우트 접근 시 `/auth/login`으로 리다이렉트됩니다.
 
+### 프로필
+
+- `/profile/[id]` 공개 프로필 페이지
+- owner 프로필에서는 블로그 게시글 목록 표시
+- member 프로필에서는 게스트 게시글 목록 표시
+- 진입 경로: nav 아바타, 게시글 작성자, 댓글 작성자
+- 모바일 내비게이션(`NavMenuMobile`)에 프로필 링크 추가
+
 ### UI/UX
 
 - 다크/라이트 시스템 테마
-- 모바일 대응 네비게이션
+- 모바일 대응 내비게이션
+- `PostsMenu.tsx` 기반 "게시글" 드롭다운 메뉴
+- 네비게이션 바 간결화
+- role 뱃지 제거
+- 회원관리/회원정보 링크 제거
+- 회원가입 버튼 제거
+- 글쓰기 버튼 텍스트를 "새 글 쓰기"로 통일
+- 게시글 목록 스크롤 애니메이션(`ScrollReveal`)
 - 다국어(ko/en) 텍스트 처리
 - BGM 플레이어
 - 라이브 시계
 - shadcn/ui 기반 Button/Input/Dialog 등
+
+### 규칙 정리
+
+- `lib/env.ts`에 `NODE_ENV`, `IS_VERCEL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 추가
+- `lib/auth/session.ts`, `lib/storage.ts`, `lib/supabase/client.ts`, `app/layout.tsx`의 환경 변수 접근을 `lib/env.ts` 기준으로 중앙화
+- `components/comment-thread.tsx`의 `text-white`를 `text-[var(--surface)]`로 수정
 
 ---
 
@@ -114,26 +141,51 @@
 
 ---
 
-## 6. Ch9 완료 반영
+## 6. Ch10 완료 반영
 
-- `proxy.ts`로 보호 라우트가 추가되었습니다.
-- 비로그인 사용자는 `/auth/login`으로 리다이렉트됩니다.
-- Next.js 16 기준 deprecated된 `middleware.ts`를 제거하고 `proxy.ts`로 변경했습니다.
-- `.agent/rules/project.md` 생성이 완료되었습니다.
+- `/posts` 목록이 Supabase 또는 자체 저장소(local fallback)에 연결되었습니다.
+- `/posts/[id]` 상세 페이지가 저장소 데이터에 연결되었습니다.
+- `/posts/new` 작성 폼이 Server Action과 `addPost()` 흐름에 연결되었습니다.
+- 상세 페이지에서 작성자 또는 Owner에게만 수정/삭제 UI가 표시됩니다.
+- 수정/삭제 Server Action에서도 `canManagePost()`로 권한을 재검증합니다.
+- `npm run build`가 통과했습니다. 최초 실행은 Google Fonts 네트워크 fetch 실패였고, 네트워크 권한 재실행에서 성공했습니다.
+- `npm run lint`가 통과했습니다.
+- GitHub 원격 `origin/master`에 최신 커밋이 push된 상태입니다.
+- Vercel Production 배포가 `Ready` 상태로 확인되었습니다.
 
 ---
 
-## 7. 미구현/보류 기능
+## 7. 오늘 완료 반영
+
+- 게시글 목록 스크롤 애니메이션을 `ScrollReveal` 컴포넌트와 Intersection Observer API로 구현했습니다.
+- 내비게이션 바를 간결화했습니다.
+- `PostsMenu.tsx`를 추가해 "게시글" 드롭다운에서 블로그/게스트 게시판으로 이동하도록 구성했습니다.
+- role 뱃지를 제거했습니다.
+- 회원관리/회원정보 링크를 제거했습니다.
+- 회원가입 버튼을 제거했습니다.
+- 글쓰기 버튼 텍스트를 "새 글 쓰기"로 통일했습니다.
+- `/profile/[id]` 프로필 페이지를 구현했습니다.
+- owner 프로필에는 블로그 게시글 목록을 표시합니다.
+- member 프로필에는 게스트 게시글 목록을 표시합니다.
+- nav 아바타, 게시글 작성자, 댓글 작성자에서 프로필로 진입할 수 있습니다.
+- `NavMenuMobile`에 프로필 링크를 추가했습니다.
+- 환경 변수 접근을 `lib/env.ts` 기준으로 중앙화했습니다.
+- `components/comment-thread.tsx`에서 직접 색상 사용을 CSS variables 기반으로 수정했습니다.
+
+---
+
+## 8. 미구현/보류 기능
 
 - 실시간 채팅
 - 친구/팔로우 기능
 - Supabase Realtime 기반 알림
 - 업로드형 프로필 이미지
 - E2E 테스트
+- 반응 테이블을 포함한 Supabase SQL 문서 최신화
 
 ---
 
-## 8. 열린 질문
+## 9. 열린 질문
 
 - 대댓글 depth를 현재 1단계 이상으로 확장할지 여부
 - 반응 테이블 SQL 문서를 실제 운영 스키마 기준으로 정리할지 여부

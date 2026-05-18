@@ -27,6 +27,7 @@
 - `/guest/new`: 게스트 글 작성
 - `/guest/[id]/edit`: 게스트 글 수정
 - `/guest/account`: 회원 프로필 수정, 비밀번호 변경, 회원 탈퇴
+- `/profile/[id]`: 공개 프로필. owner는 블로그 게시글 목록, member는 게스트 게시글 목록 표시
 - `/auth/login`: 로그인
 - `/auth/signup`: 이메일 OTP 기반 회원가입
 - `/admin/members`: Owner 전용 회원 관리
@@ -37,7 +38,7 @@
 
 ## 3. 보호 라우트
 
-Next.js 16 기준으로 `middleware.ts`는 사용하지 않고 루트의 `proxy.ts`를 사용합니다.
+Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.ts`를 사용합니다.
 
 `proxy.ts`는 `sjc-session` 자체 세션 쿠키를 확인합니다. 세션 쿠키가 없으면 아래 보호 라우트 접근 시 `/auth/login`으로 리다이렉트합니다.
 
@@ -54,9 +55,12 @@ Next.js 16 기준으로 `middleware.ts`는 사용하지 않고 루트의 `proxy.
 
 ### Layout/UI
 
-- `app/layout.tsx`: 루트 레이아웃
+- `app/layout.tsx`: 루트 레이아웃, Next font, 전역 메타데이터
 - `app/components/ClientLayout.tsx`: 클라이언트 전용 전역 UI wrapper
-- `app/components/Header.tsx`: 네비게이션
+- `app/components/Header.tsx`: 내비게이션
+- `app/components/PostsMenu.tsx`: "게시글" 드롭다운 메뉴. 블로그와 게스트 게시판 링크 제공
+- `app/components/NavMenuMobile.tsx`: 모바일 내비게이션. 프로필 링크 포함
+- `app/components/ScrollReveal.tsx`: Intersection Observer API 기반 스크롤 등장 애니메이션
 - `app/components/ThemeProvider.tsx`, `ThemeToggle.tsx`: 테마 전환
 - `app/components/BgmPlayer.tsx`: BGM 플레이어
 - `app/components/LiveClock.tsx`: 라이브 시계
@@ -76,6 +80,13 @@ Next.js 16 기준으로 `middleware.ts`는 사용하지 않고 루트의 `proxy.
 - `app/guest/actions.ts`: 게스트 게시판 Server Actions
 - `app/components/GuestPostsSearchList.tsx`: 게스트 게시글 검색 UI
 
+### Profile
+
+- `app/profile/[id]/page.tsx`: 공개 프로필 페이지
+- owner 프로필은 블로그 게시글 목록을 표시합니다.
+- member 프로필은 게스트 게시글 목록을 표시합니다.
+- 진입 경로는 nav 아바타, 게시글 작성자 링크, 댓글 작성자 링크입니다.
+
 ### Auth
 
 - `lib/auth/core.ts`: 회원 저장소, 회원 정규화, 공통 인증 로직
@@ -89,12 +100,13 @@ Next.js 16 기준으로 `middleware.ts`는 사용하지 않고 루트의 `proxy.
 
 ### Shared Utilities
 
-- `lib/env.ts`: 환경 변수 중앙화
+- `lib/env.ts`: 환경 변수 중앙화. `NODE_ENV`, `IS_VERCEL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 포함
 - `lib/storage.ts`: Supabase Storage, Vercel Blob, local file fallback
 - `lib/supabase/http.ts`: Supabase REST 공통 요청
+- `lib/supabase/client.ts`: Supabase client 생성
 - `lib/permissions.ts`: 게시글/댓글 관리 권한
 - `lib/date.ts`: KST 날짜/시간
-- `lib/form-utils.ts`: FormData 문자열 처리
+- `lib/form-utils.ts`: FormData 문자열/숫자 처리
 - `lib/attachment-utils.ts`: 링크/첨부 정규화
 - `lib/avatar-utils.ts`: 이름 기반 아바타 색상/문자 생성
 - `lib/safe-json.ts`: 안전한 JSON 파싱
@@ -138,6 +150,7 @@ Next.js 16 기준으로 `middleware.ts`는 사용하지 않고 루트의 `proxy.
 - `link_url`
 - `file_url`
 - `file_name`
+- `views`
 
 ### guest_posts
 
@@ -151,6 +164,7 @@ Next.js 16 기준으로 `middleware.ts`는 사용하지 않고 루트의 `proxy.
 - `link_url`
 - `file_url`
 - `file_name`
+- `views`
 - `comments` (legacy 호환용 JSONB)
 
 ### post_comments
@@ -209,6 +223,10 @@ Next.js 16 기준으로 `middleware.ts`는 사용하지 않고 루트의 `proxy.
 ## 9. 구현 완료 기능
 
 - 블로그 게시글 CRUD
+- `/posts` 목록 Supabase 또는 local fallback 연결
+- `/posts/[id]` 상세 연결
+- `/posts/new` 작성 연결
+- 작성자에게만 수정/삭제 UI 표시
 - 게스트 게시글 CRUD
 - 댓글 CRUD
 - `parent_id` 기반 대댓글
@@ -221,12 +239,19 @@ Next.js 16 기준으로 `middleware.ts`는 사용하지 않고 루트의 `proxy.
 - 회원 비밀번호 변경
 - 회원 탈퇴
 - Owner 회원 관리
+- 공개 프로필 페이지 `/profile/[id]`
 - 검색
 - 파일/링크 첨부
 - 테마 전환
 - 이름 기반 아바타
+- 게시글 목록 스크롤 애니메이션
+- 간결화된 내비게이션과 `PostsMenu.tsx`
 - `.agent/rules/project.md` 생성
 - Next.js 16 기준 `middleware.ts` 제거 및 `proxy.ts` 전환
+- 환경 변수 중앙화와 CSS variables 규칙 위반 수정
+- `npm run build` 통과
+- GitHub push 완료
+- Vercel Production 배포 완료
 
 ---
 
@@ -236,6 +261,8 @@ Next.js 16 기준으로 `middleware.ts`는 사용하지 않고 루트의 `proxy.
 - 친구/팔로우 기능
 - Supabase Realtime 기반 알림
 - 업로드형 프로필 이미지
+- E2E 테스트
+- 반응 테이블을 포함한 Supabase SQL 문서 최신화
 
 ---
 
