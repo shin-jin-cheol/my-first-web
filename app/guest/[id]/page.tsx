@@ -1,5 +1,5 @@
 ﻿import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import {
   getGuestPostById,
   getGuestCommentReactions,
@@ -38,8 +38,6 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
     redirect("/guest");
   }
 
-  await incrementGuestPostViews(postId);
-
   const sessionPromise = requireSession();
   const [locale, session, post, postReactions] = await Promise.all([
     localePromise,
@@ -48,8 +46,11 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
     getGuestPostReactions(postId),
   ]);
   if (!post) {
-    redirect("/guest");
+    notFound();
   }
+
+  await incrementGuestPostViews(postId);
+
   const fileDownloadUrl = post.fileUrl ? buildDownloadUrl(post.fileUrl, post.fileName) : undefined;
 
   const canManage = canManagePost(session, post);

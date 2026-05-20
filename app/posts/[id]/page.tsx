@@ -1,4 +1,5 @@
 ﻿import Link from "next/link";
+import { notFound } from "next/navigation";
 import {
   getPostById,
   getPostCommentsByPostId,
@@ -34,14 +35,19 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const { id } = resolvedParams;
   const postId = Number(id);
 
-  await incrementPostViews(postId);
-
   const [post, session, comments, postReactions] = await Promise.all([
     getPostById(postId),
     getSession(),
     getPostCommentsByPostId(postId),
     getPostReactions(postId),
   ]);
+
+  if (!post) {
+    notFound();
+  }
+
+  await incrementPostViews(postId);
+
   const canManagePostResult = canManagePost(session ?? null, post ?? { authorId: undefined });
   const fileDownloadUrl = post?.fileUrl ? buildDownloadUrl(post.fileUrl, post.fileName) : undefined;
   const canInteract = Boolean(session);
@@ -94,21 +100,6 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const boundAddReplyAction = addReplyAction.bind(null, postId);
   const boundUpdateCommentAction = updateCommentAction.bind(null, postId);
   const boundDeleteCommentAction = deleteCommentAction.bind(null, postId);
-
-  if (!post) {
-    return (
-      <div className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]">
-        <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">{tk(locale, "postDetailTitle")}</h1>
-        <p className="text-text-muted dark:text-text-muted">{tk(locale, "postNotFound")}</p>
-        <Link
-          href="/posts"
-          className="inline-flex rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
-        >
-          {tk(locale, "backToList")}
-        </Link>
-      </div>
-    );
-  }
 
   const authorProfileHref = `/profile/${encodeURIComponent(post.authorId ?? ownerAccount.id)}`;
 
