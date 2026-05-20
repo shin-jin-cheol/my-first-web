@@ -152,6 +152,8 @@ Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.
 - `file_name`
 - `views`
 
+posts 테이블은 Ch11에서 RLS를 활성화했습니다. 적용 정책은 `posts_select_public`(SELECT 누구나 가능), `posts_insert_authenticated`(INSERT 로그인 사용자만 가능, `author_id = auth.uid()`), `posts_update_owner`(UPDATE 작성자만 가능), `posts_delete_owner`(DELETE 작성자만 가능)입니다.
+
 ### guest_posts
 
 - `id` (PK)
@@ -217,6 +219,7 @@ Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.
 - Member: 본인이 작성한 게스트 게시글과 댓글 관리 가능
 - 비회원: 공개 목록/상세 조회 중심, 보호 라우트 접근 시 `/auth/login`으로 이동
 - 게시글/댓글 관리 권한은 `lib/permissions.ts`에서 공통 처리
+- posts 테이블은 Supabase RLS로 공개 SELECT와 작성자 기반 INSERT/UPDATE/DELETE 정책을 적용합니다.
 
 ---
 
@@ -249,6 +252,12 @@ Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.
 - `.agent/rules/project.md` 생성
 - Next.js 16 기준 `middleware.ts` 제거 및 `proxy.ts` 전환
 - 환경 변수 중앙화와 CSS variables 규칙 위반 수정
+- posts 테이블 RLS 활성화
+- `posts_select_public`, `posts_insert_authenticated`, `posts_update_owner`, `posts_delete_owner` 정책 적용
+- `supabase/migrations/20260520041504_add_posts_rls.sql` 마이그레이션 작성 및 `npx supabase db push` 원격 적용 완료
+- 브라우저 우회 테스트로 다른 계정의 수정/삭제 실패 확인
+- 민감 키 grep 검사 통과
+- 클라이언트 컴포넌트에서 service_role 키 미사용 확인
 - `npm run build` 통과
 - GitHub push 완료
 - Vercel Production 배포 완료

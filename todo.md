@@ -15,6 +15,11 @@
 - [x] `/posts/[id]` 상세 연결
 - [x] `/posts/new` 작성 연결
 - [x] 작성자에게만 수정/삭제 UI 표시
+- [x] Ch11 posts 테이블 RLS 활성화
+- [x] `posts_select_public` SELECT 누구나 가능 정책 적용
+- [x] `posts_insert_authenticated` INSERT 로그인 사용자 및 `author_id = auth.uid()` 정책 적용
+- [x] `posts_update_owner` UPDATE 작성자만 가능 정책 적용
+- [x] `posts_delete_owner` DELETE 작성자만 가능 정책 적용
 
 ### 댓글/반응
 
@@ -74,11 +79,16 @@
 - [x] `lib/env.ts`에 `NODE_ENV`, `IS_VERCEL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 추가
 - [x] `lib/auth/session.ts`, `lib/storage.ts`, `lib/supabase/client.ts`, `app/layout.tsx` env 중앙화
 - [x] `components/comment-thread.tsx` `text-white`를 `text-[var(--surface)]`로 수정
+- [x] `supabase/migrations/20260520041504_add_posts_rls.sql` 마이그레이션 작성
+- [x] `npx supabase db push` 원격 적용 완료
 
 ### 검증/배포
 
 - [x] `npm run build` 통과
 - [x] `npm run lint` 통과
+- [x] 브라우저 우회 테스트 완료 (다른 계정 수정/삭제 실패 확인)
+- [x] 민감 키 grep 검사 통과
+- [x] 클라이언트 컴포넌트에서 service_role 키 미사용 확인
 - [x] GitHub push 완료
 - [x] Vercel 배포 완료
 

@@ -19,6 +19,7 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - 카테고리 시스템
 - 파일 업로드
 - 다국어 텍스트 처리
+- posts 테이블 RLS 활성화 및 작성자 기반 정책 적용
 - Supabase HTTP client pattern, Supabase Storage, Vercel Blob, local fallback 기반 데이터 및 파일 저장
 - Vercel 프로덕션 배포
 
@@ -157,3 +158,17 @@ docs: Ch9 완료 기준 프로젝트 문서 갱신
 ```
 
 사용자가 커밋 메시지를 지정한 경우에는 지정된 메시지를 그대로 사용합니다.
+
+## 9. Ch11 RLS 완료 기록
+
+- posts 테이블 RLS가 활성화되었습니다.
+- 적용 정책:
+  - `posts_select_public`: SELECT 누구나 가능
+  - `posts_insert_authenticated`: INSERT 로그인 사용자만 가능, `author_id = auth.uid()`
+  - `posts_update_owner`: UPDATE 작성자만 가능
+  - `posts_delete_owner`: DELETE 작성자만 가능
+- 마이그레이션 파일: `supabase/migrations/20260520041504_add_posts_rls.sql`
+- `npx supabase db push`로 원격 적용이 완료되었습니다.
+- 브라우저 우회 테스트에서 다른 계정의 수정/삭제 실패를 확인했습니다.
+- 민감 키 grep 검사가 통과했습니다.
+- 클라이언트 컴포넌트에서 service_role 키를 사용하지 않음을 확인했습니다.

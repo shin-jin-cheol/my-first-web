@@ -121,6 +121,14 @@
 - Supabase Storage `uploads` bucket
 - local fallback JSON data
 
+`posts` 테이블은 Ch11에서 RLS를 활성화했습니다.
+
+- `posts_select_public`: SELECT 누구나 가능
+- `posts_insert_authenticated`: INSERT 로그인 사용자만 가능, `author_id = auth.uid()`
+- `posts_update_owner`: UPDATE 작성자만 가능
+- `posts_delete_owner`: DELETE 작성자만 가능
+- 마이그레이션 파일: `supabase/migrations/20260520041504_add_posts_rls.sql`
+
 ---
 
 ## 5. 주요 규칙
@@ -174,7 +182,22 @@
 
 ---
 
-## 8. 미구현/보류 기능
+## 8. Ch11 RLS 완료 반영
+
+- posts 테이블 RLS를 활성화했습니다.
+- `posts_select_public` 정책으로 SELECT는 누구나 가능하도록 적용했습니다.
+- `posts_insert_authenticated` 정책으로 INSERT는 로그인 사용자만 가능하고 `author_id = auth.uid()` 조건을 적용했습니다.
+- `posts_update_owner` 정책으로 UPDATE는 작성자만 가능하도록 적용했습니다.
+- `posts_delete_owner` 정책으로 DELETE는 작성자만 가능하도록 적용했습니다.
+- 마이그레이션 파일은 `supabase/migrations/20260520041504_add_posts_rls.sql`입니다.
+- `npx supabase db push`로 원격 적용이 완료되었습니다.
+- 브라우저 우회 테스트에서 다른 계정의 수정/삭제 실패를 확인했습니다.
+- 민감 키 grep 검사가 통과했습니다.
+- 클라이언트 컴포넌트에서 service_role 키를 사용하지 않음을 확인했습니다.
+
+---
+
+## 9. 미구현/보류 기능
 
 - 실시간 채팅
 - 친구/팔로우 기능
@@ -185,7 +208,7 @@
 
 ---
 
-## 9. 열린 질문
+## 10. 열린 질문
 
 - 대댓글 depth를 현재 1단계 이상으로 확장할지 여부
 - 반응 테이블 SQL 문서를 실제 운영 스키마 기준으로 정리할지 여부
