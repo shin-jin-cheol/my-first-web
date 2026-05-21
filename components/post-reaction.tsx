@@ -18,13 +18,19 @@ export function PostReaction({
   togglePostReactionAction,
 }: PostReactionProps) {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleReaction = async (emoji: string) => {
-    const formData = new FormData();
-    formData.append("postId", String(postId));
-    formData.append("emoji", emoji);
-    await togglePostReactionAction(formData);
-    setShowEmojiPicker(false);
+    try {
+      const formData = new FormData();
+      formData.append("postId", String(postId));
+      formData.append("emoji", emoji);
+      await togglePostReactionAction(formData);
+      setShowEmojiPicker(false);
+      setError(null);
+    } catch {
+      setError("반응을 처리하는 중 오류가 발생했습니다.");
+    }
   };
 
   return (
@@ -67,6 +73,8 @@ export function PostReaction({
               ))}
             </div>
           ) : null}
+
+          {error ? <p className="text-xs text-danger-sub">{error}</p> : null}
         </>
       ) : null}
     </div>

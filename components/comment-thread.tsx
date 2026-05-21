@@ -107,6 +107,7 @@ export function CommentThread({
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
   const [menuCommentId, setMenuCommentId] = useState<number | null>(null);
   const [showEmojiPickerId, setShowEmojiPickerId] = useState<number | null>(null);
+  const [reactionError, setReactionError] = useState<string | null>(null);
 
   const startReply = (commentId: number) => {
     setReplyingCommentId((current) => (current === commentId ? null : commentId));
@@ -130,12 +131,17 @@ export function CommentThread({
       return;
     }
 
-    const formData = new FormData();
-    formData.append("postId", String(postId));
-    formData.append("commentId", String(commentId));
-    formData.append("emoji", emoji);
-    await toggleCommentReactionAction(formData);
-    setShowEmojiPickerId(null);
+    try {
+      const formData = new FormData();
+      formData.append("postId", String(postId));
+      formData.append("commentId", String(commentId));
+      formData.append("emoji", emoji);
+      await toggleCommentReactionAction(formData);
+      setShowEmojiPickerId(null);
+      setReactionError(null);
+    } catch {
+      setReactionError("반응을 처리하는 중 오류가 발생했습니다.");
+    }
   };
 
   const renderComment = (comment: CommentTreeNode, depth = 0) => {
@@ -268,6 +274,8 @@ export function CommentThread({
                       ))}
                     </div>
                   ) : null}
+
+                  {reactionError ? <p className="text-xs text-danger-sub">{reactionError}</p> : null}
                 </>
               ) : null}
             </div>
