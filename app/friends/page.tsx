@@ -15,6 +15,11 @@ type FriendsPageProps = {
   searchParams: Promise<{ q?: string }>;
 };
 
+type SearchResultItem = {
+  id: string;
+  name: string;
+};
+
 type FriendUserItem = {
   friend: Friend;
   userId: string;
@@ -68,10 +73,19 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
   const session = await requireSession();
   const resolvedSearchParams = await searchParams;
   const query = resolvedSearchParams.q?.trim() || "";
-  const searchResult = query ? await getMemberByName(query) : undefined;
-  const searchResultName = searchResult?.name || "";
-  const searchResultAvatarText = searchResult ? getAvatarText(searchResultName) : "";
-  const searchResultAvatarColor = searchResult ? getAvatarColorClass(searchResultName) : "";
+  const searchResultItems: SearchResultItem[] = [];
+
+  if (query) {
+    if (ownerAccount.name.includes(query)) {
+      searchResultItems.push({ id: ownerAccount.id, name: ownerAccount.name });
+    }
+
+    const member = await getMemberByName(query);
+    if (member) {
+      searchResultItems.push({ id: member.id, name: member.name });
+    }
+  }
+
   const [pendingRequests, friends] = await Promise.all([
     getPendingRequests(session.userId),
     getFriends(session.userId),
@@ -120,18 +134,22 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
             <h2 className="text-2xl font-bold text-text-sub dark:text-text-base">
               검색 결과
             </h2>
-            {searchResult ? (
-              <article className="flex items-center justify-between gap-4 rounded-2xl border border-border-strong bg-surface-muted p-5 transition hover:bg-surface-strong dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong">
+            {searchResultItems.length > 0 ? (
+              searchResultItems.map((searchResult) => (
+              <article
+                key={searchResult.id}
+                className="flex items-center justify-between gap-4 rounded-2xl border border-border-strong bg-surface-muted p-5 transition hover:bg-surface-strong dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong"
+              >
                 <div className="flex min-w-0 items-center gap-3">
                   <div
                     className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-[var(--surface)]"
-                    style={{ backgroundColor: searchResultAvatarColor }}
+                    style={{ backgroundColor: getAvatarColorClass(searchResult.name) }}
                   >
-                    {searchResultAvatarText}
+                    {getAvatarText(searchResult.name)}
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-base font-bold text-text-base">
-                      {searchResultName}
+                      {searchResult.name}
                     </p>
                     <p className="truncate text-sm text-text-muted dark:text-text-subtle">
                       @{searchResult.id}
@@ -154,6 +172,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
                   </div>
                 ) : null}
               </article>
+              ))
             ) : (
               <p className="rounded-2xl border border-border-base bg-surface-sub px-4 py-3 text-sm text-text-muted dark:bg-surface-strong">
                 검색 결과가 없습니다.
