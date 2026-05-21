@@ -3,6 +3,8 @@ import {
   SUPABASE_URL,
   SUPABASE_GUEST_POSTS_TABLE,
   SUPABASE_GUEST_POST_COMMENTS_TABLE,
+  SUPABASE_GUEST_POST_REACTIONS_TABLE,
+  SUPABASE_GUEST_COMMENT_REACTIONS_TABLE,
 } from "@/lib/env";
 import { getKstDateString, getKstDateTimeString } from "@/lib/date";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
@@ -904,7 +906,7 @@ function getSupabaseGuestPostReactionsEndpoint(query = "") {
   if (!SUPABASE_URL) {
     return "";
   }
-  const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/guest_post_reactions`;
+  const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${SUPABASE_GUEST_POST_REACTIONS_TABLE}`;
   return `${base}${query}`;
 }
 
@@ -912,7 +914,7 @@ function getSupabaseGuestCommentReactionsEndpoint(query = "") {
   if (!SUPABASE_URL) {
     return "";
   }
-  const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/guest_comment_reactions`;
+  const base = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/${SUPABASE_GUEST_COMMENT_REACTIONS_TABLE}`;
   return `${base}${query}`;
 }
 
