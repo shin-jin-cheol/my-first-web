@@ -1,10 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import {
+  acceptFriendRequestAction,
+  deleteFriendAction,
+  rejectFriendRequestAction,
+  sendFriendRequestAction,
+} from "@/app/friends/actions";
+import { Button } from "@/components/ui/button";
+import { getSession } from "@/lib/auth";
 import { getGuestPosts } from "@/lib/guest-posts";
 import { getPosts } from "@/lib/posts";
 import { getMemberById, ownerAccount } from "@/lib/auth/core";
 import { getAvatarColorClass, getAvatarText } from "@/lib/avatar-utils";
 import { formatKstDateString } from "@/lib/date";
+import { getFriendStatus } from "@/lib/friends";
 import { getLocale, t } from "@/lib/i18n";
 import { getCategoryLabel } from "@/lib/post-categories";
 
@@ -38,6 +47,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   }
 
   const profileName = isOwnerProfile ? ownerAccount.name : member?.name || profileId;
+  const session = await getSession();
+  const friendStatus =
+    session && session.userId !== profileId ? await getFriendStatus(session.userId, profileId) : undefined;
   const joinedDate = member?.createdAt
     ? formatKstDateString(member.createdAt)
     : t(locale, "운영자 계정", "Owner account");
@@ -68,6 +80,26 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           views: post.views,
         }));
 
+  async function submitSendFriendRequestAction(formData: FormData) {
+    "use server";
+    await sendFriendRequestAction(formData);
+  }
+
+  async function submitAcceptFriendRequestAction(formData: FormData) {
+    "use server";
+    await acceptFriendRequestAction(formData);
+  }
+
+  async function submitRejectFriendRequestAction(formData: FormData) {
+    "use server";
+    await rejectFriendRequestAction(formData);
+  }
+
+  async function submitDeleteFriendAction(formData: FormData) {
+    "use server";
+    await deleteFriendAction(formData);
+  }
+
   return (
     <section className="space-y-8">
       <header className="flex flex-col gap-4 rounded-2xl border border-border-base bg-surface-sub p-6 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)] dark:border-border-base dark:bg-surface-strong sm:flex-row sm:items-center">
@@ -87,6 +119,47 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           <p className="text-sm text-text-muted dark:text-text-subtle">
             {t(locale, "가입일", "Joined")}: {joinedDate}
           </p>
+          {session && session.userId !== profileId ? (
+            <div className="flex flex-wrap gap-2">
+              {friendStatus?.status === "accepted" ? (
+                <form action={submitDeleteFriendAction}>
+                  <input type="hidden" name="friendId" value={friendStatus.id} />
+                  <Button type="submit" variant="outline" size="sm">
+                    친구 삭제
+                  </Button>
+                </form>
+              ) : friendStatus?.status === "pending" && friendStatus.requesterId === session.userId ? (
+                <form action={submitDeleteFriendAction}>
+                  <input type="hidden" name="friendId" value={friendStatus.id} />
+                  <Button type="submit" variant="outline" size="sm">
+                    요청 취소
+                  </Button>
+                </form>
+              ) : friendStatus?.status === "pending" && friendStatus.receiverId === session.userId ? (
+                <>
+                  <form action={submitAcceptFriendRequestAction}>
+                    <input type="hidden" name="friendId" value={friendStatus.id} />
+                    <Button type="submit" size="sm">
+                      수락
+                    </Button>
+                  </form>
+                  <form action={submitRejectFriendRequestAction}>
+                    <input type="hidden" name="friendId" value={friendStatus.id} />
+                    <Button type="submit" variant="outline" size="sm">
+                      거절
+                    </Button>
+                  </form>
+                </>
+              ) : (
+                <form action={submitSendFriendRequestAction}>
+                  <input type="hidden" name="receiverId" value={profileId} />
+                  <Button type="submit" size="sm">
+                    친구 요청
+                  </Button>
+                </form>
+              )}
+            </div>
+          ) : null}
         </div>
       </header>
 
