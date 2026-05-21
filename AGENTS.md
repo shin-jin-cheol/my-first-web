@@ -16,6 +16,7 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - 자체 세션 쿠키 인증
 - 이메일 OTP 회원가입/로그인
 - 댓글 기능
+- 친구 요청/수락/거절/삭제 기능
 - 카테고리 시스템
 - 파일 업로드
 - 다국어 텍스트 처리
@@ -28,6 +29,8 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - `/`: 홈, 최신 글 목록
 - `/posts`, `/posts/[id]`, `/posts/new`, `/posts/[id]/edit`: 블로그
 - `/guest`, `/guest/[id]`, `/guest/new`, `/guest/[id]/edit`, `/guest/account`: 게스트 게시판
+- `/friends`: 친구 검색, 받은 요청 수락/거절, 친구 목록 관리
+- `/profile/[id]`: 공개 프로필 및 친구 요청/수락/거절/삭제
 - `/auth/login`, `/auth/signup`: 인증
 - `/admin/members`: 관리자 회원 관리
 
@@ -36,6 +39,7 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - `/posts/new`
 - `/guest/new`
 - `/guest/account`
+- `/friends`
 - `/admin/:path*`
 
 비로그인 사용자는 보호 라우트 접근 시 `/auth/login`으로 리다이렉트됩니다.
@@ -178,3 +182,18 @@ docs: Ch9 완료 기준 프로젝트 문서 갱신
   - 사용자 B가 사용자 A의 posts 레코드를 수정/삭제하는 우회 시도는 실패함을 확인했습니다.
 - 민감 키 grep 검사가 통과했습니다.
 - 클라이언트 컴포넌트에서 service_role 키를 사용하지 않음을 확인했습니다.
+
+## 10. 친구 기능 완료 기록
+
+- `lib/friends.ts` 친구 CRUD 함수가 추가되었습니다.
+- `app/friends/actions.ts` 친구 기능 Server Actions가 추가되었습니다.
+- `/friends` 페이지가 추가되었습니다.
+  - 사용자 이름 검색에서 owner를 포함합니다.
+  - 받은 친구 요청을 수락/거절할 수 있습니다.
+  - 친구 목록 조회와 친구 삭제를 지원합니다.
+- `/profile/[id]`에 친구 요청/수락/거절/삭제 버튼이 추가되었습니다.
+- `app/components/NavMenuMobile.tsx`에 친구 링크가 추가되었습니다.
+- `proxy.ts` 보호 라우트에 `/friends`가 추가되었습니다.
+- Supabase `friends` 테이블과 RLS 정책이 추가되었습니다.
+- 마이그레이션 파일: `supabase/migrations/20260521055613_add_friends_table.sql`
+- `lib/env.ts`에 `SUPABASE_FRIENDS_TABLE` 상수가 추가되었습니다.

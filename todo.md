@@ -21,6 +21,8 @@
 - [x] `posts_insert_authenticated` INSERT 로그인 사용자 및 `author_id = auth.uid()` 정책 적용
 - [x] `posts_update_owner` UPDATE 작성자만 가능 정책 적용
 - [x] `posts_delete_owner` DELETE 작성자만 가능 정책 적용
+- [x] Supabase `friends` 테이블 생성 및 RLS 정책 적용
+- [x] `supabase/migrations/20260521055613_add_friends_table.sql` 마이그레이션 작성
 
 ### 댓글/반응
 
@@ -42,7 +44,21 @@
 - [x] Owner 전용 회원 관리
 - [x] Owner 비밀번호 해시 비교
 - [x] `proxy.ts` 보호 라우트 추가
+- [x] `proxy.ts` `/friends` 보호 라우트 추가
 - [x] 비로그인 사용자 `/auth/login` 리다이렉트
+
+### 친구
+
+- [x] `lib/friends.ts` 친구 CRUD 함수 추가
+- [x] `app/friends/actions.ts` 친구 기능 Server Actions 추가
+- [x] `/friends` 페이지 추가
+- [x] 사용자 이름 검색(owner 포함)
+- [x] 받은 친구 요청 수락/거절
+- [x] 친구 목록 조회
+- [x] 친구 삭제
+- [x] `/profile/[id]` 친구 요청/수락/거절/삭제 버튼 추가
+- [x] `NavMenuMobile.tsx` 친구 링크 추가
+- [x] `lib/env.ts` `SUPABASE_FRIENDS_TABLE` 상수 추가
 
 ### UI/UX
 
@@ -98,7 +114,7 @@
 ## 미구현/보류
 
 - [ ] 실시간 채팅
-- [ ] 친구/팔로우 기능
+- [ ] 팔로우 기능
 - [ ] Supabase Realtime 알림
 - [ ] 업로드형 프로필 이미지
 - [ ] E2E 테스트

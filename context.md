@@ -6,6 +6,7 @@
 
 - Owner는 블로그 게시글을 운영합니다.
 - Member는 게스트 게시판에 글을 작성하고 댓글/반응으로 참여합니다.
+- 로그인 사용자는 친구 요청을 보내고, 받은 요청을 수락/거절하며, 친구 목록을 관리할 수 있습니다.
 - 데이터 저장은 Supabase HTTP 클라이언트 패턴을 우선 사용합니다.
 - 파일 저장은 Supabase Storage를 우선 사용하고, 기존 흐름에 따라 Vercel Blob 또는 local fallback을 사용합니다.
 - 인증은 Supabase Auth가 아니라 자체 세션 쿠키와 이메일 OTP 흐름을 사용합니다.
@@ -53,6 +54,7 @@
 - 댓글 이모지 반응
 - 이름 기반 댓글 아바타
 - 댓글 작성자 프로필 링크
+- 프로필 페이지 친구 요청/수락/거절/삭제 버튼
 
 ### 인증/회원
 
@@ -65,12 +67,14 @@
 - Owner 전용 회원 관리 페이지
 - Owner 비밀번호 SHA-256 해시 비교
 - `proxy.ts` 기반 보호 라우트 리다이렉트
+- 친구 기능 접근 보호
 
 보호 라우트:
 
 - `/posts/new`
 - `/guest/new`
 - `/guest/account`
+- `/friends`
 - `/admin/:path*`
 
 비로그인 사용자는 보호 라우트 접근 시 `/auth/login`으로 리다이렉트됩니다.
@@ -82,6 +86,20 @@
 - member 프로필에서는 게스트 게시글 목록 표시
 - 진입 경로: nav 아바타, 게시글 작성자, 댓글 작성자
 - 모바일 내비게이션(`NavMenuMobile`)에 프로필 링크 추가
+- 모바일 내비게이션(`NavMenuMobile`)에 친구 링크 추가
+
+### 친구
+
+- `/friends` 친구 페이지
+- 사용자 이름 검색에서 owner 포함
+- 받은 친구 요청 수락/거절
+- 친구 목록 조회
+- 친구 삭제
+- `lib/friends.ts` 친구 CRUD 함수
+- `app/friends/actions.ts` 친구 기능 Server Actions
+- Supabase `friends` 테이블 및 RLS 정책
+- 마이그레이션 파일: `supabase/migrations/20260521055613_add_friends_table.sql`
+- `lib/env.ts`의 `SUPABASE_FRIENDS_TABLE` 상수
 
 ### UI/UX
 
@@ -102,6 +120,7 @@
 ### 규칙 정리
 
 - `lib/env.ts`에 `NODE_ENV`, `IS_VERCEL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 추가
+- `lib/env.ts`에 `SUPABASE_FRIENDS_TABLE` 추가
 - `lib/auth/session.ts`, `lib/storage.ts`, `lib/supabase/client.ts`, `app/layout.tsx`의 환경 변수 접근을 `lib/env.ts` 기준으로 중앙화
 - `components/comment-thread.tsx`의 `text-white`를 `text-[var(--surface)]`로 수정
 
@@ -118,6 +137,7 @@
 - `post_comment_reactions`
 - `guest_post_reactions`
 - `guest_comment_reactions`
+- `friends`
 - Supabase Storage `uploads` bucket
 - local fallback JSON data
 
@@ -128,6 +148,11 @@
 - `posts_update_owner`: UPDATE 작성자만 가능
 - `posts_delete_owner`: DELETE 작성자만 가능
 - 마이그레이션 파일: `supabase/migrations/20260520041504_add_posts_rls.sql`
+
+`friends` 테이블은 친구 요청과 친구 관계를 저장하며 RLS를 적용했습니다.
+
+- 요청자/수신자 기준으로 본인 관련 친구 레코드만 조회/변경/삭제할 수 있습니다.
+- 마이그레이션 파일: `supabase/migrations/20260521055613_add_friends_table.sql`
 
 ---
 
@@ -177,6 +202,8 @@
 - member 프로필에는 게스트 게시글 목록을 표시합니다.
 - nav 아바타, 게시글 작성자, 댓글 작성자에서 프로필로 진입할 수 있습니다.
 - `NavMenuMobile`에 프로필 링크를 추가했습니다.
+- `NavMenuMobile`에 친구 링크를 추가했습니다.
+- `/profile/[id]`에 친구 요청/수락/거절/삭제 버튼을 추가했습니다.
 - 환경 변수 접근을 `lib/env.ts` 기준으로 중앙화했습니다.
 - `components/comment-thread.tsx`에서 직접 색상 사용을 CSS variables 기반으로 수정했습니다.
 
@@ -200,10 +227,26 @@
 
 ---
 
-## 9. 미구현/보류 기능
+## 9. 친구 기능 완료 반영
+
+- `lib/friends.ts` 친구 CRUD 함수를 추가했습니다.
+- `app/friends/actions.ts` 친구 기능 Server Actions를 추가했습니다.
+- `/friends` 페이지를 추가했습니다.
+- `/friends`에서 사용자 이름 검색 시 owner를 포함합니다.
+- `/friends`에서 받은 친구 요청을 수락/거절할 수 있습니다.
+- `/friends`에서 친구 목록 조회와 친구 삭제를 지원합니다.
+- `/profile/[id]`에서 친구 요청/수락/거절/삭제 버튼을 제공합니다.
+- `proxy.ts` 보호 라우트에 `/friends`를 추가했습니다.
+- Supabase `friends` 테이블과 RLS 정책을 추가했습니다.
+- 마이그레이션 파일은 `supabase/migrations/20260521055613_add_friends_table.sql`입니다.
+- `lib/env.ts`에 `SUPABASE_FRIENDS_TABLE` 상수를 추가했습니다.
+
+---
+
+## 10. 미구현/보류 기능
 
 - 실시간 채팅
-- 친구/팔로우 기능
+- 팔로우 기능
 - Supabase Realtime 기반 알림
 - 업로드형 프로필 이미지
 - E2E 테스트
@@ -211,7 +254,7 @@
 
 ---
 
-## 10. 열린 질문
+## 11. 열린 질문
 
 - 대댓글 depth를 현재 1단계 이상으로 확장할지 여부
 - 반응 테이블 SQL 문서를 실제 운영 스키마 기준으로 정리할지 여부
