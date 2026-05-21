@@ -76,6 +76,9 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - 환경 변수는 `lib/env.ts`에서 중앙 관리합니다.
 - Supabase HTTP 요청은 기존 `lib/supabase/http.ts` 패턴을 따릅니다.
 - 인증은 Supabase Auth가 아니라 자체 세션 쿠키와 이메일 OTP 흐름을 유지합니다.
+- 보안은 클라이언트 if문이나 UI 숨김으로만 처리하지 않고, DB에서 RLS로 강제합니다.
+- RLS SQL은 반드시 `supabase/migrations/` 아래 마이그레이션으로 남깁니다.
+- `service_role` 키는 클라이언트 컴포넌트나 브라우저 번들에서 사용하지 않습니다.
 - FormData 문자열/숫자 처리는 `lib/form-utils.ts`를 우선 사용합니다.
 - 저장소 및 파일 fallback 처리는 `lib/storage.ts`와 `lib/attachment-utils.ts`의 기존 흐름을 유지합니다.
 - 날짜 처리는 `lib/date.ts`의 KST 유틸을 사용합니다.
@@ -169,6 +172,9 @@ docs: Ch9 완료 기준 프로젝트 문서 갱신
   - `posts_delete_owner`: DELETE 작성자만 가능
 - 마이그레이션 파일: `supabase/migrations/20260520041504_add_posts_rls.sql`
 - `npx supabase db push`로 원격 적용이 완료되었습니다.
-- 브라우저 우회 테스트에서 다른 계정의 수정/삭제 실패를 확인했습니다.
+- 테스트 결과:
+  - 비로그인 사용자는 `/posts/new` 접근 시 `/auth/login`으로 리다이렉트됩니다.
+  - 사용자 A는 본인이 작성한 posts 레코드의 수정/삭제만 허용됩니다.
+  - 사용자 B가 사용자 A의 posts 레코드를 수정/삭제하는 우회 시도는 실패함을 확인했습니다.
 - 민감 키 grep 검사가 통과했습니다.
 - 클라이언트 컴포넌트에서 service_role 키를 사용하지 않음을 확인했습니다.

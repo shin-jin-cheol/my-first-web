@@ -219,7 +219,13 @@ posts 테이블은 Ch11에서 RLS를 활성화했습니다. 적용 정책은 `po
 - Member: 본인이 작성한 게스트 게시글과 댓글 관리 가능
 - 비회원: 공개 목록/상세 조회 중심, 보호 라우트 접근 시 `/auth/login`으로 이동
 - 게시글/댓글 관리 권한은 `lib/permissions.ts`에서 공통 처리
-- posts 테이블은 Supabase RLS로 공개 SELECT와 작성자 기반 INSERT/UPDATE/DELETE 정책을 적용합니다.
+- UI 분기는 작성자에게만 수정/삭제 버튼을 보여 주는 UX 계층입니다.
+- DB 보안은 클라이언트 조건문이 아니라 Supabase RLS로 강제합니다.
+- posts 테이블 보호 정책:
+  - `posts_select_public`: SELECT 누구나 가능
+  - `posts_insert_authenticated`: INSERT 로그인 사용자만 가능, `author_id = auth.uid()`
+  - `posts_update_owner`: UPDATE 작성자만 가능
+  - `posts_delete_owner`: DELETE 작성자만 가능
 
 ---
 

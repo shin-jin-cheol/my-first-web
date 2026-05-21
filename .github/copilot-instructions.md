@@ -96,6 +96,9 @@ Pages Router용 `pages/` 디렉터리와 API를 사용하지 않습니다.
 - Supabase Auth 회원은 Auth API로 로그인/이메일 인증/비밀번호 변경을 처리합니다.
 - 게시글/댓글 관리 권한은 `lib/permissions.ts`를 우선 사용합니다.
 - 인증/권한 검증을 제거하지 않습니다.
+- 보안은 클라이언트 if문이나 UI 숨김으로만 처리하지 않고, DB에서 RLS로 강제합니다.
+- RLS SQL은 반드시 `supabase/migrations/` 아래 마이그레이션으로 남깁니다.
+- `service_role` 키는 클라이언트 컴포넌트나 브라우저 번들에서 사용하지 않습니다.
 
 ---
 

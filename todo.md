@@ -16,6 +16,7 @@
 - [x] `/posts/new` 작성 연결
 - [x] 작성자에게만 수정/삭제 UI 표시
 - [x] Ch11 posts 테이블 RLS 활성화
+- [x] posts RLS 마이그레이션 생성
 - [x] `posts_select_public` SELECT 누구나 가능 정책 적용
 - [x] `posts_insert_authenticated` INSERT 로그인 사용자 및 `author_id = auth.uid()` 정책 적용
 - [x] `posts_update_owner` UPDATE 작성자만 가능 정책 적용
@@ -86,11 +87,11 @@
 
 - [x] `npm run build` 통과
 - [x] `npm run lint` 통과
-- [x] 브라우저 우회 테스트 완료 (다른 계정 수정/삭제 실패 확인)
+- [x] 다른 계정 우회 테스트 완료 (사용자 B가 사용자 A 게시글 수정/삭제 실패 확인)
 - [x] 민감 키 grep 검사 통과
 - [x] 클라이언트 컴포넌트에서 service_role 키 미사용 확인
 - [x] GitHub push 완료
-- [x] Vercel 배포 완료
+- [x] Vercel 빌드/배포 검증 완료
 
 ---
 
