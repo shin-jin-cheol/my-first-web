@@ -3,12 +3,17 @@ import {
   acceptFriendRequestAction,
   deleteFriendAction,
   rejectFriendRequestAction,
+  sendFriendRequestAction,
 } from "@/app/friends/actions";
 import { Button } from "@/components/ui/button";
 import { requireSession } from "@/lib/auth";
-import { getMemberById, ownerAccount } from "@/lib/auth/core";
+import { getMemberById, getMemberByName, ownerAccount } from "@/lib/auth/core";
 import { getAvatarColorClass, getAvatarText } from "@/lib/avatar-utils";
 import { type Friend, getFriends, getPendingRequests } from "@/lib/friends";
+
+type FriendsPageProps = {
+  searchParams: Promise<{ q?: string }>;
+};
 
 type FriendUserItem = {
   friend: Friend;
@@ -54,8 +59,19 @@ async function submitDeleteFriendAction(formData: FormData) {
   await deleteFriendAction(formData);
 }
 
-export default async function FriendsPage() {
+async function submitSendFriendRequestAction(formData: FormData) {
+  "use server";
+  await sendFriendRequestAction(formData);
+}
+
+export default async function FriendsPage({ searchParams }: FriendsPageProps) {
   const session = await requireSession();
+  const resolvedSearchParams = await searchParams;
+  const query = resolvedSearchParams.q?.trim() || "";
+  const searchResult = query ? await getMemberByName(query) : undefined;
+  const searchResultName = searchResult?.name || "";
+  const searchResultAvatarText = searchResult ? getAvatarText(searchResultName) : "";
+  const searchResultAvatarColor = searchResult ? getAvatarColorClass(searchResultName) : "";
   const [pendingRequests, friends] = await Promise.all([
     getPendingRequests(session.userId),
     getFriends(session.userId),
@@ -81,6 +97,71 @@ export default async function FriendsPage() {
           친구
         </h1>
       </header>
+
+      <section className="space-y-4">
+        <form
+          action="/friends"
+          className="flex flex-col gap-3 rounded-2xl border border-border-base bg-surface-sub p-4 dark:border-border-base dark:bg-surface-strong sm:flex-row"
+        >
+          <input
+            type="search"
+            name="q"
+            defaultValue={query}
+            placeholder="사용자 이름 검색"
+            className="min-h-9 flex-1 rounded-lg border border-border-base bg-surface px-3 py-2 text-sm text-text-base outline-none transition placeholder:text-text-muted focus:border-accent-border dark:border-border-sub dark:bg-surface-muted dark:text-text-base dark:placeholder:text-text-subtle"
+          />
+          <Button type="submit" className="sm:w-auto">
+            검색
+          </Button>
+        </form>
+
+        {query ? (
+          <div className="space-y-3">
+            <h2 className="text-2xl font-bold text-text-sub dark:text-text-base">
+              검색 결과
+            </h2>
+            {searchResult ? (
+              <article className="flex items-center justify-between gap-4 rounded-2xl border border-border-strong bg-surface-muted p-5 transition hover:bg-surface-strong dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-[var(--surface)]"
+                    style={{ backgroundColor: searchResultAvatarColor }}
+                  >
+                    {searchResultAvatarText}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate text-base font-bold text-text-base">
+                      {searchResultName}
+                    </p>
+                    <p className="truncate text-sm text-text-muted dark:text-text-subtle">
+                      @{searchResult.id}
+                    </p>
+                  </div>
+                </div>
+                {searchResult.id !== session.userId ? (
+                  <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/profile/${encodeURIComponent(searchResult.id)}`}>
+                        프로필 보기
+                      </Link>
+                    </Button>
+                    <form action={submitSendFriendRequestAction}>
+                      <input type="hidden" name="receiverId" value={searchResult.id} />
+                      <Button type="submit" size="sm">
+                        친구 요청
+                      </Button>
+                    </form>
+                  </div>
+                ) : null}
+              </article>
+            ) : (
+              <p className="rounded-2xl border border-border-base bg-surface-sub px-4 py-3 text-sm text-text-muted dark:bg-surface-strong">
+                검색 결과가 없습니다.
+              </p>
+            )}
+          </div>
+        ) : null}
+      </section>
 
       <section className="space-y-4">
         <h2 className="text-2xl font-bold text-text-sub dark:text-text-base">
