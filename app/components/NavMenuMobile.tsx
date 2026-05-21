@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Menu } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
-import { useEffect, useRef } from 'react';
+import { useDetailsClose } from './useDetailsClose';
 import { Button } from '@/components/ui/button';
 import { useLocale } from '@/lib/i18n-client';
 import type { Session } from '@/lib/auth';
@@ -19,7 +19,7 @@ export function NavMenuMobile({
   serverLocale,
   setLanguageAction,
 }: NavMenuMobileProps) {
-  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const detailsRef = useDetailsClose();
   const clientLocale = useLocale();
   const locale = clientLocale || serverLocale;
 
@@ -27,31 +27,6 @@ export function NavMenuMobile({
   const writeHref = session?.role === 'owner' ? '/posts/new' : '/guest/new';
   const writeLabel =
     session?.role === 'owner' ? t('새 글 쓰기', 'Write') : t('게스트 글 쓰기', 'Write Guest Post');
-
-  useEffect(() => {
-    const onPointerDown = (event: MouseEvent | TouchEvent) => {
-      const details = detailsRef.current;
-      if (!details?.open) {
-        return;
-      }
-
-      const target = event.target;
-      if (!(target instanceof Node)) {
-        return;
-      }
-
-      if (!details.contains(target)) {
-        details.open = false;
-      }
-    };
-
-    document.addEventListener('mousedown', onPointerDown);
-    document.addEventListener('touchstart', onPointerDown, { passive: true });
-    return () => {
-      document.removeEventListener('mousedown', onPointerDown);
-      document.removeEventListener('touchstart', onPointerDown);
-    };
-  }, []);
 
   const closeMenuOnAction = (event: React.MouseEvent<HTMLDivElement>) => {
     const details = detailsRef.current;

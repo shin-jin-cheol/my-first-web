@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useDetailsClose } from "./useDetailsClose";
 import { useLocale } from "@/lib/i18n-client";
 
 type PostsMenuProps = {
@@ -9,35 +9,10 @@ type PostsMenuProps = {
 };
 
 export function PostsMenu({ serverLocale }: PostsMenuProps) {
-  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const detailsRef = useDetailsClose();
   const clientLocale = useLocale();
   const locale = clientLocale || serverLocale;
   const t = (ko: string, en: string) => (locale === "en" ? en : ko);
-
-  useEffect(() => {
-    const onPointerDown = (event: MouseEvent | TouchEvent) => {
-      const details = detailsRef.current;
-      if (!details?.open) {
-        return;
-      }
-
-      const target = event.target;
-      if (!(target instanceof Node)) {
-        return;
-      }
-
-      if (!details.contains(target)) {
-        details.open = false;
-      }
-    };
-
-    document.addEventListener("mousedown", onPointerDown);
-    document.addEventListener("touchstart", onPointerDown, { passive: true });
-    return () => {
-      document.removeEventListener("mousedown", onPointerDown);
-      document.removeEventListener("touchstart", onPointerDown);
-    };
-  }, []);
 
   const closeMenuOnAction = (event: React.MouseEvent<HTMLDivElement>) => {
     const details = detailsRef.current;
