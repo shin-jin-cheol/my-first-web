@@ -21,6 +21,8 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - 파일 업로드
 - 다국어 텍스트 처리
 - posts 테이블 RLS 활성화 및 작성자 기반 정책 적용
+- Ch13 이후 posts 쓰기 정책은 자체 세션 쿠키 인증과 service_role 서버 요청 흐름에 맞춰 서버 사이드 권한 검증 기반으로 운영
+- Ch13 이후 guest_posts 테이블은 서버 사이드 권한 검증을 기준으로 RLS 비활성화
 - Supabase HTTP client pattern, Supabase Storage, Vercel Blob, local fallback 기반 데이터 및 파일 저장
 - Vercel 프로덕션 배포
 
@@ -81,6 +83,10 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - Supabase HTTP 요청은 기존 `lib/supabase/http.ts` 패턴을 따릅니다.
 - 인증은 Supabase Auth가 아니라 자체 세션 쿠키와 이메일 OTP 흐름을 유지합니다.
 - 보안은 클라이언트 if문이나 UI 숨김으로만 처리하지 않고, DB에서 RLS로 강제합니다.
+- 이 프로젝트는 Supabase Auth를 사용하지 않으므로 Supabase RLS의 `auth.uid()`는 자체 세션 쿠키 사용자 ID를 알 수 없고 null을 반환합니다.
+- 따라서 작성/수정/삭제 권한은 `lib/permissions.ts`, `app/posts/actions.ts`, `app/guest/actions.ts`, `proxy.ts`에서 서버 사이드로 검증합니다.
+- posts 테이블은 RLS를 유지하되 INSERT/UPDATE/DELETE는 service_role 기반 정책(`WITH CHECK (true)`)으로 열고, 권한 검증은 Server Action에서 수행합니다.
+- guest_posts 테이블은 서버 사이드 권한 검증을 기준으로 RLS를 비활성화합니다.
 - RLS SQL은 반드시 `supabase/migrations/` 아래 마이그레이션으로 남깁니다.
 - `service_role` 키는 클라이언트 컴포넌트나 브라우저 번들에서 사용하지 않습니다.
 - FormData 문자열/숫자 처리는 `lib/form-utils.ts`를 우선 사용합니다.
@@ -197,3 +203,27 @@ docs: Ch9 완료 기준 프로젝트 문서 갱신
 - Supabase `friends` 테이블과 RLS 정책이 추가되었습니다.
 - 마이그레이션 파일: `supabase/migrations/20260521055613_add_friends_table.sql`
 - `lib/env.ts`에 `SUPABASE_FRIENDS_TABLE` 상수가 추가되었습니다.
+
+## 11. Ch13 버그 수정 및 아키텍처 결정 기록
+
+- Supabase Auth 대신 자체 세션 쿠키를 사용하므로 `auth.uid()` 기반 RLS 쓰기 정책이 자체 로그인 사용자와 연결되지 않음을 확인했습니다.
+- posts RLS INSERT/UPDATE/DELETE 정책을 auth.uid() 기반에서 service_role 기반으로 수정했습니다.
+- posts 테이블은 RLS 활성화를 유지하고, SELECT는 공개 정책을 유지하며, INSERT/UPDATE/DELETE는 서버 사이드 권한 검증 후 service_role 요청으로 처리합니다.
+- guest_posts 테이블은 서버 사이드 권한 검증을 기준으로 RLS를 비활성화했습니다.
+- 권한 검증 위치:
+  - `lib/permissions.ts`: 권한 체크 공통 함수
+  - `app/posts/actions.ts`: 블로그 Server Action 세션/권한 검증
+  - `app/guest/actions.ts`: 게스트 게시판 Server Action 세션/권한 검증
+  - `proxy.ts`: 보호 라우트 차단
+- posts_category_valid 제약 조건에 누락된 `notice` 카테고리를 추가했습니다.
+- `lib/posts.ts` 레거시 카테고리 체크 코드를 제거했습니다.
+- `lib/guest-posts.ts` 레거시 카테고리 체크 코드를 제거했습니다.
+- 추가된 마이그레이션 파일:
+  - `supabase/migrations/20260526164049_fix_posts_rls.sql`
+  - `supabase/migrations/20260526170435_fix_posts_category_constraint.sql`
+  - `supabase/migrations/20260526173544_disable_guest_posts_rls.sql`
+- Ch13 검증 완료:
+  - Playwright E2E 테스트 2개 통과
+  - 보안 grep 3개 통과
+  - Vercel 수동 검증 5개 완료
+  - 검증 보고서: `docs/verification-report.md`

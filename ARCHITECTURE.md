@@ -134,6 +134,8 @@ Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.
 6. Supabase 또는 Blob 설정이 부족한 환경에서는 기존 local fallback 흐름 사용
 7. 변경 성공 후 `revalidatePath`와 `redirect`로 화면 갱신
 
+권한 검증은 자체 세션 쿠키 인증을 기준으로 Server Action에서 수행합니다. Supabase Auth를 사용하지 않으므로 Supabase RLS의 `auth.uid()`는 자체 세션 사용자를 알 수 없고 null을 반환합니다. 따라서 쓰기 권한은 `lib/permissions.ts`, `app/posts/actions.ts`, `app/guest/actions.ts`, `proxy.ts` 조합으로 검증합니다.
+
 ---
 
 ## 6. 데이터 모델
@@ -163,7 +165,14 @@ Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.
 - `file_name`
 - `views`
 
-posts 테이블은 Ch11에서 RLS를 활성화했습니다. 적용 정책은 `posts_select_public`(SELECT 누구나 가능), `posts_insert_authenticated`(INSERT 로그인 사용자만 가능, `author_id = auth.uid()`), `posts_update_owner`(UPDATE 작성자만 가능), `posts_delete_owner`(DELETE 작성자만 가능)입니다.
+posts 테이블은 Ch11에서 RLS를 활성화했습니다. 당시 적용 정책은 `posts_select_public`(SELECT 누구나 가능), `posts_insert_authenticated`(INSERT 로그인 사용자만 가능, `author_id = auth.uid()`), `posts_update_owner`(UPDATE 작성자만 가능), `posts_delete_owner`(DELETE 작성자만 가능)입니다.
+
+Ch13 이후 posts 쓰기 정책은 자체 세션 쿠키 인증 구조에 맞춰 변경되었습니다. Supabase Auth를 사용하지 않아 `auth.uid()`가 null을 반환하므로 INSERT/UPDATE/DELETE는 service_role 기반 정책으로 열고, 실제 권한은 Server Action에서 검증합니다. SELECT 공개 정책은 유지합니다.
+
+- `posts_insert_service`: INSERT는 서버 사이드 권한 검증 후 service_role 요청으로 허용
+- `posts_update_service`: UPDATE는 서버 사이드 권한 검증 후 service_role 요청으로 허용
+- `posts_delete_service`: DELETE는 서버 사이드 권한 검증 후 service_role 요청으로 허용
+- `posts_category_valid`: `study`, `daily`, `info`, `notice` 허용
 
 ### guest_posts
 
@@ -179,6 +188,8 @@ posts 테이블은 Ch11에서 RLS를 활성화했습니다. 적용 정책은 `po
 - `file_name`
 - `views`
 - `comments` (legacy 호환용 JSONB)
+
+guest_posts 테이블은 Ch13 이후 RLS를 비활성화했습니다. 자체 세션 쿠키 기반 권한은 `app/guest/actions.ts`와 `lib/permissions.ts`에서 서버 사이드로 검증합니다.
 
 ### post_comments
 
@@ -247,11 +258,18 @@ friends 테이블은 친구 요청과 친구 관계를 저장합니다. `status`
 - 친구 관계 관리는 `lib/friends.ts`와 friends 테이블 RLS 정책으로 요청자/수신자 기준 권한을 강제
 - UI 분기는 작성자에게만 수정/삭제 버튼을 보여 주는 UX 계층입니다.
 - DB 보안은 클라이언트 조건문이 아니라 Supabase RLS로 강제합니다.
+- 이 프로젝트는 Supabase Auth를 사용하지 않고 자체 세션 쿠키를 사용하므로 Supabase RLS의 `auth.uid()` 기반 쓰기 정책은 자체 로그인 사용자와 연결되지 않습니다.
+- Ch13 이후 블로그/게스트 쓰기 권한은 다음 서버 사이드 계층에서 검증합니다.
+  - `lib/permissions.ts`: 권한 체크 공통 함수
+  - `app/posts/actions.ts`: 블로그 Server Action 세션/권한 검증
+  - `app/guest/actions.ts`: 게스트 게시판 Server Action 세션/권한 검증
+  - `proxy.ts`: 보호 라우트 차단
 - posts 테이블 보호 정책:
   - `posts_select_public`: SELECT 누구나 가능
-  - `posts_insert_authenticated`: INSERT 로그인 사용자만 가능, `author_id = auth.uid()`
-  - `posts_update_owner`: UPDATE 작성자만 가능
-  - `posts_delete_owner`: DELETE 작성자만 가능
+  - INSERT/UPDATE/DELETE: service_role 기반 정책으로 허용하고 Server Action에서 권한 검증
+- guest_posts 테이블 보호 정책:
+  - RLS 비활성화
+  - Server Action에서 세션/권한 검증
 
 ---
 
@@ -297,6 +315,18 @@ friends 테이블은 친구 요청과 친구 관계를 저장합니다. `status`
 - posts 테이블 RLS 활성화
 - `posts_select_public`, `posts_insert_authenticated`, `posts_update_owner`, `posts_delete_owner` 정책 적용
 - `supabase/migrations/20260520041504_add_posts_rls.sql` 마이그레이션 작성 및 `npx supabase db push` 원격 적용 완료
+- posts RLS INSERT/UPDATE/DELETE 정책을 auth.uid() 기반에서 service_role 기반으로 수정
+- `supabase/migrations/20260526164049_fix_posts_rls.sql` 마이그레이션 작성
+- posts_category_valid 제약 조건에 `notice` 카테고리 추가
+- `supabase/migrations/20260526170435_fix_posts_category_constraint.sql` 마이그레이션 작성
+- `lib/posts.ts` 레거시 카테고리 체크 코드 제거
+- `lib/guest-posts.ts` 레거시 카테고리 체크 코드 제거
+- guest_posts RLS 비활성화
+- `supabase/migrations/20260526173544_disable_guest_posts_rls.sql` 마이그레이션 작성
+- Playwright E2E 테스트 2개 통과
+- 보안 grep 3개 통과
+- Vercel 수동 검증 5개 완료
+- Ch13 검증 보고서 작성: `docs/verification-report.md`
 - 브라우저 우회 테스트로 다른 계정의 수정/삭제 실패 확인
 - 민감 키 grep 검사 통과
 - 클라이언트 컴포넌트에서 service_role 키 미사용 확인
@@ -312,7 +342,7 @@ friends 테이블은 친구 요청과 친구 관계를 저장합니다. `status`
 - 팔로우 기능
 - Supabase Realtime 기반 알림
 - 업로드형 프로필 이미지
-- E2E 테스트
+- E2E 테스트 CI 자동화
 - 반응 테이블을 포함한 Supabase SQL 문서 최신화
 
 ---

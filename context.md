@@ -149,6 +149,23 @@
 - `posts_delete_owner`: DELETE 작성자만 가능
 - 마이그레이션 파일: `supabase/migrations/20260520041504_add_posts_rls.sql`
 
+Ch13에서 자체 세션 쿠키 인증 흐름과 Supabase service_role 서버 요청 흐름에 맞춰 posts RLS 쓰기 정책을 수정했습니다.
+
+- Supabase Auth를 사용하지 않으므로 `auth.uid()`는 자체 세션 쿠키 사용자 ID를 알 수 없고 null을 반환합니다.
+- 따라서 auth.uid() 기반 INSERT/UPDATE/DELETE RLS 정책은 자체 로그인 사용자 권한 검증에 사용할 수 없습니다.
+- 기존 INSERT/UPDATE/DELETE 정책을 제거했습니다.
+- `posts_insert_service`: INSERT는 서버 사이드 권한 검증 후 service_role 요청으로 허용합니다.
+- `posts_update_service`: UPDATE는 서버 사이드 권한 검증 후 service_role 요청으로 허용합니다.
+- `posts_delete_service`: DELETE는 서버 사이드 권한 검증 후 service_role 요청으로 허용합니다.
+- 마이그레이션 파일: `supabase/migrations/20260526164049_fix_posts_rls.sql`
+- `posts_category_valid` 제약 조건에 `notice` 카테고리를 추가했습니다.
+- 마이그레이션 파일: `supabase/migrations/20260526170435_fix_posts_category_constraint.sql`
+
+`guest_posts` 테이블은 Ch13에서 서버 사이드 권한 검증 흐름에 맞춰 RLS를 비활성화했습니다.
+
+- 서버 사이드에서 작성/수정/삭제 권한을 검증하므로 DB 레벨 RLS를 사용하지 않습니다.
+- 마이그레이션 파일: `supabase/migrations/20260526173544_disable_guest_posts_rls.sql`
+
 `friends` 테이블은 친구 요청과 친구 관계를 저장하며 RLS를 적용했습니다.
 
 - 요청자/수신자 기준으로 본인 관련 친구 레코드만 조회/변경/삭제할 수 있습니다.
@@ -168,6 +185,11 @@
 - FormData 문자열 처리는 `lib/form-utils.ts`를 우선 사용합니다.
 - 날짜는 `lib/date.ts`의 KST 유틸을 사용합니다.
 - 권한 검증을 제거하지 않습니다.
+- 자체 세션 쿠키 인증을 사용하므로 Supabase RLS의 `auth.uid()` 기반 쓰기 정책에 의존하지 않습니다.
+- 작성/수정/삭제 권한은 `lib/permissions.ts`, `app/posts/actions.ts`, `app/guest/actions.ts`에서 서버 사이드로 검증합니다.
+- 보호 라우트 접근 차단은 `proxy.ts`에서 수행합니다.
+- posts 테이블은 RLS 활성화를 유지하되 INSERT/UPDATE/DELETE는 service_role 기반 정책으로 처리합니다.
+- guest_posts 테이블은 RLS를 비활성화하고 Server Action 권한 검증을 사용합니다.
 - 입력값은 trim/검증 후 저장합니다.
 - Tailwind 기본 색상 직접 사용은 피하고 CSS variables를 우선 사용합니다.
 - Next.js 16 기준으로 `middleware.ts` 대신 `proxy.ts`를 사용합니다.
@@ -243,18 +265,43 @@
 
 ---
 
-## 10. 미구현/보류 기능
+## 10. Ch13 버그 수정 및 검증 완료 반영
+
+- posts RLS INSERT/UPDATE/DELETE 정책을 auth.uid() 기반에서 service_role 기반으로 수정했습니다.
+- Supabase Auth 대신 자체 세션 쿠키를 사용해 `auth.uid()`가 null을 반환하는 구조임을 확인하고, DB 레벨 auth.uid() 기반 쓰기 정책 대신 서버 사이드 권한 검증을 기준으로 정리했습니다.
+- posts_category_valid 제약 조건에 누락된 `notice` 카테고리를 추가했습니다.
+- `lib/posts.ts`의 레거시 카테고리 체크 코드를 제거했습니다.
+- `lib/guest-posts.ts`의 레거시 카테고리 체크 코드를 제거했습니다.
+- guest_posts RLS를 비활성화했습니다.
+- 서버 사이드 권한 검증 흐름은 유지합니다.
+- 권한 검증 위치:
+  - `lib/permissions.ts`: 권한 체크 공통 함수
+  - `app/posts/actions.ts`: 블로그 Server Action 세션/권한 검증
+  - `app/guest/actions.ts`: 게스트 게시판 Server Action 세션/권한 검증
+  - `proxy.ts`: 보호 라우트 차단
+- 추가된 마이그레이션 파일:
+  - `supabase/migrations/20260526164049_fix_posts_rls.sql`
+  - `supabase/migrations/20260526170435_fix_posts_category_constraint.sql`
+  - `supabase/migrations/20260526173544_disable_guest_posts_rls.sql`
+- Playwright E2E 테스트 2개가 통과했습니다.
+- 보안 grep 3개가 통과했습니다.
+- Vercel 수동 검증 5개를 완료했습니다.
+- 검증 보고서: `docs/verification-report.md`
+
+---
+
+## 11. 미구현/보류 기능
 
 - 실시간 채팅
 - 팔로우 기능
 - Supabase Realtime 기반 알림
 - 업로드형 프로필 이미지
-- E2E 테스트
+- E2E 테스트 CI 자동화
 - 반응 테이블을 포함한 Supabase SQL 문서 최신화
 
 ---
 
-## 11. 열린 질문
+## 12. 열린 질문
 
 - 대댓글 depth를 현재 1단계 이상으로 확장할지 여부
 - 반응 테이블 SQL 문서를 실제 운영 스키마 기준으로 정리할지 여부

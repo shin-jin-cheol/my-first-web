@@ -21,6 +21,14 @@
 - [x] `posts_insert_authenticated` INSERT 로그인 사용자 및 `author_id = auth.uid()` 정책 적용
 - [x] `posts_update_owner` UPDATE 작성자만 가능 정책 적용
 - [x] `posts_delete_owner` DELETE 작성자만 가능 정책 적용
+- [x] posts RLS INSERT/UPDATE/DELETE 정책을 service_role 기반으로 수정
+- [x] `supabase/migrations/20260526164049_fix_posts_rls.sql` 마이그레이션 작성
+- [x] posts_category_valid 제약 조건에 `notice` 카테고리 추가
+- [x] `supabase/migrations/20260526170435_fix_posts_category_constraint.sql` 마이그레이션 작성
+- [x] `lib/posts.ts` 레거시 카테고리 체크 코드 제거
+- [x] `lib/guest-posts.ts` 레거시 카테고리 체크 코드 제거
+- [x] guest_posts RLS 비활성화
+- [x] `supabase/migrations/20260526173544_disable_guest_posts_rls.sql` 마이그레이션 작성
 - [x] Supabase `friends` 테이블 생성 및 RLS 정책 적용
 - [x] `supabase/migrations/20260521055613_add_friends_table.sql` 마이그레이션 작성
 
@@ -88,6 +96,12 @@
 - [x] Supabase Storage/Blob/local fallback 저장 전략
 - [x] 안전한 JSON 파싱
 - [x] 권한 체크 공통화
+- [x] Supabase Auth 미사용으로 `auth.uid()` 기반 RLS 쓰기 정책을 사용하지 않는 아키텍처 결정 문서화
+- [x] `lib/permissions.ts` 기반 서버 사이드 권한 검증 유지
+- [x] `app/posts/actions.ts`, `app/guest/actions.ts` Server Action 세션/권한 검증 유지
+- [x] `proxy.ts` 보호 라우트 차단 유지
+- [x] posts 테이블 RLS 활성화 및 INSERT/UPDATE/DELETE service_role 기반 정책 결정 문서화
+- [x] guest_posts 테이블 RLS 비활성화 결정 문서화
 - [x] KST 날짜 유틸
 - [x] FormData 유틸
 - [x] Next.js 16 기준 `middleware.ts` 제거 및 `proxy.ts` 전환
@@ -108,6 +122,10 @@
 - [x] 클라이언트 컴포넌트에서 service_role 키 미사용 확인
 - [x] GitHub push 완료
 - [x] Vercel 빌드/배포 검증 완료
+- [x] Playwright E2E 테스트 2개 통과
+- [x] 보안 grep 3개 통과
+- [x] Vercel 수동 검증 5개 완료
+- [x] Ch13 검증 보고서 작성 (`docs/verification-report.md`)
 
 ---
 
@@ -117,5 +135,5 @@
 - [ ] 팔로우 기능
 - [ ] Supabase Realtime 알림
 - [ ] 업로드형 프로필 이미지
-- [ ] E2E 테스트
+- [ ] E2E 테스트 CI 자동화
 - [ ] 반응 테이블 포함 Supabase SQL 문서 최신화
