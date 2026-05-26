@@ -117,9 +117,6 @@ type SupabasePostCommentReactionRow = {
 };
 
 // SUPABASE_* constants are centralized in lib/env.ts
-const CATEGORY_SCHEMA_MESSAGE =
-  "선택한 카테고리를 저장하려면 Supabase SQL Editor에서 docs/supabase-content.sql을 먼저 실행해야 합니다.";
-
 const initialPosts: Post[] = [
   {
     id: 1,
@@ -674,10 +671,6 @@ export async function addPost(input: NewPostInput): Promise<Post> {
       return mapSupabaseRowToPost(result.data[0]);
     }
 
-    if (postInput.category !== "study") {
-      throw new Error(CATEGORY_SCHEMA_MESSAGE);
-    }
-
     const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
       "POST",
       "",
@@ -791,10 +784,6 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
 
     if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
       return mapSupabaseRowToPost(result.data[0]);
-    }
-
-    if (updatedPost.category !== "study") {
-      throw new Error(CATEGORY_SCHEMA_MESSAGE);
     }
 
     const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
