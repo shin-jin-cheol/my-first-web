@@ -125,9 +125,6 @@ type SupabaseGuestCommentReactionRow = {
 
 const GUEST_POSTS_BLOB_KEY = "guest/guest-posts.json";
 // SUPABASE_* constants are centralized in lib/env.ts
-const CATEGORY_SCHEMA_MESSAGE =
-  "선택한 카테고리를 저장하려면 Supabase SQL Editor에서 docs/supabase-content.sql을 먼저 실행해야 합니다.";
-
 let hasTriedSupabaseGuestBootstrap = false;
 
 function getSupabaseGuestPostsEndpoint(query = "") {
@@ -432,11 +429,6 @@ async function syncGuestPostsToSupabase(posts: GuestPost[]) {
     return;
   }
 
-  const hasNonStudyCategory = posts.some((post) => post.category !== "study");
-  if (hasNonStudyCategory) {
-    throw new Error(CATEGORY_SCHEMA_MESSAGE);
-  }
-
   const legacyResult = await requestSupabase(
     "POST",
     "?on_conflict=id",
@@ -599,10 +591,6 @@ export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost>
       return mapSupabaseRowToGuestPost(result.data[0]);
     }
 
-    if (postInput.category !== "study") {
-      throw new Error(CATEGORY_SCHEMA_MESSAGE);
-    }
-
     const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
       "POST",
       "",
@@ -721,10 +709,6 @@ export async function updateGuestPostById(
         ...mapSupabaseRowToGuestPost(result.data[0]),
         comments: commentsByPostId?.get(id) ?? [],
       };
-    }
-
-    if (updatedPost.category !== "study") {
-      throw new Error(CATEGORY_SCHEMA_MESSAGE);
     }
 
     const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
