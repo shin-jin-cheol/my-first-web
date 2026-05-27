@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const BASE_URL = 'https://my-first-web-ten-phi.vercel.app';
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL ?? 'https://my-first-web-ten-phi.vercel.app';
 const testId = process.env.TEST_ID;
 const testPassword = process.env.TEST_PASSWORD;
 
