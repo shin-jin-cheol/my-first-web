@@ -75,14 +75,15 @@ export async function sendFriendRequest(
   return mapSupabaseRowToFriend(result.data[0]);
 }
 
-export async function acceptFriendRequest(id: number): Promise<boolean> {
+export async function acceptFriendRequest(id: number, currentUserId: string): Promise<boolean> {
   if (!hasSupabaseStorage()) {
     return false;
   }
 
+  const encodedUserId = encodeURIComponent(currentUserId);
   const result = await requestSupabaseFriends<SupabaseFriendRow[]>(
     "PATCH",
-    `?id=eq.${id}&select=id,requester_id,receiver_id,status,created_at`,
+    `?id=eq.${id}&receiver_id=eq.${encodedUserId}&select=id,requester_id,receiver_id,status,created_at`,
     { status: "accepted" },
     "return=representation",
   );
@@ -90,14 +91,15 @@ export async function acceptFriendRequest(id: number): Promise<boolean> {
   return Boolean(result.ok && Array.isArray(result.data) && result.data.length > 0);
 }
 
-export async function rejectFriendRequest(id: number): Promise<boolean> {
+export async function rejectFriendRequest(id: number, currentUserId: string): Promise<boolean> {
   if (!hasSupabaseStorage()) {
     return false;
   }
 
+  const encodedUserId = encodeURIComponent(currentUserId);
   const result = await requestSupabaseFriends<SupabaseFriendRow[]>(
     "PATCH",
-    `?id=eq.${id}&select=id,requester_id,receiver_id,status,created_at`,
+    `?id=eq.${id}&receiver_id=eq.${encodedUserId}&select=id,requester_id,receiver_id,status,created_at`,
     { status: "rejected" },
     "return=representation",
   );
@@ -105,14 +107,15 @@ export async function rejectFriendRequest(id: number): Promise<boolean> {
   return Boolean(result.ok && Array.isArray(result.data) && result.data.length > 0);
 }
 
-export async function deleteFriend(id: number): Promise<boolean> {
+export async function deleteFriend(id: number, currentUserId: string): Promise<boolean> {
   if (!hasSupabaseStorage()) {
     return false;
   }
 
+  const encodedUserId = encodeURIComponent(currentUserId);
   const result = await requestSupabaseFriends<SupabaseFriendRow[]>(
     "DELETE",
-    `?id=eq.${id}&select=id,requester_id,receiver_id,status,created_at`,
+    `?id=eq.${id}&or=(requester_id.eq.${encodedUserId},receiver_id.eq.${encodedUserId})&select=id,requester_id,receiver_id,status,created_at`,
     undefined,
     "return=representation",
   );

@@ -24,6 +24,11 @@ export async function sendFriendRequestAction(formData: FormData): Promise<boole
     return false;
   }
 
+  if (receiverId === session.userId) {
+    revalidateFriendPaths(session.userId);
+    return false;
+  }
+
   const friend = await sendFriendRequest(session.userId, receiverId);
   revalidateFriendPaths(session.userId);
   revalidatePath(`/profile/${encodeURIComponent(receiverId)}`, "page");
@@ -40,7 +45,7 @@ export async function acceptFriendRequestAction(formData: FormData): Promise<boo
     return false;
   }
 
-  const accepted = await acceptFriendRequest(friendId);
+  const accepted = await acceptFriendRequest(friendId, session.userId);
   revalidateFriendPaths(session.userId);
 
   return accepted;
@@ -55,7 +60,7 @@ export async function rejectFriendRequestAction(formData: FormData): Promise<boo
     return false;
   }
 
-  const rejected = await rejectFriendRequest(friendId);
+  const rejected = await rejectFriendRequest(friendId, session.userId);
   revalidateFriendPaths(session.userId);
 
   return rejected;
@@ -70,7 +75,7 @@ export async function deleteFriendAction(formData: FormData): Promise<boolean> {
     return false;
   }
 
-  const deleted = await deleteFriend(friendId);
+  const deleted = await deleteFriend(friendId, session.userId);
   revalidateFriendPaths(session.userId);
 
   return deleted;
