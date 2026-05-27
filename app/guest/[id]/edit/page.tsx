@@ -1,5 +1,5 @@
 ﻿import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getGuestPostById } from "@/lib/guest-posts";
 import { requireSession } from "@/lib/auth";
 import { getCategoryLabel, GUEST_POST_CATEGORIES } from "@/lib/post-categories";
@@ -27,12 +27,12 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
   const postId = Number(id);
 
   if (!Number.isFinite(postId) || postId <= 0) {
-    redirect("/guest");
+    notFound();
   }
 
   const post = await getGuestPostById(postId);
   if (!post) {
-    redirect("/guest");
+    notFound();
   }
 
   const canEdit = canManagePost(session, post);

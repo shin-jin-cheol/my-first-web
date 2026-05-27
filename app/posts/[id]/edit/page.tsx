@@ -1,5 +1,5 @@
 ﻿import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
 import { getPostById } from "@/lib/posts";
@@ -23,12 +23,12 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
   const postId = Number(id);
 
   if (!Number.isFinite(postId) || postId <= 0) {
-    redirect("/posts");
+    notFound();
   }
 
   const post = await getPostById(postId);
   if (!post) {
-    redirect("/posts");
+    notFound();
   }
 
   const canEdit = canManagePost(session, post);
