@@ -176,7 +176,7 @@ export async function updatePostAction(postId: number, formData: FormData) {
   const removeAttachment = formData.get("removeAttachment") === "on";
 
   if (!title || !author || !content) {
-    return;
+    redirect(`/posts/${postId}/edit?error=${encodeURIComponent("제목, 작성자, 내용은 필수입니다.")}`);
   }
 
   if (currentSession.role !== "owner" && category === "notice") {
