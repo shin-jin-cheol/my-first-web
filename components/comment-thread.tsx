@@ -254,7 +254,7 @@ export function CommentThread({
                   <button
                     type="button"
                     onClick={() => setShowEmojiPickerId((current) => (current === comment.id ? null : comment.id))}
-                    aria-label="이모지 반응"
+                    aria-label="댓글 반응"
                     className="rounded-full border border-border-base bg-surface-muted px-2 py-1 text-xs font-semibold text-text-sub transition hover:bg-surface-strong"
                   >
                     {"\u2764\uFE0F"}

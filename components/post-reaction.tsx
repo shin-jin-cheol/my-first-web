@@ -53,7 +53,7 @@ export function PostReaction({
           <button
             type="button"
             onClick={() => setShowEmojiPicker((current) => !current)}
-            aria-label="이모지 반응"
+            aria-label="게시글 반응"
             className="rounded-full border border-border-base bg-surface-muted px-2 py-1 text-xs font-semibold text-text-sub transition hover:bg-surface-strong"
           >
             {"\u2764\uFE0F"}
