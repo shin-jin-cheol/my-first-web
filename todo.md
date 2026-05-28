@@ -31,6 +31,9 @@
 - [x] `supabase/migrations/20260526173544_disable_guest_posts_rls.sql` 마이그레이션 작성
 - [x] Supabase `friends` 테이블 생성 및 RLS 정책 적용
 - [x] `supabase/migrations/20260521055613_add_friends_table.sql` 마이그레이션 작성
+- [x] Supabase `chat_rooms`, `messages` 테이블 생성
+- [x] `supabase/migrations/20260529004057_add_chat_tables.sql` 마이그레이션 작성
+- [x] Supabase Realtime `messages` 테이블 등록
 
 ### 댓글/반응
 
@@ -68,6 +71,21 @@
 - [x] `NavMenuMobile.tsx` 친구 링크 추가
 - [x] `lib/env.ts` `SUPABASE_FRIENDS_TABLE` 상수 추가
 
+### 라이브 채팅
+
+- [x] `lib/chat.ts` 채팅 CRUD 함수와 타입 추가
+- [x] `getOrCreateRoom()`, `getMessages()`, `sendMessage()`, `getRoom()`, `isChatRoomParticipant()` 구현
+- [x] `/chat/[roomId]` 채팅 페이지 추가
+- [x] `app/chat/[roomId]/ChatWindow.tsx` Supabase Realtime 구독 추가
+- [x] `app/chat/[roomId]/actions.ts` 메시지 전송 Server Action 추가
+- [x] `app/friends/FriendChatButton.tsx` 친구 목록 채팅 버튼 추가
+- [x] `app/friends/actions.ts` `getChatRoomAction()` 추가
+- [x] `app/friends/page.tsx` 친구 항목 채팅 버튼 추가
+- [x] `PostsMenu.tsx` 데스크탑 nav 채팅 링크 추가
+- [x] `NavMenuMobile.tsx` 모바일 nav 채팅 링크 추가
+- [x] `proxy.ts` `/chat/:path*` 보호 라우트 추가
+- [x] Vercel `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 추가
+
 ### UI/UX
 
 - [x] 다크/라이트 시스템 테마
@@ -100,8 +118,10 @@
 - [x] `lib/permissions.ts` 기반 서버 사이드 권한 검증 유지
 - [x] `app/posts/actions.ts`, `app/guest/actions.ts` Server Action 세션/권한 검증 유지
 - [x] `proxy.ts` 보호 라우트 차단 유지
+- [x] 채팅 Server Component/Server Action 참여자 권한 검증 유지
 - [x] posts 테이블 RLS 활성화 및 INSERT/UPDATE/DELETE service_role 기반 정책 결정 문서화
 - [x] guest_posts 테이블 RLS 비활성화 결정 문서화
+- [x] chat_rooms/messages 테이블 RLS 비활성화 및 서버 사이드 권한 검증 결정 문서화
 - [x] KST 날짜 유틸
 - [x] FormData 유틸
 - [x] Next.js 16 기준 `middleware.ts` 제거 및 `proxy.ts` 전환
@@ -131,7 +151,6 @@
 
 ## 미구현/보류
 
-- [ ] 실시간 채팅
 - [ ] 팔로우 기능
 - [ ] Supabase Realtime 알림
 - [ ] 업로드형 프로필 이미지

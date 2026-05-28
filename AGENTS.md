@@ -17,6 +17,7 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - 이메일 OTP 회원가입/로그인
 - 댓글 기능
 - 친구 요청/수락/거절/삭제 기능
+- 친구 간 1:1 라이브 채팅 기능
 - 카테고리 시스템
 - 파일 업로드
 - 다국어 텍스트 처리
@@ -32,6 +33,7 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - `/posts`, `/posts/[id]`, `/posts/new`, `/posts/[id]/edit`: 블로그
 - `/guest`, `/guest/[id]`, `/guest/new`, `/guest/[id]/edit`, `/guest/account`: 게스트 게시판
 - `/friends`: 친구 검색, 받은 요청 수락/거절, 친구 목록 관리
+- `/chat/[roomId]`: 친구 간 1:1 라이브 채팅
 - `/profile/[id]`: 공개 프로필 및 친구 요청/수락/거절/삭제
 - `/auth/login`, `/auth/signup`: 인증
 - `/admin/members`: 관리자 회원 관리
@@ -42,6 +44,7 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - `/guest/new`
 - `/guest/account`
 - `/friends`
+- `/chat/:path*`
 - `/admin/:path*`
 
 비로그인 사용자는 보호 라우트 접근 시 `/auth/login`으로 리다이렉트됩니다.
@@ -87,6 +90,8 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - 따라서 작성/수정/삭제 권한은 `lib/permissions.ts`, `app/posts/actions.ts`, `app/guest/actions.ts`, `proxy.ts`에서 서버 사이드로 검증합니다.
 - posts 테이블은 RLS를 유지하되 INSERT/UPDATE/DELETE는 service_role 기반 정책(`WITH CHECK (true)`)으로 열고, 권한 검증은 Server Action에서 수행합니다.
 - guest_posts 테이블은 서버 사이드 권한 검증을 기준으로 RLS를 비활성화합니다.
+- chat_rooms/messages 테이블은 서버 사이드 세션/참여자 권한 검증을 기준으로 RLS를 비활성화합니다.
+- 채팅 Realtime 구독은 브라우저에서 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`로 생성한 Supabase 클라이언트를 사용합니다.
 - RLS SQL은 반드시 `supabase/migrations/` 아래 마이그레이션으로 남깁니다.
 - `service_role` 키는 클라이언트 컴포넌트나 브라우저 번들에서 사용하지 않습니다.
 - FormData 문자열/숫자 처리는 `lib/form-utils.ts`를 우선 사용합니다.
@@ -227,3 +232,18 @@ docs: Ch9 완료 기준 프로젝트 문서 갱신
   - 보안 grep 3개 통과
   - Vercel 수동 검증 5개 완료
   - 검증 보고서: `docs/verification-report.md`
+
+## 12. 라이브 채팅 기능 완료 기록
+
+- `lib/chat.ts`에 `ChatRoom`, `Message` 타입과 `getOrCreateRoom()`, `getMessages()`, `sendMessage()`, `getRoom()`, `isChatRoomParticipant()` 함수가 추가되었습니다.
+- `app/chat/[roomId]/page.tsx` Server Component 채팅 페이지가 추가되었습니다.
+- `app/chat/[roomId]/ChatWindow.tsx` Client Component가 Supabase Realtime `messages` INSERT 이벤트를 구독합니다.
+- `app/chat/[roomId]/actions.ts` 메시지 전송 Server Action이 추가되었습니다.
+- `app/friends/FriendChatButton.tsx` 친구 목록 채팅 버튼이 추가되었습니다.
+- `app/friends/actions.ts`에 `getChatRoomAction()`이 추가되었습니다.
+- `app/friends/page.tsx` 친구 항목에서 채팅방 진입을 지원합니다.
+- `app/components/PostsMenu.tsx`, `app/components/NavMenuMobile.tsx`에 로그인 사용자용 채팅 진입 링크가 추가되었습니다.
+- `proxy.ts` 보호 라우트에 `/chat/:path*`가 추가되었습니다.
+- Supabase `chat_rooms`, `messages` 테이블이 추가되었고, `messages` 테이블은 Supabase Realtime publication에 등록되었습니다.
+- 마이그레이션 파일: `supabase/migrations/20260529004057_add_chat_tables.sql`
+- Vercel 환경 변수 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`가 브라우저 Realtime 구독에 사용됩니다.

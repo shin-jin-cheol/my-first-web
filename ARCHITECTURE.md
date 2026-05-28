@@ -28,6 +28,7 @@
 - `/guest/[id]/edit`: 게스트 글 수정
 - `/guest/account`: 회원 프로필 수정, 비밀번호 변경, 회원 탈퇴
 - `/friends`: 친구 검색, 받은 친구 요청 수락/거절, 친구 목록과 삭제
+- `/chat/[roomId]`: 친구 간 1:1 라이브 채팅
 - `/profile/[id]`: 공개 프로필. owner는 블로그 게시글 목록, member는 게스트 게시글 목록 표시
 - `/auth/login`: 로그인
 - `/auth/signup`: 이메일 OTP 기반 회원가입
@@ -47,6 +48,7 @@ Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.
 - `/guest/new`
 - `/guest/account`
 - `/friends`
+- `/chat/:path*`
 - `/admin/:path*`
 
 `export const config`의 matcher 설정으로 보호 라우트를 제한합니다.
@@ -95,8 +97,18 @@ Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.
 - `lib/friends.ts`: 친구 요청 생성, 조회, 수락, 거절, 삭제 저장소 로직
 - `app/friends/actions.ts`: 친구 기능 Server Actions
 - `app/friends/page.tsx`: 사용자 이름 검색, 받은 친구 요청 처리, 친구 목록 관리 페이지
+- `app/friends/FriendChatButton.tsx`: 친구 목록에서 채팅방 생성 후 `/chat/[roomId]`로 이동하는 Client Component
 - 친구 검색은 owner 계정을 포함합니다.
 - 친구 기능은 `proxy.ts` 보호 라우트와 자체 세션 쿠키 인증을 기준으로 접근을 제한합니다.
+
+### Chat
+
+- `lib/chat.ts`: `ChatRoom`, `Message` 타입과 채팅방/메시지 CRUD 로직
+- `app/chat/[roomId]/page.tsx`: 세션 쿠키와 참여자 권한을 확인하고 초기 메시지를 조회하는 Server Component
+- `app/chat/[roomId]/ChatWindow.tsx`: 메시지 목록, 전송 폼, Supabase Realtime `messages` INSERT 구독을 담당하는 Client Component
+- `app/chat/[roomId]/actions.ts`: 메시지 전송 Server Action
+- `app/friends/actions.ts`의 `getChatRoomAction()`: 현재 사용자와 친구 사이의 채팅방을 조회하거나 생성
+- 채팅 접근은 `proxy.ts`의 `/chat/:path*` 보호 라우트와 서버 사이드 참여자 검증으로 제한합니다.
 
 ### Auth
 
@@ -129,7 +141,7 @@ Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.
 1. 사용자가 폼 제출 또는 반응 버튼 클릭
 2. 보호 라우트는 `proxy.ts`에서 자체 세션 쿠키를 먼저 확인
 3. Server Action에서 세션, 권한, 입력값 검증
-4. `lib/posts.ts`, `lib/guest-posts.ts`, `lib/friends.ts`, `lib/auth/*` 저장소 함수 호출
+4. `lib/posts.ts`, `lib/guest-posts.ts`, `lib/friends.ts`, `lib/chat.ts`, `lib/auth/*` 저장소 함수 호출
 5. Supabase 사용 가능 시 Supabase HTTP/Storage 요청
 6. Supabase 또는 Blob 설정이 부족한 환경에서는 기존 local fallback 흐름 사용
 7. 변경 성공 후 `revalidatePath`와 `redirect`로 화면 갱신
@@ -237,6 +249,27 @@ guest_posts 테이블은 Ch13 이후 RLS를 비활성화했습니다. 자체 세
 
 friends 테이블은 친구 요청과 친구 관계를 저장합니다. `status`는 요청 대기, 수락 등 관계 상태를 표현하며, RLS 정책은 로그인 사용자 본인이 요청자 또는 수신자인 친구 레코드만 생성/조회/변경/삭제할 수 있도록 제한합니다.
 
+### chat_rooms
+
+- `id` (PK)
+- `user_a_id`
+- `user_b_id`
+- `created_at`
+
+chat_rooms 테이블은 1:1 채팅방을 저장합니다. `user_a_id < user_b_id` 체크 제약으로 사용자 쌍 정렬을 보장하고, `(user_a_id, user_b_id)` 유니크 제약으로 같은 사용자 쌍의 중복 방 생성을 막습니다.
+
+### messages
+
+- `id` (PK)
+- `room_id`
+- `sender_id`
+- `content`
+- `created_at`
+
+messages 테이블은 채팅 메시지를 저장합니다. `room_id`는 `chat_rooms(id)`를 참조하고 채팅방 삭제 시 함께 삭제됩니다. `messages` 테이블은 Supabase Realtime publication에 등록되어 Client Component에서 INSERT 이벤트를 구독합니다.
+
+chat_rooms/messages 테이블은 자체 세션 쿠키 기반 서버 사이드 권한 검증을 사용하므로 RLS를 비활성화했습니다. 참여자 검증은 `lib/chat.ts`의 `isChatRoomParticipant()`와 채팅 Server Action/페이지에서 수행합니다.
+
 ---
 
 ## 7. 저장 전략
@@ -245,6 +278,7 @@ friends 테이블은 친구 요청과 친구 관계를 저장합니다. `status`
 - 첨부 파일: Supabase Storage 우선, Vercel Blob 또는 local fallback
 - 회원: 자체 회원 저장소와 세션 쿠키 흐름 유지
 - 친구: Supabase REST 우선, 자체 세션 쿠키와 RLS 기반 권한 강제
+- 채팅: Supabase REST 우선, 자체 세션 쿠키와 서버 사이드 참여자 권한 검증, Realtime 구독
 - 환경 변수: `lib/env.ts`에서 중앙 관리
 
 ---
@@ -256,6 +290,7 @@ friends 테이블은 친구 요청과 친구 관계를 저장합니다. `status`
 - 비회원: 공개 목록/상세 조회 중심, 보호 라우트 접근 시 `/auth/login`으로 이동
 - 게시글/댓글 관리 권한은 `lib/permissions.ts`에서 공통 처리
 - 친구 관계 관리는 `lib/friends.ts`와 friends 테이블 RLS 정책으로 요청자/수신자 기준 권한을 강제
+- 채팅방 접근과 메시지 전송은 `lib/chat.ts`, `app/chat/[roomId]/page.tsx`, `app/chat/[roomId]/actions.ts`에서 참여자 기준으로 검증
 - UI 분기는 작성자에게만 수정/삭제 버튼을 보여 주는 UX 계층입니다.
 - DB 보안은 클라이언트 조건문이 아니라 Supabase RLS로 강제합니다.
 - 이 프로젝트는 Supabase Auth를 사용하지 않고 자체 세션 쿠키를 사용하므로 Supabase RLS의 `auth.uid()` 기반 쓰기 정책은 자체 로그인 사용자와 연결되지 않습니다.
@@ -303,6 +338,18 @@ friends 테이블은 친구 요청과 친구 관계를 저장합니다. `status`
 - friends 테이블 RLS 활성화
 - `supabase/migrations/20260521055613_add_friends_table.sql` 마이그레이션 작성
 - `lib/env.ts` `SUPABASE_FRIENDS_TABLE` 상수 추가
+- 라이브 채팅 기능
+- `lib/chat.ts` 채팅 CRUD 함수와 타입 추가
+- `/chat/[roomId]` 채팅 페이지 추가
+- `app/chat/[roomId]/ChatWindow.tsx` Supabase Realtime 구독 추가
+- `app/chat/[roomId]/actions.ts` 메시지 전송 Server Action 추가
+- `app/friends/FriendChatButton.tsx` 친구 목록 채팅 버튼 추가
+- `app/friends/actions.ts` `getChatRoomAction()` 추가
+- `PostsMenu.tsx`, `NavMenuMobile.tsx` 채팅 진입 링크 추가
+- `proxy.ts` `/chat/:path*` 보호 라우트 추가
+- chat_rooms/messages 테이블 생성 및 `messages` Realtime 등록
+- `supabase/migrations/20260529004057_add_chat_tables.sql` 마이그레이션 작성
+- Vercel `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` Realtime 환경 변수 추가
 - 검색
 - 파일/링크 첨부
 - 테마 전환
@@ -338,7 +385,6 @@ friends 테이블은 친구 요청과 친구 관계를 저장합니다. `status`
 
 ## 10. 미구현 기능
 
-- 실시간 채팅
 - 팔로우 기능
 - Supabase Realtime 기반 알림
 - 업로드형 프로필 이미지
