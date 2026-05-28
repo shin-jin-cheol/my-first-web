@@ -6,9 +6,11 @@ import { requireSession } from "@/lib/auth";
 import {
   acceptFriendRequest,
   deleteFriend,
+  getFriendStatus,
   rejectFriendRequest,
   sendFriendRequest,
 } from "@/lib/friends";
+import { getOrCreateRoom } from "@/lib/chat";
 
 function revalidateFriendPaths(userId: string) {
   revalidatePath("/friends", "page");
@@ -79,4 +81,21 @@ export async function deleteFriendAction(formData: FormData): Promise<boolean> {
   revalidateFriendPaths(session.userId);
 
   return deleted;
+}
+
+export async function getChatRoomAction(friendId: string): Promise<string> {
+  const session = await requireSession();
+  const normalizedFriendId = friendId.trim();
+
+  if (!normalizedFriendId || normalizedFriendId === session.userId) {
+    throw new Error("Invalid friend id");
+  }
+
+  const friendStatus = await getFriendStatus(session.userId, normalizedFriendId);
+  if (!friendStatus || friendStatus.status !== "accepted") {
+    throw new Error("Chat room requires an accepted friend");
+  }
+
+  const room = await getOrCreateRoom(session.userId, normalizedFriendId);
+  return room.id;
 }

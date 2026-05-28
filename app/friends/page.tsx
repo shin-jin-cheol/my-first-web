@@ -5,6 +5,7 @@ import {
   rejectFriendRequestAction,
   sendFriendRequestAction,
 } from "@/app/friends/actions";
+import { FriendChatButton } from "@/app/friends/FriendChatButton";
 import { Button } from "@/components/ui/button";
 import { requireSession } from "@/lib/auth";
 import { getMemberById, getMemberByName, ownerAccount } from "@/lib/auth/core";
@@ -266,6 +267,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
                     </p>
                   </div>
                 </div>
+                <FriendChatButton friendId={item.userId} />
                 <form action={submitDeleteFriendAction} className="shrink-0">
                   <input type="hidden" name="friendId" value={item.friend.id} />
                   <Button type="submit" variant="outline" size="sm">

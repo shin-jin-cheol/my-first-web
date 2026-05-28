@@ -73,7 +73,7 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
           <Link href="/" className="hidden h-9 shrink-0 items-center text-sm font-medium text-text-sub transition hover:text-text-base hover:drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.18)] dark:text-text-muted dark:hover:text-highlight dark:hover:drop-shadow-[0_0_8px_rgb(from_var(--accent-primary)_r_g_b_/_0.18)] lg:inline-flex">
             {t(locale, "\ud648", "Home")}
           </Link>
-          <PostsMenu serverLocale={locale} />
+          <PostsMenu session={session} serverLocale={locale} />
           {session ? (
             <Link
               href={writeHref}
