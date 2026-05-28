@@ -1,11 +1,16 @@
 "use client";
 
 import { Send } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
 import { useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from "react";
 import { sendChatMessageAction } from "@/app/chat/[roomId]/actions";
 import { Button } from "@/components/ui/button";
-import { supabaseBrowserClient } from "@/lib/supabase/client";
 import type { Message } from "@/lib/chat";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+);
 
 type ChatWindowProps = {
   roomId: string;
@@ -74,7 +79,7 @@ export default function ChatWindow({
       });
     };
 
-    const channel = supabaseBrowserClient
+    const channel = supabase
       .channel(`room:${roomId}`)
       .on(
         "postgres_changes",
@@ -93,7 +98,7 @@ export default function ChatWindow({
       .subscribe();
 
     return () => {
-      supabaseBrowserClient.removeChannel(channel);
+      supabase.removeChannel(channel);
     };
   }, [roomId]);
 
