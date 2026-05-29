@@ -6,11 +6,12 @@ import {
   sendFriendRequestAction,
 } from "@/app/friends/actions";
 import { FriendChatButton } from "@/app/friends/FriendChatButton";
+import { UserAvatar } from "@/app/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { requireSession } from "@/lib/auth";
-import { getMemberById, getMemberByName, ownerAccount } from "@/lib/auth/core";
-import { getAvatarColorClass, getAvatarText } from "@/lib/avatar-utils";
+import { getMemberById, getMemberByName, ownerAccount, readMembers } from "@/lib/auth/core";
 import { type Friend, getFriends, getPendingRequests } from "@/lib/friends";
+import { getOwnerAvatarUrl } from "@/lib/owner-settings";
 
 type FriendsPageProps = {
   searchParams: Promise<{ q?: string }>;
@@ -19,14 +20,14 @@ type FriendsPageProps = {
 type SearchResultItem = {
   id: string;
   name: string;
+  avatarUrl: string | null;
 };
 
 type FriendUserItem = {
   friend: Friend;
   userId: string;
   name: string;
-  avatarText: string;
-  avatarColor: string;
+  avatarUrl: string | null;
 };
 
 async function getDisplayName(userId: string) {
@@ -38,15 +39,18 @@ async function getDisplayName(userId: string) {
   return member?.name || userId;
 }
 
-async function toFriendUserItem(friend: Friend, userId: string): Promise<FriendUserItem> {
+async function toFriendUserItem(
+  friend: Friend,
+  userId: string,
+  avatarUrl: string | null,
+): Promise<FriendUserItem> {
   const name = await getDisplayName(userId);
 
   return {
     friend,
     userId,
     name,
-    avatarText: getAvatarText(name),
-    avatarColor: getAvatarColorClass(name),
+    avatarUrl,
   };
 }
 
@@ -75,15 +79,21 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
   const resolvedSearchParams = await searchParams;
   const query = resolvedSearchParams.q?.trim() || "";
   const searchResultItems: SearchResultItem[] = [];
+  const [members, ownerAvatarUrl] = await Promise.all([readMembers(), getOwnerAvatarUrl()]);
+  const avatarById = new Map(members.map((member) => [member.id, member.avatarUrl ?? null]));
+
+  if (ownerAvatarUrl) {
+    avatarById.set(ownerAccount.id, ownerAvatarUrl);
+  }
 
   if (query) {
     if (ownerAccount.name.includes(query)) {
-      searchResultItems.push({ id: ownerAccount.id, name: ownerAccount.name });
+      searchResultItems.push({ id: ownerAccount.id, name: ownerAccount.name, avatarUrl: ownerAvatarUrl });
     }
 
     const member = await getMemberByName(query);
     if (member) {
-      searchResultItems.push({ id: member.id, name: member.name });
+      searchResultItems.push({ id: member.id, name: member.name, avatarUrl: member.avatarUrl ?? null });
     }
   }
 
@@ -92,13 +102,13 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
     getFriends(session.userId),
   ]);
   const pendingRequestItems = await Promise.all(
-    pendingRequests.map((friend) => toFriendUserItem(friend, friend.requesterId)),
+    pendingRequests.map((friend) => toFriendUserItem(friend, friend.requesterId, avatarById.get(friend.requesterId) ?? null)),
   );
   const friendItems = await Promise.all(
     friends.map((friend) => {
       const friendUserId =
         friend.requesterId === session.userId ? friend.receiverId : friend.requesterId;
-      return toFriendUserItem(friend, friendUserId);
+      return toFriendUserItem(friend, friendUserId, avatarById.get(friendUserId) ?? null);
     }),
   );
 
@@ -142,12 +152,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
                 className="flex items-center justify-between gap-4 rounded-2xl border border-border-strong bg-surface-muted p-5 transition hover:bg-surface-strong dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <div
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-[var(--surface)]"
-                    style={{ backgroundColor: getAvatarColorClass(searchResult.name) }}
-                  >
-                    {getAvatarText(searchResult.name)}
-                  </div>
+                  <UserAvatar name={searchResult.name} avatarUrl={searchResult.avatarUrl} size={48} />
                   <div className="min-w-0">
                     <p className="truncate text-base font-bold text-text-base">
                       {searchResult.name}
@@ -195,12 +200,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
                 className="flex items-center justify-between gap-4 rounded-2xl border border-border-strong bg-surface-muted p-5 transition hover:bg-surface-strong dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <div
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-[var(--surface)]"
-                    style={{ backgroundColor: item.avatarColor }}
-                  >
-                    {item.avatarText}
-                  </div>
+                  <UserAvatar name={item.name} avatarUrl={item.avatarUrl} size={48} />
                   <div className="min-w-0">
                     <Link
                       href={`/profile/${encodeURIComponent(item.userId)}`}
@@ -249,12 +249,7 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
                 className="flex items-center justify-between gap-4 rounded-2xl border border-border-strong bg-surface-muted p-5 transition hover:bg-surface-strong dark:border-border-sub dark:bg-surface-sub dark:hover:bg-surface-strong"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <div
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-[var(--surface)]"
-                    style={{ backgroundColor: item.avatarColor }}
-                  >
-                    {item.avatarText}
-                  </div>
+                  <UserAvatar name={item.name} avatarUrl={item.avatarUrl} size={48} />
                   <div className="min-w-0">
                     <Link
                       href={`/profile/${encodeURIComponent(item.userId)}`}
