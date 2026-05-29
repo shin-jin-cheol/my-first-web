@@ -19,6 +19,7 @@ export type MemberRecord = {
   email?: string;
   emailVerified: boolean;
   authUserId?: string;
+  avatarUrl?: string | null;
   createdAt: string;
 };
 
@@ -29,6 +30,7 @@ type SupabaseMemberRow = {
   email: string | null;
   email_verified: boolean | null;
   auth_user_id: string | null;
+  avatar_url: string | null;
   created_at: string;
 };
 
@@ -120,6 +122,7 @@ function mapSupabaseRowToMember(row: SupabaseMemberRow): MemberRecord {
     email: row.email ?? undefined,
     emailVerified: Boolean(row.email_verified),
     authUserId: row.auth_user_id ?? undefined,
+    avatarUrl: row.avatar_url ?? undefined,
     createdAt: row.created_at,
   };
 }
@@ -132,6 +135,7 @@ function mapMemberToSupabaseRow(member: MemberRecord) {
     email: member.email ?? null,
     email_verified: member.emailVerified,
     auth_user_id: member.authUserId ?? null,
+    avatar_url: member.avatarUrl ?? null,
     created_at: member.createdAt,
   };
 }
@@ -144,6 +148,7 @@ function normalizeMemberRecord(input: Partial<MemberRecord> & { id: string }): M
     email: input.email?.trim().toLowerCase() || undefined,
     emailVerified: Boolean(input.emailVerified),
     authUserId: input.authUserId?.trim() || undefined,
+    avatarUrl: input.avatarUrl?.trim() || undefined,
     createdAt: input.createdAt || new Date().toISOString(),
   };
 }
@@ -242,7 +247,7 @@ async function writeMembersToLegacyStorage(members: MemberRecord[]) {
 async function readMembersFromSupabase() {
   const result = await requestSupabaseMembers<SupabaseMemberRow[]>(
     "GET",
-    "?select=id,name,password,email,email_verified,auth_user_id,created_at&order=created_at.asc",
+    "?select=id,name,password,email,email_verified,auth_user_id,avatar_url,created_at&order=created_at.asc",
   );
 
   if (!result.ok || !Array.isArray(result.data)) {
@@ -315,7 +320,7 @@ export async function saveMember(member: MemberRecord) {
   if (hasSupabaseStorage()) {
     const result = await requestSupabaseMembers<SupabaseMemberRow[]>(
       "POST",
-      "?on_conflict=id&select=id,name,password,email,email_verified,auth_user_id,created_at",
+      "?on_conflict=id&select=id,name,password,email,email_verified,auth_user_id,avatar_url,created_at",
       [mapMemberToSupabaseRow(normalized)],
       "resolution=merge-duplicates,return=representation",
     );
@@ -336,6 +341,45 @@ export async function saveMember(member: MemberRecord) {
 
   await writeMembersToLegacyStorage(members);
   return normalized;
+}
+
+export async function updateMemberAvatarUrl(userId: string, avatarUrl: string) {
+  const normalizedUserId = userId.trim();
+  const normalizedAvatarUrl = avatarUrl.trim();
+
+  if (!normalizedUserId || !normalizedAvatarUrl) {
+    throw new Error("Invalid avatar update request.");
+  }
+
+  if (hasSupabaseStorage()) {
+    const result = await requestSupabaseMembers<SupabaseMemberRow[]>(
+      "PATCH",
+      `?id=eq.${encodeURIComponent(normalizedUserId)}&select=id,name,password,email,email_verified,auth_user_id,avatar_url,created_at`,
+      { avatar_url: normalizedAvatarUrl },
+      "return=representation",
+    );
+
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+      return mapSupabaseRowToMember(result.data[0]);
+    }
+
+    throw new Error("Failed to update avatar.");
+  }
+
+  const members = await readMembersFromLegacyStorage();
+  const index = members.findIndex((member) => member.id === normalizedUserId);
+
+  if (index === -1) {
+    throw new Error("Member not found.");
+  }
+
+  members[index] = {
+    ...members[index],
+    avatarUrl: normalizedAvatarUrl,
+  };
+
+  await writeMembersToLegacyStorage(members);
+  return members[index];
 }
 
 export async function deleteMemberById(userId: string) {

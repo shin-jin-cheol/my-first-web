@@ -28,7 +28,7 @@ export function PostsMenu({ serverLocale }: PostsMenuProps) {
 
   return (
     <details ref={detailsRef} className="group relative hidden h-9 shrink-0 items-center align-middle lg:inline-flex">
-      <summary className="inline-flex h-9 cursor-pointer list-none items-center gap-2 rounded-full border border-border-base bg-surface-muted px-3 text-sm font-semibold text-text-sub shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_8px_rgba(0,0,0,0.08)] transition marker:hidden hover:bg-surface-strong hover:text-text-base [&::-webkit-details-marker]:hidden dark:border-border-base dark:bg-surface-strong dark:text-text-sub dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_0_8px_rgba(0,0,0,0.22)] dark:hover:bg-surface-sub dark:hover:text-text-base">
+      <summary className="inline-flex h-9 cursor-pointer list-none items-center gap-2 px-1 text-sm font-semibold text-text-sub transition marker:hidden hover:text-text-base hover:underline [&::-webkit-details-marker]:hidden">
         <span>{t("게시글", "Posts")}</span>
       </summary>
       <div

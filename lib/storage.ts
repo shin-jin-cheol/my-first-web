@@ -4,6 +4,7 @@ import { list, put } from "@vercel/blob";
 import {
   BLOB_READ_WRITE_TOKEN,
   IS_VERCEL,
+  SUPABASE_AVATARS_BUCKET,
   SUPABASE_SERVICE_ROLE_KEY,
   SUPABASE_UPLOADS_BUCKET,
   SUPABASE_URL,
@@ -63,6 +64,14 @@ export function getSupabasePublicFileUrl(storagePath: string) {
   return `${SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object/public/${SUPABASE_UPLOADS_BUCKET}/${storagePath}`;
 }
 
+export function getSupabasePublicBucketFileUrl(bucket: string, storagePath: string) {
+  if (!SUPABASE_URL) {
+    return "";
+  }
+
+  return `${SUPABASE_URL.replace(/\/$/, "")}/storage/v1/object/public/${bucket}/${storagePath}`;
+}
+
 export function getAttachmentRuntimeOptions(): AttachmentRuntimeOptions {
   return {
     hasSupabaseStorage: hasSupabaseStorage(),
@@ -81,6 +90,33 @@ export function getStoragePublicUrl(storagePath: string) {
 
 export async function saveFile(file: File | null | undefined) {
   return saveAttachmentFile(file, getAttachmentRuntimeOptions());
+}
+
+export async function saveAvatarFile(file: File, storagePath: string) {
+  if (!hasSupabaseStorage() || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("Supabase Storage is not configured.");
+  }
+
+  const response = await fetch(
+    getSupabaseStorageObjectEndpoint(`/${SUPABASE_AVATARS_BUCKET}/${storagePath}`),
+    {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        "Content-Type": file.type || "application/octet-stream",
+        "x-upsert": "true",
+      },
+      body: Buffer.from(await file.arrayBuffer()),
+      cache: "no-store",
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to upload avatar.");
+  }
+
+  return getSupabasePublicBucketFileUrl(SUPABASE_AVATARS_BUCKET, storagePath);
 }
 
 export async function deleteFile(fileUrl: string | undefined) {

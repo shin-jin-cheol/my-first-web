@@ -11,11 +11,12 @@ import { getSession } from "@/lib/auth";
 import { getGuestPosts } from "@/lib/guest-posts";
 import { getPosts } from "@/lib/posts";
 import { getMemberById, ownerAccount } from "@/lib/auth/core";
-import { getAvatarColorClass, getAvatarText } from "@/lib/avatar-utils";
 import { formatKstDateString } from "@/lib/date";
 import { getFriendStatus } from "@/lib/friends";
 import { getLocale, t } from "@/lib/i18n";
 import { getCategoryLabel } from "@/lib/post-categories";
+import { UserAvatar } from "@/app/components/UserAvatar";
+import { AvatarUpload } from "./AvatarUpload";
 
 type ProfilePageProps = {
   params: Promise<{ id: string }>;
@@ -48,13 +49,13 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   const profileName = isOwnerProfile ? ownerAccount.name : member?.name || profileId;
   const session = await getSession();
+  const isOwnProfile = session?.userId === profileId;
   const friendStatus =
     session && session.userId !== profileId ? await getFriendStatus(session.userId, profileId) : undefined;
   const joinedDate = member?.createdAt
     ? formatKstDateString(member.createdAt)
     : t(locale, "운영자 계정", "Owner account");
-  const avatarText = getAvatarText(profileName);
-  const avatarColor = getAvatarColorClass(profileName);
+  const avatarUrl = member?.avatarUrl;
 
   const authoredPosts: ProfilePostItem[] = isOwnerProfile
     ? (await getPosts())
@@ -103,12 +104,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   return (
     <section className="space-y-8">
       <header className="flex flex-col gap-4 rounded-2xl border border-border-base bg-surface-sub p-6 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)] dark:border-border-base dark:bg-surface-strong sm:flex-row sm:items-center">
-        <div
-          className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full text-2xl font-bold text-[var(--surface)]"
-          style={{ backgroundColor: avatarColor }}
-        >
-          {avatarText}
-        </div>
+        <UserAvatar name={profileName} avatarUrl={avatarUrl} size={80} />
         <div className="min-w-0 space-y-2">
           <p className="text-sm font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">
             {t(locale, "프로필", "Profile")}
@@ -119,6 +115,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           <p className="text-sm text-text-muted dark:text-text-subtle">
             {t(locale, "가입일", "Joined")}: {joinedDate}
           </p>
+          {isOwnProfile && !isOwnerProfile ? <AvatarUpload userId={profileId} /> : null}
           {session && session.userId !== profileId ? (
             <div className="flex flex-wrap gap-2">
               {friendStatus?.status === "accepted" ? (
