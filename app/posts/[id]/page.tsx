@@ -15,6 +15,7 @@ import { ownerAccount, readMembers } from "@/lib/auth/core";
 import { getCategoryLabel } from "@/lib/post-categories";
 import { canManagePost, canManageComment } from "@/lib/permissions";
 import { getLocale, tk, t } from "@/lib/i18n";
+import { getOwnerAvatarUrl } from "@/lib/owner-settings";
 import {
   addCommentAction,
   addReplyAction,
@@ -36,12 +37,13 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const { id } = resolvedParams;
   const postId = Number(id);
 
-  const [post, session, comments, postReactions, members] = await Promise.all([
+  const [post, session, comments, postReactions, members, ownerAvatarUrl] = await Promise.all([
     getPostById(postId),
     getSession(),
     getPostCommentsByPostId(postId),
     getPostReactions(postId),
     readMembers(),
+    getOwnerAvatarUrl(),
   ]);
 
   if (!post) {
@@ -92,8 +94,13 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   }
 
   const memberAvatarMap = new Map(members.map((member) => [member.id, member.avatarUrl ?? null]));
+
+  if (ownerAvatarUrl) {
+    memberAvatarMap.set(ownerAccount.id, ownerAvatarUrl);
+  }
+  const authorId = post.authorId ?? ownerAccount.id;
   const authorName = post.author;
-  const authorAvatarUrl = post.authorId ? memberAvatarMap.get(post.authorId) ?? null : null;
+  const authorAvatarUrl = memberAvatarMap.get(authorId) ?? null;
 
   const commentItems: CommentThreadItem[] = comments.map((comment) => ({
     ...comment,
@@ -108,7 +115,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const boundUpdateCommentAction = updateCommentAction.bind(null, postId);
   const boundDeleteCommentAction = deleteCommentAction.bind(null, postId);
 
-  const authorProfileHref = `/profile/${encodeURIComponent(post.authorId ?? ownerAccount.id)}`;
+  const authorProfileHref = `/profile/${encodeURIComponent(authorId)}`;
 
   return (
     <article className="space-y-6 rounded-2xl border border-border-base dark:border-border-base bg-surface-sub dark:bg-surface-strong p-8 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]">

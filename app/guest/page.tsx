@@ -7,22 +7,29 @@ import { getLocale, t } from "@/lib/i18n";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import GuestPostsSearchList from "@/app/components/GuestPostsSearchList";
 import { deleteGuestPostAction } from "@/app/guest/actions";
+import { getOwnerAvatarUrl } from "@/lib/owner-settings";
+import { OWNER_ID } from "@/lib/env";
 
 type GuestBoardPageProps = {
   searchParams: Promise<{ error?: string }>;
 };
 
 export default async function GuestBoardPage({ searchParams }: GuestBoardPageProps) {
-  const [locale, session, guestBoardPosts, members, params] = await Promise.all([
+  const [locale, session, guestBoardPosts, members, params, ownerAvatarUrl] = await Promise.all([
     getLocale(),
     requireSession(),
     getGuestPosts(),
     readMembers(),
     searchParams,
+    getOwnerAvatarUrl(),
   ]);
   const errorMessage = params.error ? safeDecodeURIComponent(params.error) : "";
   const memberNameById = new Map(members.map((member) => [member.id, member.name.trim()]));
   const memberAvatarById = new Map(members.map((member) => [member.id, member.avatarUrl ?? null]));
+
+  if (ownerAvatarUrl) {
+    memberAvatarById.set(OWNER_ID, ownerAvatarUrl);
+  }
 
   const posts = guestBoardPosts.map((post) => ({
     id: `guest-${post.id}`,

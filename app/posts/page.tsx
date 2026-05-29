@@ -4,14 +4,16 @@ import { readMembers } from "@/lib/auth/core";
 import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
 import { getPosts } from "@/lib/posts";
 import { getLocale, t } from "@/lib/i18n";
+import { getOwnerAvatarUrl } from "@/lib/owner-settings";
 import PostsSearchContent from "@/app/components/PostsSearchContent";
 
 export default async function PostsPage() {
-  const [locale, posts, guestPosts, members] = await Promise.all([
+  const [locale, posts, guestPosts, members, ownerAvatarUrl] = await Promise.all([
     getLocale(),
     getPosts(),
     getGuestPosts(),
     readMembers(),
+    getOwnerAvatarUrl(),
   ]);
   const memberNameById = new Map(
     members
@@ -21,22 +23,30 @@ export default async function PostsPage() {
   const memberIdSet = new Set(members.map((member) => member.id));
   const memberAvatarById = new Map(members.map((member) => [member.id, member.avatarUrl ?? null]));
 
+  if (ownerAvatarUrl) {
+    memberAvatarById.set(ownerAccount.id, ownerAvatarUrl);
+  }
+
   const ownerPosts = posts.filter((post) => (post.authorId ? !memberIdSet.has(post.authorId) : true));
   const memberBlogPosts = posts.filter((post) => (post.authorId ? memberIdSet.has(post.authorId) : false));
 
-  const ownerPostItems = ownerPosts.map((post) => ({
-    id: post.id,
-    title: post.title,
-    content: post.content,
-    authorId: post.authorId ?? ownerAccount.id,
-    author: post.author,
-    avatarUrl: post.authorId ? memberAvatarById.get(post.authorId) ?? null : null,
-    date: post.date,
-    category: post.category,
-    categoryLabel: getCategoryLabel(post.category),
-    detailHref: `/posts/${post.id}`,
-    views: post.views,
-  }));
+  const ownerPostItems = ownerPosts.map((post) => {
+    const authorId = post.authorId ?? ownerAccount.id;
+
+    return {
+      id: post.id,
+      title: post.title,
+      content: post.content,
+      authorId,
+      author: post.author,
+      avatarUrl: memberAvatarById.get(authorId) ?? null,
+      date: post.date,
+      category: post.category,
+      categoryLabel: getCategoryLabel(post.category),
+      detailHref: `/posts/${post.id}`,
+      views: post.views,
+    };
+  });
 
   const memberBlogItems = memberBlogPosts.map((post) => {
     const category: "study" | "daily" | "info" =
