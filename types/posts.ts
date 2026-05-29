@@ -7,6 +7,7 @@ export type OwnerPostItem = {
   content: string;
   authorId: string;
   author: string;
+  avatarUrl?: string | null;
   date: string;
   category: BlogPostCategory;
   categoryLabel: string;
@@ -20,6 +21,7 @@ export type CommunityPostItem = {
   content: string;
   authorId: string;
   authorDisplay: string;
+  avatarUrl?: string | null;
   date: string;
   detailHref: string;
   category: BlogPostCategory;
@@ -34,6 +36,7 @@ export type GuestPostItem = {
   content: string;
   authorId: string;
   authorDisplay: string;
+  avatarUrl?: string | null;
   date: string;
   detailHref: string;
   canManage: boolean;

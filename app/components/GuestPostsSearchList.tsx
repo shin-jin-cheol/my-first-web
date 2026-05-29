@@ -3,6 +3,7 @@
 import Link from "next/link";
 import ScrollReveal from "./ScrollReveal";
 import SearchableList, { createSearchableListSection } from "./SearchableList";
+import { UserAvatar } from "@/app/components/UserAvatar";
 import type { GuestPostCategory } from "@/lib/post-categories";
 import type { GuestPostItem, CategoryOption } from "@/types/posts";
 
@@ -60,8 +61,9 @@ export default function GuestPostsSearchList({
                   </h2>
                   <p className="text-text-sub dark:text-text-sub">{post.content}</p>
                   <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-text-sub dark:text-text-muted">
-                    <p>
+                    <p className="flex flex-wrap items-center gap-2">
                       {labels.author}:{" "}
+                      <UserAvatar name={post.authorDisplay} avatarUrl={post.avatarUrl} size={28} />
                       <Link href={authorHref} className="font-semibold transition hover:text-accent-sub">
                         {post.authorDisplay}
                       </Link>

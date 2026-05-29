@@ -25,6 +25,7 @@ import {
   togglePostReactionAction,
 } from "@/app/posts/actions";
 import { CommentThread, type CommentThreadItem } from "@/components/comment-thread";
+import { UserAvatar } from "@/app/components/UserAvatar";
 
 type PostDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -91,6 +92,8 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   }
 
   const memberAvatarMap = new Map(members.map((member) => [member.id, member.avatarUrl ?? null]));
+  const authorName = post.author;
+  const authorAvatarUrl = post.authorId ? memberAvatarMap.get(post.authorId) ?? null : null;
 
   const commentItems: CommentThreadItem[] = comments.map((comment) => ({
     ...comment,
@@ -113,10 +116,11 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         <p className="text-sm font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">Post Detail</p>
         <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">{post.title}</h1>
         <div className="flex flex-wrap gap-4 text-sm text-text-muted dark:text-text-subtle">
-          <p>
+          <p className="flex flex-wrap items-center gap-2">
             <strong>{tk(locale, "author")}:</strong>{" "}
+            <UserAvatar name={authorName} avatarUrl={authorAvatarUrl} size={28} />
             <Link href={authorProfileHref} className="font-semibold transition hover:text-accent-sub">
-              {post.author}
+              {authorName}
             </Link>
           </p>
           <p>

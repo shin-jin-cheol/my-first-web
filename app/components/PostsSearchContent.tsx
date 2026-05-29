@@ -3,6 +3,7 @@
 import Link from "next/link";
 import ScrollReveal from "./ScrollReveal";
 import SearchableList, { createSearchableListSection } from "./SearchableList";
+import { UserAvatar } from "@/app/components/UserAvatar";
 import type { BlogPostCategory } from "@/lib/post-categories";
 import type { OwnerPostItem, CommunityPostItem, CategoryOption } from "@/types/posts";
 
@@ -72,8 +73,9 @@ export default function PostsSearchContent({
                     {post.content}
                   </p>
                   <div className="space-y-2 text-sm text-text-sub dark:text-text-muted">
-                    <p>
+                    <p className="flex flex-wrap items-center gap-2">
                       <strong>{labels.author}:</strong>{" "}
+                      <UserAvatar name={post.author} avatarUrl={post.avatarUrl} size={28} />
                       <Link href={authorHref} className="font-semibold transition hover:text-accent-sub">
                         {post.author}
                       </Link>
@@ -140,8 +142,9 @@ export default function PostsSearchContent({
                     {post.content}
                   </p>
                   <div className="space-y-2 text-sm text-text-sub dark:text-text-muted">
-                    <p>
+                    <p className="flex flex-wrap items-center gap-2">
                       <strong>{labels.author}:</strong>{" "}
+                      <UserAvatar name={post.authorDisplay} avatarUrl={post.avatarUrl} size={28} />
                       <Link href={authorHref} className="font-semibold transition hover:text-accent-sub">
                         {post.authorDisplay}
                       </Link>

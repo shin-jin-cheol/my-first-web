@@ -1,6 +1,7 @@
 ﻿import Link from "next/link";
 import { getGuestPosts } from "@/lib/guest-posts";
-import { getMemberSummaries, requireSession } from "@/lib/auth";
+import { requireSession } from "@/lib/auth";
+import { readMembers } from "@/lib/auth/core";
 import { getCategoryLabel, GUEST_POST_CATEGORIES } from "@/lib/post-categories";
 import { getLocale, t } from "@/lib/i18n";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
@@ -16,11 +17,12 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
     getLocale(),
     requireSession(),
     getGuestPosts(),
-    getMemberSummaries(),
+    readMembers(),
     searchParams,
   ]);
   const errorMessage = params.error ? safeDecodeURIComponent(params.error) : "";
   const memberNameById = new Map(members.map((member) => [member.id, member.name.trim()]));
+  const memberAvatarById = new Map(members.map((member) => [member.id, member.avatarUrl ?? null]));
 
   const posts = guestBoardPosts.map((post) => ({
     id: `guest-${post.id}`,
@@ -28,6 +30,7 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
     content: post.content,
     authorId: post.authorId,
     authorDisplay: post.authorName || memberNameById.get(post.authorId) || post.authorId,
+    avatarUrl: memberAvatarById.get(post.authorId) ?? null,
     date: post.date,
     detailHref: `/guest/${post.id}`,
     canManage: session.role === "owner" || (session.role === "member" && post.authorId === session.userId),

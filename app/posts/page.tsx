@@ -1,5 +1,6 @@
 import { getGuestPosts } from "@/lib/guest-posts";
-import { getMemberSummaries, ownerAccount } from "@/lib/auth";
+import { ownerAccount } from "@/lib/auth";
+import { readMembers } from "@/lib/auth/core";
 import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
 import { getPosts } from "@/lib/posts";
 import { getLocale, t } from "@/lib/i18n";
@@ -10,7 +11,7 @@ export default async function PostsPage() {
     getLocale(),
     getPosts(),
     getGuestPosts(),
-    getMemberSummaries(),
+    readMembers(),
   ]);
   const memberNameById = new Map(
     members
@@ -18,6 +19,7 @@ export default async function PostsPage() {
       .filter((entry) => Boolean(entry[1])),
   );
   const memberIdSet = new Set(members.map((member) => member.id));
+  const memberAvatarById = new Map(members.map((member) => [member.id, member.avatarUrl ?? null]));
 
   const ownerPosts = posts.filter((post) => (post.authorId ? !memberIdSet.has(post.authorId) : true));
   const memberBlogPosts = posts.filter((post) => (post.authorId ? memberIdSet.has(post.authorId) : false));
@@ -28,6 +30,7 @@ export default async function PostsPage() {
     content: post.content,
     authorId: post.authorId ?? ownerAccount.id,
     author: post.author,
+    avatarUrl: post.authorId ? memberAvatarById.get(post.authorId) ?? null : null,
     date: post.date,
     category: post.category,
     categoryLabel: getCategoryLabel(post.category),
@@ -45,6 +48,7 @@ export default async function PostsPage() {
       content: post.content,
       authorId: post.authorId ?? "",
       authorDisplay: memberNameById.get(post.authorId ?? "") || post.author,
+      avatarUrl: memberAvatarById.get(post.authorId ?? "") ?? null,
       date: post.date,
       detailHref: `/posts/${post.id}`,
       category,
@@ -64,6 +68,7 @@ export default async function PostsPage() {
       content: post.content,
       authorId: post.authorId,
       authorDisplay: post.authorName || memberNameById.get(post.authorId) || post.authorId,
+      avatarUrl: memberAvatarById.get(post.authorId) ?? null,
       date: post.date,
       detailHref: `/guest/${post.id}`,
       category,

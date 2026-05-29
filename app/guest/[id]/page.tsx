@@ -24,6 +24,7 @@ import {
   toggleGuestPostReactionAction,
 } from "@/app/guest/actions";
 import { CommentThread, type CommentThreadItem } from "@/components/comment-thread";
+import { UserAvatar } from "@/app/components/UserAvatar";
 
 type GuestPostDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -95,6 +96,8 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   }
   
   const memberAvatarMap = new Map(members.map((member) => [member.id, member.avatarUrl ?? null]));
+  const authorName = post.authorName || post.authorId;
+  const authorAvatarUrl = memberAvatarMap.get(post.authorId) ?? null;
 
   const commentItems: CommentThreadItem[] = (post.comments ?? []).map((comment) => ({
     ...comment,
@@ -116,10 +119,11 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
         <p className="text-sm font-semibold uppercase tracking-wider text-text-muted dark:text-text-subtle">Guest Detail</p>
         <h1 className="text-3xl font-extrabold text-text-sub dark:text-text-base">{post.title}</h1>
         <div className="flex flex-wrap gap-4 text-sm text-text-muted dark:text-text-subtle">
-          <p>
+          <p className="flex flex-wrap items-center gap-2">
             <strong>{t(locale, "작성자", "Author")}:</strong>{" "}
+            <UserAvatar name={authorName} avatarUrl={authorAvatarUrl} size={28} />
             <Link href={authorProfileHref} className="font-semibold transition hover:text-accent-sub">
-              {post.authorName || post.authorId}
+              {authorName}
             </Link>
           </p>
           <p>
