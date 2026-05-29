@@ -7,7 +7,7 @@ import { updateMemberAvatarUrl } from "@/lib/auth/core";
 import { sanitizeFileName } from "@/lib/attachment-utils";
 import { saveAvatarFile } from "@/lib/storage";
 
-const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024;
+const MAX_AVATAR_SIZE_BYTES = 10 * 1024 * 1024;
 
 function getAvatarExtension(file: File) {
   const nameExtension = file.name.split(".").pop()?.toLowerCase();
@@ -52,7 +52,7 @@ export async function uploadAvatarAction(formData: FormData): Promise<void> {
   }
 
   if (file.size > MAX_AVATAR_SIZE_BYTES) {
-    throw new Error("Avatar image must be 5MB or smaller.");
+    throw new Error("Avatar image must be 10MB or smaller.");
   }
 
   const safeUserId = sanitizeFileName(session.userId);

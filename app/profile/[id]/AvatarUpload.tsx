@@ -8,7 +8,7 @@ type AvatarUploadProps = {
   userId: string;
 };
 
-const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024;
+const MAX_AVATAR_SIZE_BYTES = 10 * 1024 * 1024;
 
 export function AvatarUpload({ userId }: AvatarUploadProps) {
   const router = useRouter();
@@ -31,7 +31,7 @@ export function AvatarUpload({ userId }: AvatarUploadProps) {
     }
 
     if (file.size > MAX_AVATAR_SIZE_BYTES) {
-      setMessage("프로필 이미지는 5MB 이하만 가능합니다.");
+      setMessage("프로필 이미지는 10MB 이하만 가능합니다.");
       event.target.value = "";
       return;
     }

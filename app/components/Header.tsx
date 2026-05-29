@@ -2,11 +2,9 @@ import Link from "next/link";
 import { logoutAction } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
 import type { Session } from "@/lib/auth";
-import { getMemberById } from "@/lib/auth/core";
 import { t, type Locale } from "@/lib/i18n";
 import { NavMenuMobile } from "./NavMenuMobile";
 import { PostsMenu } from "./PostsMenu";
-import { UserAvatar } from "./UserAvatar";
 
 const siteTitle = "\uacf5\uc778\uc7ac \uc2e0\uc9c4\ucca0\uc758 \uc0dd\uc874\uc77c\uae30";
 
@@ -16,15 +14,13 @@ type HeaderProps = {
   setLanguageAction: (formData: FormData) => Promise<void>;
 };
 
-export async function Header({ session, locale, setLanguageAction }: HeaderProps) {
-  const sessionMember = session?.role === "member" ? await getMemberById(session.userId) : undefined;
+export function Header({ session, locale, setLanguageAction }: HeaderProps) {
   const writeHref = session?.role === "owner" ? "/posts/new" : "/guest/new";
   const writeLabel =
     session?.role === "owner"
       ? t(locale, "\uc0c8 \uae00 \uc4f0\uae30", "Write")
       : t(locale, "\uc0c8 \uae00 \uc4f0\uae30", "Write");
-  const profileName = sessionMember?.name || session?.userName || session?.userId || "";
-  const profileAvatarUrl = sessionMember?.avatarUrl;
+  const profileName = session?.userName || session?.userId || "";
   const profileHref = session ? `/profile/${encodeURIComponent(session.userId)}` : "";
 
   return (
@@ -35,24 +31,18 @@ export async function Header({ session, locale, setLanguageAction }: HeaderProps
             {siteTitle}
           </Link>
           <div className="flex h-9 shrink-0 items-center gap-2">
-            {session ? (
-              <Link
-                href={profileHref}
-                aria-label={t(locale, "\ud504\ub85c\ud544", "Profile")}
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center transition hover:brightness-105"
-              >
-                <UserAvatar name={profileName} avatarUrl={profileAvatarUrl} size={36} />
-              </Link>
-            ) : null}
             {!session ? (
               <Link href="/auth/login" className="inline-flex h-9 items-center rounded-full border border-border-strong bg-surface-muted/92 px-3 text-xs font-semibold text-text-sub shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] transition hover:brightness-105 dark:border-border-strong dark:bg-surface-strong dark:text-text-base dark:shadow-none dark:hover:bg-surface-sub">
                 {t(locale, "\ub85c\uadf8\uc778", "Login")}
               </Link>
             ) : (
               <>
-                <span className="max-w-[5rem] truncate text-xs font-semibold text-text-sub">
+                <Link
+                  href={profileHref}
+                  className="max-w-[5rem] truncate text-xs font-semibold text-text-sub transition hover:text-text-base hover:underline"
+                >
                   {profileName}님
-                </span>
+                </Link>
                 <form action={logoutAction} className="inline-flex h-9 items-center">
                   <Button
                     type="submit"
@@ -93,12 +83,10 @@ export async function Header({ session, locale, setLanguageAction }: HeaderProps
               <>
                 <Link
                   href={profileHref}
-                  aria-label={t(locale, "\ud504\ub85c\ud544", "Profile")}
-                  className="inline-flex h-9 w-9 items-center justify-center transition hover:brightness-105"
+                  className="text-sm font-semibold text-text-sub transition hover:text-text-base hover:underline"
                 >
-                  <UserAvatar name={profileName} avatarUrl={profileAvatarUrl} size={36} />
+                  {profileName}님
                 </Link>
-                <span className="text-sm font-semibold text-text-sub">{profileName}님</span>
                 <form action={logoutAction} className="inline-flex h-9 items-center">
                   <Button
                     type="submit"
