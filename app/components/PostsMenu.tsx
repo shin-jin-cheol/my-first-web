@@ -1,16 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import type { Session } from "@/lib/auth";
-import { useDetailsClose } from "./useDetailsClose";
 import { useLocale } from "@/lib/i18n-client";
+import { useDetailsClose } from "./useDetailsClose";
 
 type PostsMenuProps = {
-  session: Session | null;
   serverLocale: "ko" | "en";
 };
 
-export function PostsMenu({ session, serverLocale }: PostsMenuProps) {
+export function PostsMenu({ serverLocale }: PostsMenuProps) {
   const detailsRef = useDetailsClose();
   const clientLocale = useLocale();
   const locale = clientLocale || serverLocale;
@@ -49,14 +47,6 @@ export function PostsMenu({ session, serverLocale }: PostsMenuProps) {
         >
           {t("게스트 게시판", "Guest Board")}
         </Link>
-        {session ? (
-          <Link
-            href="/friends"
-            className="block rounded-lg px-2 py-1.5 text-text-sub transition hover:bg-surface-sub hover:text-text-base dark:text-text-sub dark:hover:bg-surface-strong dark:hover:text-text-base"
-          >
-            {t("채팅", "Chat")}
-          </Link>
-        ) : null}
       </div>
     </details>
   );

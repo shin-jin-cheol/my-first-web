@@ -24,6 +24,8 @@ export const SUPABASE_GUEST_POST_REACTIONS_TABLE =
   process.env.SUPABASE_GUEST_POST_REACTIONS_TABLE || "guest_post_reactions";
 export const SUPABASE_GUEST_COMMENT_REACTIONS_TABLE =
   process.env.SUPABASE_GUEST_COMMENT_REACTIONS_TABLE || "guest_comment_reactions";
+export const SUPABASE_CHAT_ROOMS_TABLE = process.env.SUPABASE_CHAT_ROOMS_TABLE || "chat_rooms";
+export const SUPABASE_MESSAGES_TABLE = process.env.SUPABASE_MESSAGES_TABLE || "messages";
 export const SUPABASE_UPLOADS_BUCKET = process.env.SUPABASE_UPLOADS_BUCKET || "uploads";
 
 export const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;

@@ -114,15 +114,6 @@ export function NavMenuMobile({
           </Link>
         ) : null}
 
-        {session ? (
-          <Link
-            href="/friends"
-            className="block rounded-lg px-2 py-1.5 text-text-muted transition hover:bg-surface-sub hover:text-text-sub dark:text-text-subtle dark:hover:bg-surface-strong dark:hover:text-text-base"
-          >
-            {t('채팅', 'Chat')}
-          </Link>
-        ) : null}
-
         {session?.role === 'owner' ? (
           <Link
             href="/admin/members"

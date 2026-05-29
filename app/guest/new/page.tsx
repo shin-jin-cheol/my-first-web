@@ -55,7 +55,7 @@ export default async function NewGuestPostPage({ searchParams }: NewGuestPostPag
             className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[var(--accent-primary)] dark:[color-scheme:dark] dark:[&>option]:bg-surface-sub dark:[&>option]:text-text-base"
           >
             {GUEST_POST_CATEGORIES.map((category) => (
-              <option key={category} value={category} style={{ color: "black", background: "white" }}>
+              <option key={category} value={category} style={{ color: "var(--foreground)", background: "var(--background)" }}>
                 {getCategoryLabel(category)}
               </option>
             ))}

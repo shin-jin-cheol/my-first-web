@@ -1,16 +1,13 @@
 "use client";
 
 import { Send } from "lucide-react";
-import { createClient } from "@supabase/supabase-js";
 import { useEffect, useMemo, useRef, useState, useTransition, type FormEvent } from "react";
 import { sendChatMessageAction } from "@/app/chat/[roomId]/actions";
 import { Button } from "@/components/ui/button";
 import type { Message } from "@/lib/chat";
+import { supabaseBrowserClient } from "@/lib/supabase/client";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+const supabase = supabaseBrowserClient;
 
 type ChatWindowProps = {
   roomId: string;

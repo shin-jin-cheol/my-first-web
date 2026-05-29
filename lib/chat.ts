@@ -1,9 +1,10 @@
-import { SUPABASE_URL } from "@/lib/env";
+import {
+  SUPABASE_CHAT_ROOMS_TABLE,
+  SUPABASE_MESSAGES_TABLE,
+  SUPABASE_URL,
+} from "@/lib/env";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
 import { hasSupabaseStorage } from "@/lib/storage";
-
-const CHAT_ROOMS_TABLE = "chat_rooms";
-const MESSAGES_TABLE = "messages";
 
 export type ChatRoom = {
   id: string;
@@ -35,7 +36,7 @@ async function requestChatRooms<T>(
   body?: unknown,
   prefer?: string,
 ): Promise<{ ok: boolean; status: number; data: T | null }> {
-  return requestSupabaseHttp<T>(getSupabaseRestEndpoint(CHAT_ROOMS_TABLE, query), {
+  return requestSupabaseHttp<T>(getSupabaseRestEndpoint(SUPABASE_CHAT_ROOMS_TABLE, query), {
     method,
     body,
     prefer,
@@ -49,7 +50,7 @@ async function requestMessages<T>(
   body?: unknown,
   prefer?: string,
 ): Promise<{ ok: boolean; status: number; data: T | null }> {
-  return requestSupabaseHttp<T>(getSupabaseRestEndpoint(MESSAGES_TABLE, query), {
+  return requestSupabaseHttp<T>(getSupabaseRestEndpoint(SUPABASE_MESSAGES_TABLE, query), {
     method,
     body,
     prefer,

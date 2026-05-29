@@ -30,9 +30,9 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
     <nav className="border-b border-border-strong bg-surface-muted text-text-base shadow-[0_0_16px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] dark:border-border-base dark:bg-surface dark:text-text-base dark:shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]">
       <div className="mx-auto w-full max-w-4xl px-4 py-3 md:px-6 md:py-4">
         <div className="flex items-center justify-between gap-3 md:hidden">
-          <span className="inline-flex h-9 min-w-0 flex-1 items-center truncate rounded-full border border-border-strong bg-surface-muted/92 px-3 text-sm font-extrabold tracking-[0.01em] text-text-base drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-border-sub dark:bg-surface-sub/70 dark:text-text-base dark:drop-shadow-none dark:shadow-[0_0_8px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)]">
+          <Link href="/" className="inline-flex h-9 min-w-0 flex-1 items-center truncate rounded-full border border-border-strong bg-surface-muted/92 px-3 text-sm font-extrabold tracking-[0.01em] text-text-base drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md transition hover:brightness-105 dark:border-border-sub dark:bg-surface-sub/70 dark:text-text-base dark:drop-shadow-none dark:shadow-[0_0_8px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)]">
             {siteTitle}
-          </span>
+          </Link>
           <div className="flex h-9 shrink-0 items-center gap-2">
             {session ? (
               <Link
@@ -67,13 +67,13 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
         </div>
 
         <div className="hidden min-w-0 items-center gap-3 md:flex">
-          <span className="inline-flex h-9 min-w-0 flex-1 items-center truncate rounded-full border border-border-strong bg-surface-muted/92 px-3 text-base font-extrabold tracking-[0.01em] text-text-base drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md dark:border-border-sub dark:bg-surface-sub/70 dark:text-text-base dark:drop-shadow-none dark:shadow-[0_0_8px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] md:text-lg lg:max-w-[15rem] lg:flex-none">
+          <Link href="/" className="inline-flex h-9 min-w-0 flex-1 items-center truncate rounded-full border border-border-strong bg-surface-muted/92 px-3 text-base font-extrabold tracking-[0.01em] text-text-base drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md transition hover:brightness-105 dark:border-border-sub dark:bg-surface-sub/70 dark:text-text-base dark:drop-shadow-none dark:shadow-[0_0_8px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] md:text-lg lg:max-w-[15rem] lg:flex-none">
             {siteTitle}
-          </span>
+          </Link>
           <Link href="/" className="hidden h-9 shrink-0 items-center text-sm font-medium text-text-sub transition hover:text-text-base hover:drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.18)] dark:text-text-muted dark:hover:text-highlight dark:hover:drop-shadow-[0_0_8px_rgb(from_var(--accent-primary)_r_g_b_/_0.18)] lg:inline-flex">
             {t(locale, "\ud648", "Home")}
           </Link>
-          <PostsMenu session={session} serverLocale={locale} />
+          <PostsMenu serverLocale={locale} />
           {session ? (
             <Link
               href={writeHref}
