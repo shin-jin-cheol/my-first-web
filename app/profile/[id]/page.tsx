@@ -41,7 +41,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   }
 
   const isOwnerProfile = profileId === ownerAccount.id;
-  const member = isOwnerProfile ? null : await getMemberById(profileId);
+  const member = await getMemberById(profileId);
 
   if (!isOwnerProfile && !member) {
     notFound();
@@ -52,7 +52,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const isOwnProfile = session?.userId === profileId;
   const friendStatus =
     session && session.userId !== profileId ? await getFriendStatus(session.userId, profileId) : undefined;
-  const joinedDate = member?.createdAt
+  const joinedDate = !isOwnerProfile && member?.createdAt
     ? formatKstDateString(member.createdAt)
     : t(locale, "운영자 계정", "Owner account");
   const avatarUrl = member?.avatarUrl;
@@ -115,7 +115,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
           <p className="text-sm text-text-muted dark:text-text-subtle">
             {t(locale, "가입일", "Joined")}: {joinedDate}
           </p>
-          {isOwnProfile && !isOwnerProfile ? <AvatarUpload userId={profileId} /> : null}
+          {isOwnProfile ? <AvatarUpload userId={profileId} /> : null}
           {session && session.userId !== profileId ? (
             <div className="flex flex-wrap gap-2">
               {friendStatus?.status === "accepted" ? (
