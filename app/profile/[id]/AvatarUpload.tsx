@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { saveAvatarUrlAction } from "./actions";
@@ -10,10 +10,6 @@ type AvatarUploadProps = {
 };
 
 const MAX_AVATAR_SIZE_BYTES = 10 * 1024 * 1024;
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
 
 function getFileExtension(file: File) {
   const nameExtension = file.name.split(".").pop()?.toLowerCase();
@@ -42,6 +38,14 @@ function getFileExtension(file: File) {
 
 export function AvatarUpload({ userId }: AvatarUploadProps) {
   const router = useRouter();
+  const supabase = useMemo(
+    () =>
+      createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      ),
+    [],
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState("");
