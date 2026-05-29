@@ -11,7 +11,7 @@ import { buildDownloadUrl } from "@/lib/download-url";
 import { Button } from "@/components/ui/button";
 import { PostReaction } from "@/components/post-reaction";
 import { getSession } from "@/lib/auth";
-import { ownerAccount } from "@/lib/auth/core";
+import { ownerAccount, readMembers } from "@/lib/auth/core";
 import { getCategoryLabel } from "@/lib/post-categories";
 import { canManagePost, canManageComment } from "@/lib/permissions";
 import { getLocale, tk, t } from "@/lib/i18n";
@@ -35,11 +35,12 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
   const { id } = resolvedParams;
   const postId = Number(id);
 
-  const [post, session, comments, postReactions] = await Promise.all([
+  const [post, session, comments, postReactions, members] = await Promise.all([
     getPostById(postId),
     getSession(),
     getPostCommentsByPostId(postId),
     getPostReactions(postId),
+    readMembers(),
   ]);
 
   if (!post) {
@@ -89,8 +90,11 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
     );
   }
 
+  const memberAvatarMap = new Map(members.map((member) => [member.id, member.avatarUrl ?? null]));
+
   const commentItems: CommentThreadItem[] = comments.map((comment) => ({
     ...comment,
+    avatarUrl: memberAvatarMap.get(comment.authorId) ?? null,
     canManage: canManageComment(session ?? null, comment),
     reactions: commentReactionMap.get(comment.id),
   }));

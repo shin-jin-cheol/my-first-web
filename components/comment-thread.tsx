@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { getAvatarColorClass, getAvatarText } from "@/lib/avatar-utils";
+import { UserAvatar } from "@/app/components/UserAvatar";
 
 const EMOJIS = ["\u2764\uFE0F", "\uD83D\uDE02", "\uD83D\uDE2E", "\uD83D\uDE22", "\uD83D\uDE21"];
 
@@ -14,6 +14,7 @@ export type CommentThreadItem = {
   content: string;
   dateTime: string;
   parentId?: number;
+  avatarUrl?: string | null;
   canManage: boolean;
   reactions?: Array<{ emoji: string; count: number; userReacted: boolean }>;
 };
@@ -48,20 +49,6 @@ type CommentThreadProps = {
 type CommentTreeNode = CommentThreadItem & {
   replies: CommentTreeNode[];
 };
-
-function CommentAvatar({ name }: { name: string }) {
-  const avatarText = getAvatarText(name);
-  const avatarColor = getAvatarColorClass(name);
-
-  return (
-    <div
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-[var(--surface)]"
-      style={{ backgroundColor: avatarColor }}
-    >
-      {avatarText}
-    </div>
-  );
-}
 
 function buildTree(comments: CommentThreadItem[]): CommentTreeNode[] {
   const nodes = new Map<number, CommentTreeNode>();
@@ -155,7 +142,7 @@ export function CommentThread({
       <div key={comment.id} className={depth === 0 ? "rounded-2xl border border-border-base bg-surface-sub/90 p-4" : "rounded-xl border border-border-sub/60 bg-surface/70 p-3"}>
         <div className="flex items-start gap-3">
           <Link href={authorProfileHref} aria-label={comment.authorName} className="shrink-0">
-            <CommentAvatar name={comment.authorName} />
+            <UserAvatar name={comment.authorName} avatarUrl={comment.avatarUrl} size={40} />
           </Link>
 
           <div className="min-w-0 flex-1 space-y-2">

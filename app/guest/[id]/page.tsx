@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { PostReaction } from "@/components/post-reaction";
 import { getLocale, t } from "@/lib/i18n";
 import { requireSession } from "@/lib/auth";
+import { readMembers } from "@/lib/auth/core";
 import { getCategoryLabel } from "@/lib/post-categories";
 import { canManagePost, canManageComment } from "@/lib/permissions";
 import {
@@ -39,11 +40,12 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   }
 
   const sessionPromise = requireSession();
-  const [locale, session, post, postReactions] = await Promise.all([
+  const [locale, session, post, postReactions, members] = await Promise.all([
     localePromise,
     sessionPromise,
     getGuestPostById(postId),
     getGuestPostReactions(postId),
+    readMembers(),
   ]);
   if (!post) {
     notFound();
@@ -92,8 +94,11 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
     );
   }
   
+  const memberAvatarMap = new Map(members.map((member) => [member.id, member.avatarUrl ?? null]));
+
   const commentItems: CommentThreadItem[] = (post.comments ?? []).map((comment) => ({
     ...comment,
+    avatarUrl: memberAvatarMap.get(comment.authorId) ?? null,
     canManage: canManageComment(session, comment),
     reactions: commentReactionMap.get(comment.id),
   }));
