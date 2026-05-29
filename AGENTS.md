@@ -247,3 +247,14 @@ docs: Ch9 완료 기준 프로젝트 문서 갱신
 - Supabase `chat_rooms`, `messages` 테이블이 추가되었고, `messages` 테이블은 Supabase Realtime publication에 등록되었습니다.
 - 마이그레이션 파일: `supabase/migrations/20260529004057_add_chat_tables.sql`
 - Vercel 환경 변수 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`가 브라우저 Realtime 구독에 사용됩니다.
+
+## 13. 오늘 반영된 추가 기록
+
+- 프로필 아바타 업로드 버튼이 owner 프로필에서도 표시되도록 수정했습니다.
+- `app/profile/[id]/AvatarUpload.tsx`의 Supabase 클라이언트 생성을 컴포넌트 내부로 옮겨 SSR 시점 env 접근 문제를 피했습니다.
+- owner 프로필 아바타는 `owner_settings` 테이블의 `avatar_url` 값으로 저장/조회하도록 분리했습니다.
+- `app/posts/page.tsx`, `app/posts/[id]/page.tsx`, `app/guest/page.tsx`, `app/guest/[id]/page.tsx`, `app/profile/[id]/page.tsx`에서 owner 아바타를 반영했습니다.
+- `app/components/PostsSearchContent.tsx`, `app/components/GuestPostsSearchList.tsx`에서 불필요한 `"use client"`를 제거했습니다.
+- 채팅 Realtime 구독은 `NEXT_PUBLIC_SUPABASE_URL`과 `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 사용하는 클라이언트로 유지합니다.
+- `lib/supabase/http.ts`의 Supabase HTTP 요청은 try/catch 기반 에러 처리로 정리했습니다.
+- `proxy.ts`는 자체 세션 쿠키 서명 검증을 통해 보호 라우트를 유지합니다.

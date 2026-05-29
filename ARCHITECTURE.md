@@ -1,22 +1,21 @@
 # Architecture
 
 ## 1. 개요
-
-이 프로젝트는 개인 블로그와 회원 기반 게스트 커뮤니티 기능을 함께 제공하는 Next.js 애플리케이션입니다.
-
+ - `app/components/UserAvatar.tsx`: 이름 기반 아바타와 업로드된 프로필 사진 표시
+ - `app/profile/[id]/AvatarUpload.tsx`: 프로필 아바타 업로드 버튼과 이미지 업로드 처리
 - Frontend: Next.js 16.2.1 App Router, React 19.2.4
 - Styling: Tailwind CSS 4, CSS variables, shadcn/ui
 - Backend: Supabase HTTP client pattern
-- Auth: 자체 세션 쿠키 + 이메일 OTP
-- File Storage: Supabase Storage, Vercel Blob, local fallback
-- Deployment: Vercel
+
+### Owner Settings
+
+ - `lib/owner-settings.ts`: `owner_settings` 테이블의 오너 아바타 URL 조회/저장 로직
+ - 오너 프로필 아바타는 `owner_settings.key = 'avatar_url'` 값을 사용합니다.
 
 기본 방향은 Server Component 우선 구조입니다. 상태, 이벤트 핸들러, 브라우저 API가 필요한 UI만 Client Component로 분리합니다.
 
----
-
-## 2. Routes (App Router)
-
+ - `lib/env.ts`: 환경 변수 중앙화. `NODE_ENV`, `IS_VERCEL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_FRIENDS_TABLE`, `SUPABASE_OWNER_SETTINGS_TABLE`, `SUPABASE_AVATARS_BUCKET` 포함
+ - `lib/supabase/http.ts`: Supabase REST 공통 요청. try/catch 기반 에러 처리 포함
 - `/`: 홈, 최신 글 목록
 - `/posts`: 블로그 목록
 - `/posts/[id]`: 블로그 상세, 댓글, 대댓글, 이모지 반응
@@ -24,21 +23,11 @@
 - `/posts/[id]/edit`: 블로그 수정
 - `/guest`: 게스트 게시판 목록
 - `/guest/[id]`: 게스트 게시글 상세, 댓글, 대댓글, 이모지 반응
-- `/guest/new`: 게스트 글 작성
-- `/guest/[id]/edit`: 게스트 글 수정
-- `/guest/account`: 회원 프로필 수정, 비밀번호 변경, 회원 탈퇴
-- `/friends`: 친구 검색, 받은 친구 요청 수락/거절, 친구 목록과 삭제
-- `/chat/[roomId]`: 친구 간 1:1 라이브 채팅
-- `/profile/[id]`: 공개 프로필. owner는 블로그 게시글 목록, member는 게스트 게시글 목록 표시
 - `/auth/login`: 로그인
 - `/auth/signup`: 이메일 OTP 기반 회원가입
 - `/admin/members`: Owner 전용 회원 관리
 
 서버 동작은 App Router와 Server Actions로 처리하며, 이동은 `redirect`, 화면 동기화는 `revalidatePath`를 사용합니다.
-
----
-
-## 3. 보호 라우트
 
 Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.ts`를 사용합니다.
 
@@ -68,6 +57,8 @@ Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.
 - `app/components/ThemeProvider.tsx`, `ThemeToggle.tsx`: 테마 전환
 - `app/components/BgmPlayer.tsx`: BGM 플레이어
 - `app/components/LiveClock.tsx`: 라이브 시계
+- `app/components/UserAvatar.tsx`: 이름 기반 기본 아바타와 업로드된 프로필 사진 표시
+- `app/profile/[id]/AvatarUpload.tsx`: 프로필 아바타 업로드 버튼과 이미지 업로드 처리
 - `components/ui/*`: shadcn/ui 기반 UI 컴포넌트
 
 ### Posts
@@ -83,6 +74,11 @@ Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.
 - `lib/guest-posts.ts`: 게스트 게시글, 댓글, 대댓글, 반응 저장소 로직
 - `app/guest/actions.ts`: 게스트 게시판 Server Actions
 - `app/components/GuestPostsSearchList.tsx`: 게스트 게시글 검색 UI
+
+### Owner Settings
+
+- `lib/owner-settings.ts`: `owner_settings` 테이블의 오너 아바타 URL 조회/저장 로직
+- `owner_settings` 테이블은 `key = 'avatar_url'` 값을 사용해 오너 프로필 아바타 URL을 저장합니다.
 
 ### Profile
 
@@ -123,9 +119,9 @@ Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.
 
 ### Shared Utilities
 
-- `lib/env.ts`: 환경 변수 중앙화. `NODE_ENV`, `IS_VERCEL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_FRIENDS_TABLE` 포함
+- `lib/env.ts`: 환경 변수 중앙화. `NODE_ENV`, `IS_VERCEL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_FRIENDS_TABLE`, `SUPABASE_OWNER_SETTINGS_TABLE`, `SUPABASE_AVATARS_BUCKET` 포함
 - `lib/storage.ts`: Supabase Storage, Vercel Blob, local file fallback
-- `lib/supabase/http.ts`: Supabase REST 공통 요청
+- `lib/supabase/http.ts`: Supabase REST 공통 요청. try/catch 기반 에러 처리 포함
 - `lib/supabase/client.ts`: Supabase client 생성
 - `lib/permissions.ts`: 게시글/댓글 관리 권한
 - `lib/date.ts`: KST 날짜/시간
@@ -148,6 +144,8 @@ Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.
 
 권한 검증은 자체 세션 쿠키 인증을 기준으로 Server Action에서 수행합니다. Supabase Auth를 사용하지 않으므로 Supabase RLS의 `auth.uid()`는 자체 세션 사용자를 알 수 없고 null을 반환합니다. 따라서 쓰기 권한은 `lib/permissions.ts`, `app/posts/actions.ts`, `app/guest/actions.ts`, `proxy.ts` 조합으로 검증합니다.
 
+채팅 Realtime 구독은 브라우저에서 `NEXT_PUBLIC_SUPABASE_URL`과 `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 사용해 생성한 Supabase 클라이언트로 수행합니다. 오너 아바타는 `owner_settings` 테이블에서, 회원 아바타는 `members.avatar_url`에서 읽습니다.
+
 ---
 
 ## 6. 데이터 모델
@@ -159,9 +157,20 @@ Next.js 16 기준으로 `middleware.ts`를 사용하지 않고 루트의 `proxy.
 - `password`
 - `email`
 - `email_verified`
+- `avatar_url`
 - `created_at`
 
 회원 인증은 Supabase Auth가 아니라 자체 세션 쿠키와 이메일 OTP 흐름을 기준으로 합니다. Owner 계정은 `OWNER_PASSWORD` 해시값과 입력 비밀번호의 SHA-256 해시를 비교합니다.
+
+### owner_settings
+
+- `id` (PK)
+- `key`
+- `value`
+- `created_at`
+- `updated_at`
+
+owner_settings 테이블은 오너 전용 설정을 저장합니다. 현재는 `key = 'avatar_url'` 값으로 오너 프로필 아바타 URL을 저장합니다.
 
 ### posts
 
@@ -269,6 +278,11 @@ chat_rooms 테이블은 1:1 채팅방을 저장합니다. `user_a_id < user_b_id
 messages 테이블은 채팅 메시지를 저장합니다. `room_id`는 `chat_rooms(id)`를 참조하고 채팅방 삭제 시 함께 삭제됩니다. `messages` 테이블은 Supabase Realtime publication에 등록되어 Client Component에서 INSERT 이벤트를 구독합니다.
 
 chat_rooms/messages 테이블은 자체 세션 쿠키 기반 서버 사이드 권한 검증을 사용하므로 RLS를 비활성화했습니다. 참여자 검증은 `lib/chat.ts`의 `isChatRoomParticipant()`와 채팅 Server Action/페이지에서 수행합니다.
+
+### avatars
+
+- Supabase Storage `avatars` 버킷은 프로필 아바타 이미지 업로드에 사용합니다.
+- 프로필 아바타는 이름 기반 기본 아바타를 우선 표시하고, 업로드된 이미지가 있으면 해당 이미지를 표시합니다.
 
 ---
 

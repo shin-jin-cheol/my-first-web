@@ -106,6 +106,8 @@
 - [x] member 프로필 게스트 게시글 목록 표시
 - [x] nav 아바타, 게시글 작성자, 댓글 작성자 프로필 링크
 - [x] `NavMenuMobile` 프로필 링크 추가
+- [x] 프로필 아바타 업로드 버튼 표시 및 owner 아바타 업로드 구현
+- [x] 게시글/댓글/프로필 화면에 owner 아바타 반영
 
 ### 안정화/구조
 
@@ -129,6 +131,8 @@
 - [x] 규칙 위반 코드 수정 (env 중앙화, CSS variables)
 - [x] `lib/env.ts`에 `NODE_ENV`, `IS_VERCEL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 추가
 - [x] `lib/auth/session.ts`, `lib/storage.ts`, `lib/supabase/client.ts`, `app/layout.tsx` env 중앙화
+- [x] `lib/supabase/http.ts` try/catch 기반 에러 처리 정리
+- [x] `proxy.ts` 자체 세션 쿠키 서명 검증 유지
 - [x] `components/comment-thread.tsx` `text-white`를 `text-[var(--surface)]`로 수정
 - [x] `supabase/migrations/20260520041504_add_posts_rls.sql` 마이그레이션 작성
 - [x] `npx supabase db push` 원격 적용 완료
@@ -153,6 +157,5 @@
 
 - [ ] 팔로우 기능
 - [ ] Supabase Realtime 알림
-- [ ] 업로드형 프로필 이미지
 - [ ] E2E 테스트 CI 자동화
 - [ ] 반응 테이블 포함 Supabase SQL 문서 최신화

@@ -56,6 +56,7 @@
 - 이름 기반 댓글 아바타
 - 댓글 작성자 프로필 링크
 - 프로필 페이지 친구 요청/수락/거절/삭제 버튼
+- owner 프로필 아바타 업로드와 owner 아바타 반영
 
 ### 인증/회원
 
@@ -89,6 +90,7 @@
 - 진입 경로: nav 아바타, 게시글 작성자, 댓글 작성자
 - 모바일 내비게이션(`NavMenuMobile`)에 프로필 링크 추가
 - 모바일 내비게이션(`NavMenuMobile`)에 친구 링크 추가
+- owner 프로필의 아바타는 `owner_settings` 테이블에서 읽고 저장합니다.
 
 ### 친구
 
@@ -134,15 +136,18 @@
 ### 규칙 정리
 
 - `lib/env.ts`에 `NODE_ENV`, `IS_VERCEL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` 추가
-- `lib/env.ts`에 `SUPABASE_FRIENDS_TABLE` 추가
+- `lib/env.ts`에 `SUPABASE_FRIENDS_TABLE`, `SUPABASE_OWNER_SETTINGS_TABLE`, `SUPABASE_AVATARS_BUCKET` 추가
 - `lib/auth/session.ts`, `lib/storage.ts`, `lib/supabase/client.ts`, `app/layout.tsx`의 환경 변수 접근을 `lib/env.ts` 기준으로 중앙화
+- `lib/supabase/http.ts`의 Supabase HTTP 요청에 try/catch 기반 에러 처리를 추가
+- `proxy.ts`의 자체 세션 쿠키 서명 검증을 유지
 - `components/comment-thread.tsx`의 `text-white`를 `text-[var(--surface)]`로 수정
 
 ---
 
 ## 4. 주요 데이터 구조
 
-- `members`
+- `members` (`avatar_url` 포함)
+- `owner_settings`
 - `posts`
 - `guest_posts`
 - `post_comments`
@@ -155,6 +160,7 @@
 - `chat_rooms`
 - `messages`
 - Supabase Storage `uploads` bucket
+- Supabase Storage `avatars` bucket
 - local fallback JSON data
 
 `posts` 테이블은 Ch11에서 RLS를 활성화했습니다.
