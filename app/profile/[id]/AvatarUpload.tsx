@@ -2,13 +2,43 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { uploadAvatarAction } from "./actions";
+import { createClient } from "@supabase/supabase-js";
+import { saveAvatarUrlAction } from "./actions";
 
 type AvatarUploadProps = {
   userId: string;
 };
 
 const MAX_AVATAR_SIZE_BYTES = 10 * 1024 * 1024;
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+);
+
+function getFileExtension(file: File) {
+  const nameExtension = file.name.split(".").pop()?.toLowerCase();
+  if (nameExtension && /^[a-z0-9]+$/.test(nameExtension)) {
+    return nameExtension;
+  }
+
+  if (file.type === "image/jpeg") {
+    return "jpg";
+  }
+
+  if (file.type === "image/png") {
+    return "png";
+  }
+
+  if (file.type === "image/gif") {
+    return "gif";
+  }
+
+  if (file.type === "image/webp") {
+    return "webp";
+  }
+
+  return "bin";
+}
 
 export function AvatarUpload({ userId }: AvatarUploadProps) {
   const router = useRouter();
@@ -36,13 +66,20 @@ export function AvatarUpload({ userId }: AvatarUploadProps) {
       return;
     }
 
-    const formData = new FormData();
-    formData.set("userId", userId);
-    formData.set("avatar", file);
-
     setIsUploading(true);
     try {
-      await uploadAvatarAction(formData);
+      const path = `${userId}/${Date.now()}.${getFileExtension(file)}`;
+      const { error } = await supabase.storage.from("avatars").upload(path, file, {
+        contentType: file.type || "application/octet-stream",
+        upsert: true,
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      await saveAvatarUrlAction(data.publicUrl);
       router.refresh();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "업로드에 실패했습니다.");
