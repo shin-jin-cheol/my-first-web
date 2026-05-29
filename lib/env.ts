@@ -11,6 +11,7 @@ export const SUPABASE_AUTH_PUBLIC_KEY =
   "";
 
 export const SUPABASE_MEMBERS_TABLE = process.env.SUPABASE_MEMBERS_TABLE || "members";
+export const SUPABASE_OWNER_SETTINGS_TABLE = process.env.SUPABASE_OWNER_SETTINGS_TABLE || "owner_settings";
 export const SUPABASE_FRIENDS_TABLE = process.env.SUPABASE_FRIENDS_TABLE || "friends";
 export const SUPABASE_POSTS_TABLE = process.env.SUPABASE_POSTS_TABLE || "posts";
 export const SUPABASE_GUEST_POSTS_TABLE = process.env.SUPABASE_GUEST_POSTS_TABLE || "guest_posts";

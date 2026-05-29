@@ -15,6 +15,7 @@ import { formatKstDateString } from "@/lib/date";
 import { getFriendStatus } from "@/lib/friends";
 import { getLocale, t } from "@/lib/i18n";
 import { getCategoryLabel } from "@/lib/post-categories";
+import { getOwnerAvatarUrl } from "@/lib/owner-settings";
 import { UserAvatar } from "@/app/components/UserAvatar";
 import { AvatarUpload } from "./AvatarUpload";
 
@@ -52,10 +53,10 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const isOwnProfile = session?.userId === profileId;
   const friendStatus =
     session && session.userId !== profileId ? await getFriendStatus(session.userId, profileId) : undefined;
+  const avatarUrl = isOwnerProfile ? await getOwnerAvatarUrl() : member?.avatarUrl ?? null;
   const joinedDate = !isOwnerProfile && member?.createdAt
     ? formatKstDateString(member.createdAt)
     : t(locale, "운영자 계정", "Owner account");
-  const avatarUrl = member?.avatarUrl;
 
   const authoredPosts: ProfilePostItem[] = isOwnerProfile
     ? (await getPosts())
