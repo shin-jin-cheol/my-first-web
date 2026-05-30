@@ -11,13 +11,14 @@ import { ChatPanel } from "@/app/components/ChatPanel";
 import { UserAvatar } from "@/app/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { useChat } from "@/lib/context/ChatContext";
-
-const chatOffsetClass = "bottom-60";
+import { usePlayer } from "@/lib/context/PlayerContext";
 
 export function GlobalChatWindow() {
   const { state, setMode, closeChat } = useChat();
+  const { isMinimized: isPlayerMinimized } = usePlayer();
   const [data, setData] = useState<(ChatWindowData & { roomId: string }) | null>(null);
   const [error, setError] = useState<{ roomId: string; message: string } | null>(null);
+  const chatOffsetClass = isPlayerMinimized ? "bottom-16" : "bottom-60";
 
   const shouldRender = Boolean(
     state.roomId && (state.mode === "floating" || state.mode === "minimized"),

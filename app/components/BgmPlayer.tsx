@@ -1,8 +1,10 @@
 ﻿"use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
+import { Maximize2, Minimize2 } from "lucide-react";
 import LiveClock from "./LiveClock";
 import { Button } from "@/components/ui/button";
+import { usePlayer } from "@/lib/context/PlayerContext";
 import useBgm from "@/lib/hooks/useBgm";
 
 type Track = {
@@ -21,12 +23,11 @@ const tracks: Track[] = [
 
 const playIcon = "\u25B6\uFE0E";
 const previousIcon = "\u25C0\uFE0E";
-const collapseIcon = "\u25B4\uFE0E";
-const expandIcon = "\u25BE\uFE0E";
 const pauseIcon = "||";
 
 export default function BgmPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const { isMinimized, setMinimized } = usePlayer();
 
   const {
     selectedIndex,
@@ -40,10 +41,8 @@ export default function BgmPlayer() {
     onSeek,
   } = useBgm(audioRef, tracks);
 
-  const [isMobileViewport, setIsMobileViewport] = useState(false);
-  const [isMobileExpanded, setIsMobileExpanded] = useState(false);
-
   const selectedSrc = tracks[selectedIndex].src;
+  const selectedTrackLabel = tracks[selectedIndex].label;
 
   const formatTime = (seconds: number) => {
     if (!Number.isFinite(seconds) || seconds < 0) {
@@ -56,32 +55,17 @@ export default function BgmPlayer() {
     return `${minutes}:${remain}`;
   };
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 767px)");
-    const applyViewport = (event: MediaQueryList | MediaQueryListEvent) => {
-      const isMobile = event.matches;
-      setIsMobileViewport(isMobile);
-      if (!isMobile) {
-        setIsMobileExpanded(false);
-      }
-    };
-
-    applyViewport(mediaQuery);
-    const onChange = (event: MediaQueryListEvent) => applyViewport(event);
-    mediaQuery.addEventListener("change", onChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", onChange);
-    };
-  }, []);
-
   return (
-    <div className="fixed bottom-24 left-1/2 z-50 flex w-[min(82vw,280px)] -translate-x-1/2 flex-col gap-2 md:bottom-5 md:left-auto md:right-5 md:w-[min(88vw,340px)] md:translate-x-0 md:gap-3">
-      {!isMobileViewport || isMobileExpanded ? (
-        <LiveClock className="w-full rounded-2xl border border-border-base bg-surface-muted/95 px-3 py-2 text-center text-text-base shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-4px_8px_rgba(0,0,0,0.05),0_5px_12px_rgba(0,0,0,0.09)] md:rounded-3xl md:px-4 md:py-2.5 dark:border-border-sub dark:bg-surface-sub/85 dark:text-accent-sub dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07),inset_0_-7px_12px_rgba(0,0,0,0.32),0_6px_14px_rgba(0,0,0,0.28)]" />
-      ) : null}
+    <div
+      className={
+        isMinimized
+          ? "fixed bottom-4 right-4 z-50 flex w-[min(82vw,280px)] flex-col md:w-[min(88vw,340px)]"
+          : "fixed bottom-24 left-1/2 z-50 flex w-[min(82vw,280px)] -translate-x-1/2 flex-col gap-2 md:bottom-5 md:left-auto md:right-5 md:w-[min(88vw,340px)] md:translate-x-0 md:gap-3"
+      }
+    >
+      <audio ref={audioRef} src={selectedSrc} preload="auto" autoPlay muted playsInline />
 
-      {isMobileViewport ? (
+      {isMinimized ? (
         <div className="flex items-center gap-2 rounded-full border border-border-base bg-surface-muted/95 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-4px_8px_rgba(0,0,0,0.05),0_5px_12px_rgba(0,0,0,0.11)] backdrop-blur dark:border-border-sub dark:bg-surface/90 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-7px_10px_rgba(0,0,0,0.34),0_5px_12px_rgba(0,0,0,0.28)]">
           <Button
             onClick={togglePlayback}
@@ -92,85 +76,99 @@ export default function BgmPlayer() {
           >
             {isPlaying ? pauseIcon : playIcon}
           </Button>
-          <p className="min-w-0 flex-1 truncate text-xs text-text-sub dark:text-text-sub">{tracks[selectedIndex].label}</p>
+          <p className="min-w-0 flex-1 truncate text-xs text-text-sub dark:text-text-sub">
+            {selectedTrackLabel}
+          </p>
           <Button
-            onClick={() => setIsMobileExpanded((prev) => !prev)}
+            onClick={() => setMinimized(false)}
             className="h-8 w-8 rounded-full px-0 py-0 text-xs"
-            aria-label={isMobileExpanded ? "Collapse player" : "Expand player"}
-            title={isMobileExpanded ? "Close" : "Open"}
+            aria-label="Expand player"
+            title="Open"
             variant="ghost"
           >
-            {isMobileExpanded ? collapseIcon : expandIcon}
+            <Maximize2 aria-hidden="true" size={15} />
           </Button>
         </div>
-      ) : null}
+      ) : (
+        <>
+          <LiveClock className="w-full rounded-2xl border border-border-base bg-surface-muted/95 px-3 py-2 text-center text-text-base shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-4px_8px_rgba(0,0,0,0.05),0_5px_12px_rgba(0,0,0,0.09)] md:rounded-3xl md:px-4 md:py-2.5 dark:border-border-sub dark:bg-surface-sub/85 dark:text-accent-sub dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.07),inset_0_-7px_12px_rgba(0,0,0,0.32),0_6px_14px_rgba(0,0,0,0.28)]" />
 
-      <div
-        className={`${isMobileViewport && !isMobileExpanded ? "hidden" : "space-y-2 rounded-2xl border border-border-base bg-surface-muted/95 p-3 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-6px_10px_rgba(0,0,0,0.06),0_7px_15px_rgba(0,0,0,0.11)] md:space-y-3 md:rounded-3xl md:p-4 dark:border-border-sub dark:bg-surface-sub/85 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-8px_13px_rgba(0,0,0,0.36),0_7px_15px_rgba(0,0,0,0.28)]"}`}
-      >
-        <audio ref={audioRef} src={selectedSrc} preload="auto" autoPlay muted playsInline />
-        <label htmlFor="bgm-track" className="sr-only">
-          Select BGM
-        </label>
-        <select
-          id="bgm-track"
-          value={selectedSrc}
-          onChange={onTrackChange}
-          className="h-9 w-full rounded-xl border border-border-base bg-surface-muted/80 px-2.5 py-2 text-xs font-medium text-text-sub outline-none transition backdrop-blur-md hover:bg-surface-muted focus:border-border-strong focus:bg-surface-muted dark:border-highlight/30 dark:bg-surface-sub dark:text-text-base dark:hover:bg-surface-sub dark:focus:border-highlight/50 dark:focus:bg-surface-sub md:h-10 md:rounded-2xl md:px-3 md:py-2.5 md:text-sm"
-        >
-          {tracks.map((track) => (
-            <option key={track.src} value={track.src} className="bg-surface-sub text-text-sub dark:bg-surface-sub dark:text-text-base">
-              {track.label}
-            </option>
-          ))}
-        </select>
+          <div className="space-y-2 rounded-2xl border border-border-base bg-surface-muted/95 p-3 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.32),inset_0_-6px_10px_rgba(0,0,0,0.06),0_7px_15px_rgba(0,0,0,0.11)] md:space-y-3 md:rounded-3xl md:p-4 dark:border-border-sub dark:bg-surface-sub/85 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-8px_13px_rgba(0,0,0,0.36),0_7px_15px_rgba(0,0,0,0.28)]">
+            <div className="flex items-center gap-2">
+              <label htmlFor="bgm-track" className="sr-only">
+                Select BGM
+              </label>
+              <select
+                id="bgm-track"
+                value={selectedSrc}
+                onChange={onTrackChange}
+                className="h-9 min-w-0 flex-1 rounded-xl border border-border-base bg-surface-muted/80 px-2.5 py-2 text-xs font-medium text-text-sub outline-none transition backdrop-blur-md hover:bg-surface-muted focus:border-border-strong focus:bg-surface-muted dark:border-highlight/30 dark:bg-surface-sub dark:text-text-base dark:hover:bg-surface-sub dark:focus:border-highlight/50 dark:focus:bg-surface-sub md:h-10 md:rounded-2xl md:px-3 md:py-2.5 md:text-sm"
+              >
+                {tracks.map((track) => (
+                  <option key={track.src} value={track.src} className="bg-surface-sub text-text-sub dark:bg-surface-sub dark:text-text-base">
+                    {track.label}
+                  </option>
+                ))}
+              </select>
+              <Button
+                onClick={() => setMinimized(true)}
+                className="h-9 w-9 rounded-full px-0 py-0 md:h-10 md:w-10"
+                aria-label="Minimize player"
+                title="Minimize"
+                variant="ghost"
+              >
+                <Minimize2 aria-hidden="true" size={15} />
+              </Button>
+            </div>
 
-        <div className="space-y-2">
-          <input
-            type="range"
-            min={0}
-            max={Math.max(duration, 0)}
-            step={1}
-            value={Math.min(currentTime, duration || 0)}
-            onChange={onSeek}
-            className="h-1.5 w-full cursor-pointer rounded-full accent-[var(--accent)] outline-none md:h-2"
-          />
-          <div className="flex items-center justify-between text-[9px] text-text-muted dark:text-text-muted md:text-[10px]">
-            <span>{formatTime(currentTime)}</span>
-            <span>{formatTime(duration)}</span>
+            <div className="space-y-2">
+              <input
+                type="range"
+                min={0}
+                max={Math.max(duration, 0)}
+                step={1}
+                value={Math.min(currentTime, duration || 0)}
+                onChange={onSeek}
+                className="h-1.5 w-full cursor-pointer rounded-full accent-[var(--accent)] outline-none md:h-2"
+              />
+              <div className="flex items-center justify-between text-[9px] text-text-muted dark:text-text-muted md:text-[10px]">
+                <span>{formatTime(currentTime)}</span>
+                <span>{formatTime(duration)}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 md:gap-6">
+              <Button
+                onClick={playPreviousTrack}
+                className="rounded-full px-3 py-2 text-sm md:px-3.5 md:py-2.5 md:text-base"
+                aria-label="Play previous track"
+                title="Previous"
+                variant="secondary"
+              >
+                {previousIcon}
+              </Button>
+              <Button
+                onClick={togglePlayback}
+                className="rounded-full px-4.5 py-2 text-base md:px-5.5 md:py-2.5 md:text-lg"
+                aria-label={isPlaying ? "Pause music" : "Play music"}
+                title={isPlaying ? "Pause" : "Play"}
+                variant="default"
+              >
+                {isPlaying ? pauseIcon : playIcon}
+              </Button>
+              <Button
+                onClick={playNextTrack}
+                className="rounded-full px-3 py-2 text-sm md:px-3.5 md:py-2.5 md:text-base"
+                aria-label="Play next track"
+                title="Next"
+                variant="secondary"
+              >
+                {playIcon}
+              </Button>
+            </div>
           </div>
-        </div>
-
-        <div className="flex items-center justify-center gap-3 md:gap-6">
-          <Button
-            onClick={playPreviousTrack}
-            className="rounded-full px-3 py-2 text-sm md:px-3.5 md:py-2.5 md:text-base"
-            aria-label="Play previous track"
-            title="Previous"
-            variant="secondary"
-          >
-            {previousIcon}
-          </Button>
-          <Button
-            onClick={togglePlayback}
-            className="rounded-full px-4.5 py-2 text-base md:px-5.5 md:py-2.5 md:text-lg"
-            aria-label={isPlaying ? "Pause music" : "Play music"}
-            title={isPlaying ? "Pause" : "Play"}
-            variant="default"
-          >
-            {isPlaying ? pauseIcon : playIcon}
-          </Button>
-          <Button
-            onClick={playNextTrack}
-            className="rounded-full px-3 py-2 text-sm md:px-3.5 md:py-2.5 md:text-base"
-            aria-label="Play next track"
-            title="Next"
-            variant="secondary"
-          >
-            {playIcon}
-          </Button>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }
