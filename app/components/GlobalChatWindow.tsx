@@ -75,17 +75,29 @@ export function GlobalChatWindow() {
 
   if (state.mode === "minimized") {
     return (
-      <button
-        type="button"
-        onClick={() => setMode("floating")}
-        className={`fixed ${chatOffsetClass} right-4 z-50 hidden w-80 max-w-[calc(100vw-2rem)] items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110 md:flex`}
-        aria-label={`${otherUser.name} 채팅 열기`}
-      >
-        <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={28} />
-        <span className="min-w-0 flex-1 truncate text-left">{otherUser.name}</span>
-        <MessageCircle aria-hidden="true" size={16} className="shrink-0" />
-        <Maximize2 aria-hidden="true" size={16} className="shrink-0" />
-      </button>
+      <>
+        <Link
+          href={`/chat/${encodeURIComponent(state.roomId)}`}
+          onClick={() => setMode("fullscreen")}
+          className={`fixed ${chatOffsetClass} left-1/2 z-50 flex w-[min(calc(100vw-2rem),20rem)] -translate-x-1/2 items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110 md:hidden`}
+          aria-label={`${otherUser.name} 채팅 열기`}
+        >
+          <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={28} />
+          <span className="min-w-0 flex-1 truncate text-left">{otherUser.name}</span>
+          <Maximize2 aria-hidden="true" size={16} className="shrink-0" />
+        </Link>
+        <button
+          type="button"
+          onClick={() => setMode("floating")}
+          className={`fixed ${chatOffsetClass} right-4 z-50 hidden w-80 max-w-[calc(100vw-2rem)] items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110 md:flex`}
+          aria-label={`${otherUser.name} 채팅 열기`}
+        >
+          <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={28} />
+          <span className="min-w-0 flex-1 truncate text-left">{otherUser.name}</span>
+          <MessageCircle aria-hidden="true" size={16} className="shrink-0" />
+          <Maximize2 aria-hidden="true" size={16} className="shrink-0" />
+        </button>
+      </>
     );
   }
 
