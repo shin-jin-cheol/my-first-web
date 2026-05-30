@@ -1,7 +1,6 @@
 "use client";
 
 import { MessageCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { getChatRoomAction } from "@/app/friends/actions";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,6 @@ export function FriendChatButton({
   partnerName,
   partnerAvatarUrl = null,
 }: FriendChatButtonProps) {
-  const router = useRouter();
   const { openChat: openFloatingChat } = useChat();
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -29,13 +27,6 @@ export function FriendChatButton({
     startTransition(async () => {
       try {
         const roomId = await getChatRoomAction(friendId);
-        const isMobileViewport = window.matchMedia("(max-width: 767px)").matches;
-
-        if (isMobileViewport) {
-          router.push(`/chat/${encodeURIComponent(roomId)}`);
-          return;
-        }
-
         openFloatingChat(roomId, partnerName, partnerAvatarUrl);
       } catch {
         setError("채팅방을 열 수 없습니다.");

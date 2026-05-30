@@ -79,7 +79,7 @@ export function GlobalChatWindow() {
         <Link
           href={`/chat/${encodeURIComponent(state.roomId)}`}
           onClick={() => setMode("fullscreen")}
-          className={`fixed ${chatOffsetClass} left-1/2 z-50 flex w-[min(calc(100vw-2rem),20rem)] -translate-x-1/2 items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110 md:hidden`}
+          className={`fixed ${chatOffsetClass} left-1/2 z-50 flex w-[min(calc(100vw-2rem),20rem)] -translate-x-1/2 items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110`}
           aria-label={`${otherUser.name} 채팅 열기`}
         >
           <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={28} />
@@ -134,7 +134,7 @@ export function GlobalChatWindow() {
   );
 
   return (
-    <aside className={`fixed ${chatOffsetClass} right-4 z-50 hidden h-[min(60vh,620px)] min-h-[480px] w-80 md:block`}>
+    <aside className={`fixed ${chatOffsetClass} right-4 z-50 h-[min(60vh,620px)] min-h-[480px] w-[min(calc(100vw-2rem),20rem)] md:w-80`}>
       {activeData ? (
         <ChatPanel
           roomId={state.roomId}
@@ -146,7 +146,7 @@ export function GlobalChatWindow() {
           showBackLink={false}
         />
       ) : (
-        <div className="flex h-full flex-col overflow-hidden rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)]">
+        <div className="flex h-full flex-col overflow-hidden rounded-2xl border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)]">
           <header className="flex items-center justify-between gap-3 border-b-[0.5px] border-[var(--color-border-tertiary)] px-4 py-3">
             <div className="flex min-w-0 items-center gap-3">
               <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={36} />

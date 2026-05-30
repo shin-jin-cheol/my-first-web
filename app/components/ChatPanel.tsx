@@ -286,7 +286,7 @@ export function ChatPanel({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)]">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)]">
       <header className="shrink-0 flex items-center justify-between gap-3 border-b-[0.5px] border-[var(--color-border-tertiary)] px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
           {showBackLink ? (
