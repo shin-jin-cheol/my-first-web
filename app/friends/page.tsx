@@ -262,7 +262,11 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
                     </p>
                   </div>
                 </div>
-                <FriendChatButton friendId={item.userId} />
+                <FriendChatButton
+                  friendId={item.userId}
+                  partnerName={item.name}
+                  partnerAvatarUrl={item.avatarUrl}
+                />
                 <form action={submitDeleteFriendAction} className="shrink-0">
                   <input type="hidden" name="friendId" value={item.friend.id} />
                   <Button type="submit" variant="outline" size="sm">

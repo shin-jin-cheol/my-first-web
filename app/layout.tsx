@@ -1,5 +1,6 @@
 ﻿import type { Metadata } from "next";
 import BgmPlayer from "./components/BgmPlayer";
+import { GlobalChatWindow } from "./components/GlobalChatWindow";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
@@ -128,6 +129,7 @@ export default async function RootLayout({
           </div>
         </footer>
         <div className="h-24" />
+        <GlobalChatWindow />
         <BgmPlayer />
         </ClientLayout>
       </body>
