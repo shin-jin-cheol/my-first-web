@@ -310,7 +310,7 @@ export function ChatPanel({
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-0 pt-3 md:px-4">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-0 pt-3 max-h-[calc(100vh-380px)] md:max-h-[calc(100vh-280px)] md:px-4">
           {messages.length > 0 ? (
             <ol className="flex flex-col gap-1">
               {messages.map((message, index) => {
