@@ -119,36 +119,37 @@ export function NotificationBell({
   }, []);
 
   useEffect(() => {
-    const channel = supabaseBrowserClient
-      .channel(`notifications:${userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          if (!isNotification(payload.new)) {
-            return;
+    const channel = supabaseBrowserClient.channel(`notifications:${userId}`);
+
+    channel.on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "notifications",
+        filter: `user_id=eq.${userId}`,
+      },
+      (payload) => {
+        if (!isNotification(payload.new)) {
+          return;
+        }
+        const nextNotification = payload.new;
+
+        setNotifications((currentNotifications) => {
+          if (currentNotifications.some((notification) => notification.id === nextNotification.id)) {
+            return currentNotifications;
           }
-          const nextNotification = payload.new;
 
-          setNotifications((currentNotifications) => {
-            if (currentNotifications.some((notification) => notification.id === nextNotification.id)) {
-              return currentNotifications;
-            }
+          return sortNotifications([nextNotification, ...currentNotifications]).slice(0, 20);
+        });
 
-            return sortNotifications([nextNotification, ...currentNotifications]).slice(0, 20);
-          });
+        if (!nextNotification.is_read) {
+          setUnreadCount((currentCount) => currentCount + 1);
+        }
+      },
+    );
 
-          if (!nextNotification.is_read) {
-            setUnreadCount((currentCount) => currentCount + 1);
-          }
-        },
-      )
-      .subscribe();
+    channel.subscribe();
 
     return () => {
       supabaseBrowserClient.removeChannel(channel);
