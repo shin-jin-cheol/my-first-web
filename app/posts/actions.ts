@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getFormNumber, getFormString } from "@/lib/form-utils";
 import { getSession, requireSession } from "@/lib/auth";
+import { OWNER_ID } from "@/lib/env";
 import {
   addPost,
   addPostCommentByPostId,
@@ -24,6 +25,7 @@ import { isRedirectError } from "@/lib/redirect-error";
 import { canManagePost } from "@/lib/permissions";
 import { normalizeAttachment, normalizeCategory } from "@/lib/utils";
 import { tk } from "@/lib/i18n";
+import { createNotification } from "@/lib/notifications";
 import { getRequiredCommentContent, getRequiredCommentId, requireManageableComment, revalidateCommentPaths } from "@/app/comment-action-utils";
 
 function assertReactionMutation(succeeded: boolean, redirectPath: string) {
@@ -119,6 +121,16 @@ export async function addCommentAction(postId: number, formData: FormData) {
     authorName,
     content,
   });
+  const notificationUserId = currentPost.authorId || OWNER_ID;
+  if (notificationUserId && notificationUserId !== currentSession.userId) {
+    await createNotification(
+      notificationUserId,
+      "comment",
+      "새 댓글",
+      `${authorName}님이 댓글을 달았습니다`,
+      `/posts/${postId}`,
+    );
+  }
 
   revalidateCommentPaths(`/posts/${postId}`, ["/posts"]);
   redirect(`/posts/${postId}?commented=${Date.now()}`);
@@ -216,6 +228,16 @@ export async function addReplyAction(postId: number, parentCommentId: number, fo
     content,
     parentId: parentCommentId,
   });
+  const notificationUserId = currentPost.authorId || OWNER_ID;
+  if (notificationUserId && notificationUserId !== currentSession.userId) {
+    await createNotification(
+      notificationUserId,
+      "comment",
+      "새 댓글",
+      `${authorName}님이 댓글을 달았습니다`,
+      `/posts/${postId}`,
+    );
+  }
 
   revalidateCommentPaths(`/posts/${postId}`, ["/posts"]);
   redirect(`/posts/${postId}?replied=${Date.now()}`);

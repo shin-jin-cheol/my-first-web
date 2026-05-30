@@ -3,7 +3,9 @@ import { logoutAction } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
 import type { Session } from "@/lib/auth";
 import { t, type Locale } from "@/lib/i18n";
+import { getNotifications, getUnreadCount } from "@/lib/notifications";
 import { NavMenuMobile } from "./NavMenuMobile";
+import { NotificationBell } from "./NotificationBell";
 import { PostsMenu } from "./PostsMenu";
 
 const siteTitle = "\uacf5\uc778\uc7ac \uc2e0\uc9c4\ucca0\uc758 \uc0dd\uc874\uc77c\uae30";
@@ -14,7 +16,7 @@ type HeaderProps = {
   setLanguageAction: (formData: FormData) => Promise<void>;
 };
 
-export function Header({ session, locale, setLanguageAction }: HeaderProps) {
+export async function Header({ session, locale, setLanguageAction }: HeaderProps) {
   const writeHref = session?.role === "owner" ? "/posts/new" : "/guest/new";
   const writeLabel =
     session?.role === "owner"
@@ -22,6 +24,9 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
       : t(locale, "\uc0c8 \uae00 \uc4f0\uae30", "Write");
   const profileName = session?.userName || session?.userId || "";
   const profileHref = session ? `/profile/${encodeURIComponent(session.userId)}` : "";
+  const notificationData = session
+    ? await Promise.all([getNotifications(session.userId), getUnreadCount(session.userId)])
+    : null;
 
   return (
     <nav className="border-b border-border-strong bg-surface-muted text-text-base shadow-[0_0_16px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] dark:border-border-base dark:bg-surface dark:text-text-base dark:shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]">
@@ -37,6 +42,11 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
               </Link>
             ) : (
               <>
+                <NotificationBell
+                  userId={session.userId}
+                  initialNotifications={notificationData?.[0] ?? []}
+                  initialUnreadCount={notificationData?.[1] ?? 0}
+                />
                 <Link
                   href={profileHref}
                   className="max-w-[5rem] truncate text-xs font-semibold text-text-sub transition hover:text-text-base hover:underline"
@@ -81,6 +91,11 @@ export function Header({ session, locale, setLanguageAction }: HeaderProps) {
               </Link>
             ) : (
               <>
+                <NotificationBell
+                  userId={session.userId}
+                  initialNotifications={notificationData?.[0] ?? []}
+                  initialUnreadCount={notificationData?.[1] ?? 0}
+                />
                 <Link
                   href={profileHref}
                   className="text-sm font-semibold text-text-sub transition hover:text-text-base hover:underline"

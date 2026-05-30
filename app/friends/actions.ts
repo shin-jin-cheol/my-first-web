@@ -11,6 +11,7 @@ import {
   sendFriendRequest,
 } from "@/lib/friends";
 import { getOrCreateRoom } from "@/lib/chat";
+import { createNotification } from "@/lib/notifications";
 
 function revalidateFriendPaths(userId: string) {
   revalidatePath("/friends", "page");
@@ -32,6 +33,17 @@ export async function sendFriendRequestAction(formData: FormData): Promise<boole
   }
 
   const friend = await sendFriendRequest(session.userId, receiverId);
+  if (friend) {
+    const senderName = session.userName?.trim() || session.userId;
+    await createNotification(
+      receiverId,
+      "friend_request",
+      "친구 요청",
+      `${senderName}님이 친구 요청을 보냈습니다`,
+      "/friends",
+    );
+  }
+
   revalidateFriendPaths(session.userId);
   revalidatePath(`/profile/${encodeURIComponent(receiverId)}`, "page");
 

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getFormString } from "@/lib/form-utils";
 import { requireSession } from "@/lib/auth";
 import { SUPABASE_CHAT_IMAGES_BUCKET } from "@/lib/env";
+import { createNotification } from "@/lib/notifications";
 import {
   getMessages,
   getRoom,
@@ -34,6 +35,16 @@ export async function sendChatMessageAction(formData: FormData): Promise<Message
   }
 
   const message = await sendMessage(roomId, session.userId, content, imageUrl);
+  const receiverId = room.user_a_id === session.userId ? room.user_b_id : room.user_a_id;
+  const senderName = session.userName?.trim() || session.userId;
+  await createNotification(
+    receiverId,
+    "chat",
+    "새 메시지",
+    `${senderName}님이 메시지를 보냈습니다`,
+    `/chat/${roomId}`,
+  );
+
   revalidatePath(`/chat/${encodeURIComponent(roomId)}`, "page");
 
   return message;

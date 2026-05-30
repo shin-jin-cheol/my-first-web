@@ -53,6 +53,8 @@
     --color-background-secondary: var(--surface-sub);
     --color-border-tertiary: var(--border-base);
     --color-text-primary: var(--text-base);
+    --color-accent: #4ECDC4;
+    --color-accent-subtle: rgba(78,205,196,0.12);
     --border-radius-lg: var(--radius-lg);
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
@@ -131,6 +133,8 @@
     --color-background-secondary: var(--surface);
     --color-border-tertiary: var(--border-base);
     --color-text-primary: var(--text-base);
+    --color-accent: #5ECFCA;
+    --color-accent-subtle: rgba(94,207,202,0.12);
     --border-radius-lg: var(--radius-lg);
     --card: oklch(0.205 0 0);
     --card-foreground: oklch(0.985 0 0);
