@@ -143,7 +143,7 @@ export function ChatPanel({
 
   const trimmedContent = content.trim();
   const canSend = Boolean((trimmedContent || pendingImageUrl) && !isPending && !isUploadingImage);
-  const formPaddingClass = isPlayerMinimized ? "pb-16 md:pb-3" : "pb-40 md:pb-3";
+  const formPaddingClass = isPlayerMinimized ? "pb-12 md:pb-3" : "pb-28 md:pb-3";
 
   useEffect(() => {
     setMessages(initialMessages);
@@ -313,7 +313,7 @@ export function ChatPanel({
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-3 md:px-4">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-0 pt-3 md:px-4">
           {messages.length > 0 ? (
             <ol className="flex flex-col gap-1">
               {messages.map((message, index) => {

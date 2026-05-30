@@ -79,23 +79,27 @@ export default function BgmPlayer() {
           tabIndex={0}
           onClick={() => setMinimized(false)}
           onKeyDown={handleMinimizedKeyDown}
-          className="flex cursor-pointer items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110"
+          className="flex cursor-pointer items-center gap-1.5 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-3 py-1.5 text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110 md:gap-2 md:px-[14px] md:py-2"
           aria-label="Expand music player"
         >
-          <Music aria-hidden="true" size={18} className="shrink-0" />
-          <span className="min-w-0 flex-1 truncate text-left text-sm font-medium">
+          <Music aria-hidden="true" className="h-4 w-4 shrink-0 md:h-[18px] md:w-[18px]" />
+          <span className="min-w-0 flex-1 truncate text-left text-xs font-medium md:text-sm">
             {minimizedTrackLabel}
           </span>
           <button
             type="button"
             onClick={handleMinimizedPlayback}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-text-primary)] text-[var(--color-background-primary)]"
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-text-primary)] text-[var(--color-background-primary)] md:h-8 md:w-8"
             aria-label={isPlaying ? "Pause music" : "Play music"}
             title={isPlaying ? "Pause" : "Play"}
           >
-            {isPlaying ? <Pause aria-hidden="true" size={15} /> : <Play aria-hidden="true" size={15} />}
+            {isPlaying ? (
+              <Pause aria-hidden="true" className="h-[13px] w-[13px] md:h-[15px] md:w-[15px]" />
+            ) : (
+              <Play aria-hidden="true" className="h-[13px] w-[13px] md:h-[15px] md:w-[15px]" />
+            )}
           </button>
-          <Maximize2 aria-hidden="true" size={16} className="shrink-0" />
+          <Maximize2 aria-hidden="true" className="h-[14px] w-[14px] shrink-0 md:h-4 md:w-4" />
         </div>
       ) : (
         <section className="overflow-hidden rounded-t-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)] md:rounded-[var(--border-radius-lg)]">
