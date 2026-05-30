@@ -159,3 +159,74 @@
 - [ ] Supabase Realtime 알림
 - [ ] E2E 테스트 CI 자동화
 - [ ] 반응 테이블 포함 Supabase SQL 문서 최신화
+---
+
+## 최신 완료 반영
+
+### UI/UX 수정
+
+- [x] 첨부파일 UI 하단 잘림 수정
+- [x] 회원정보 나가기 버튼을 홈으로 이동하도록 변경
+- [x] 햄버거 메뉴 친구/채팅 통합
+- [x] 내 프로필 텍스트 변경
+- [x] 테마/언어 설정 토글 스타일 변경
+- [x] BGM 정지 후 클릭 재생 버그 수정
+- [x] 모바일 뮤직 플레이어 중앙 정렬
+- [x] 모바일 footer 하단 여백 조정
+- [x] 모바일 nav 제목 중앙 정렬
+- [x] 모바일 버튼 줄바꿈 방지
+
+### 채팅 개선
+
+- [x] Enter 키 전송 지원
+- [x] 채팅방 상단 상대방 이름과 아바타 표시
+- [x] 새 메시지 수신 시 자동 스크롤
+- [x] 채팅 사진 전송 기능
+- [x] 데스크탑/모바일 플로팅 및 최소화 전환
+- [x] 메시지 아바타 1분 기준 그룹핑
+- [x] 채팅창 카드 둥근 모서리 스타일 조정
+- [x] 채팅 전역 상태 관리를 위한 `ChatContext` 추가
+- [x] `GlobalChatWindow` 신규 생성
+- [x] 뮤직 플레이어 최소화 연동을 위한 `PlayerContext` 사용
+- [x] Supabase Storage `chat-images` 버킷 추가
+- [x] `SUPABASE_CHAT_IMAGES_BUCKET` 환경 변수 추가
+- [x] `messages.image_url` 컬럼 추가
+- [x] `supabase/migrations/20260530190901_add_image_url_to_messages.sql` 마이그레이션 작성
+
+### 알림 기능
+
+- [x] `notifications` 테이블 생성
+- [x] 친구 요청 알림 생성
+- [x] 댓글 알림 생성
+- [x] 채팅 알림 생성
+- [x] nav 알림 아이콘과 안읽음 뱃지 추가
+- [x] Supabase Realtime 기반 알림 드롭다운 UI 추가
+- [x] 모두 읽음 처리
+- [x] 티파니 블루 시그니처 컬러 적용
+- [x] `SUPABASE_NOTIFICATIONS_TABLE` 환경 변수 추가
+- [x] `lib/notifications.ts` 추가
+- [x] `app/components/NotificationBell.tsx` 추가
+- [x] `supabase/migrations/20260530205656_add_notifications_table.sql` 마이그레이션 작성
+
+### 게시글 이미지 첨부
+
+- [x] `posts.image_url` 컬럼 추가
+- [x] `guest_posts.image_url` 컬럼 추가
+- [x] 게시글 작성 시 이미지 업로드 지원
+- [x] 게시글 수정 시 이미지 업로드/교체 지원
+- [x] 게시글 본문 이미지 표시
+- [x] Supabase Storage `post-images` 버킷 추가
+- [x] `SUPABASE_POST_IMAGES_BUCKET` 환경 변수 추가
+- [x] `supabase/migrations/20260530000000_add_image_url_to_posts.sql` 마이그레이션 작성
+
+### E2E 테스트 CI 자동화
+
+- [x] `.github/workflows/e2e.yml` 생성
+- [x] GitHub Actions push 시 Playwright 자동 실행
+- [x] GitHub Repository Variable `PLAYWRIGHT_BASE_URL` 설정 반영
+
+### 미구현/보류 항목 상태 정정
+
+- [x] Supabase Realtime 알림 구현 완료
+- [x] E2E 테스트 CI 자동화 구현 완료
+- [x] 업로드형 프로필 이미지는 owner/member 아바타 업로드 1차 구현 완료

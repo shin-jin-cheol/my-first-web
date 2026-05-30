@@ -18,6 +18,8 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - 댓글 기능
 - 친구 요청/수락/거절/삭제 기능
 - 친구 간 1:1 라이브 채팅 기능
+- 친구 요청/댓글/채팅 기반 Realtime 알림 기능
+- 채팅 이미지 전송 및 게시글 본문 이미지 첨부 기능
 - 카테고리 시스템
 - 파일 업로드
 - 다국어 텍스트 처리
@@ -37,6 +39,7 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - `/profile/[id]`: 공개 프로필 및 친구 요청/수락/거절/삭제
 - `/auth/login`, `/auth/signup`: 인증
 - `/admin/members`: 관리자 회원 관리
+- `.github/workflows/e2e.yml`: GitHub Actions Playwright E2E 자동 실행
 
 보호 라우트는 루트의 `proxy.ts`에서 자체 세션 쿠키를 확인합니다.
 
@@ -58,6 +61,7 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 - Backend: Supabase HTTP client pattern
 - Auth: 자체 세션 쿠키 + 이메일 OTP
 - File Storage: Supabase Storage, Vercel Blob, local fallback
+- Realtime: Supabase Realtime messages/notifications 구독
 - Deployment: Vercel
 - Language: TypeScript
 - Lint: ESLint 9, `eslint-config-next` 16.2.1
@@ -258,3 +262,38 @@ docs: Ch9 완료 기준 프로젝트 문서 갱신
 - 채팅 Realtime 구독은 `NEXT_PUBLIC_SUPABASE_URL`과 `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 사용하는 클라이언트로 유지합니다.
 - `lib/supabase/http.ts`의 Supabase HTTP 요청은 try/catch 기반 에러 처리로 정리했습니다.
 - `proxy.ts`는 자체 세션 쿠키 서명 검증을 통해 보호 라우트를 유지합니다.
+
+## 14. 모바일 최적화, 채팅 개선, 알림, 이미지 첨부, E2E CI 반영 기록
+
+- 첨부파일 UI 하단 잘림을 수정했습니다.
+- 회원정보 나가기 버튼 동작을 홈 이동으로 정리했습니다.
+- 햄버거 메뉴에서 친구/채팅 진입을 통합했고, 내 프로필 텍스트를 정리했습니다.
+- 테마/언어 설정 토글 스타일을 정리했습니다.
+- BGM 정지 후 클릭 재생 버그를 수정했습니다.
+- 모바일 뮤직 플레이어와 최소화 탭을 중앙 정렬했습니다.
+- 모바일 footer 하단 여백과 모바일 최소화 탭 간격을 조정했습니다.
+- 모바일 nav 제목을 중앙 정렬했습니다.
+- 모바일 버튼 텍스트 줄바꿈을 방지했습니다.
+- 채팅 Enter 키 전송을 지원합니다.
+- 채팅방 상단에 상대방 이름과 아바타를 표시합니다.
+- 새 메시지 수신 시 메시지 목록을 자동 스크롤합니다.
+- 채팅 사진 전송 기능을 추가했습니다.
+- 데스크탑과 모바일에서 채팅 플로팅/최소화 전환을 지원합니다.
+- 메시지 아바타는 1분 기준으로 그룹핑됩니다.
+- 채팅창 카드 스타일과 둥근 모서리 표시를 정리했습니다.
+- `ChatContext` 기반 채팅 전역 상태 관리를 추가했습니다.
+- `GlobalChatWindow`를 추가했습니다.
+- `PlayerContext` 기반 뮤직 플레이어 최소화 연동을 추가했습니다.
+- Supabase Storage `chat-images` 버킷을 채팅 이미지 전송에 사용합니다.
+- `notifications` 테이블을 추가하고 RLS를 비활성화했습니다.
+- 친구 요청, 댓글, 채팅 메시지 전송 시 알림을 생성합니다.
+- nav에 알림 아이콘과 안읽음 뱃지를 추가했습니다.
+- 알림 드롭다운은 Supabase Realtime으로 실시간 반영됩니다.
+- 알림 모두 읽음 처리를 지원합니다.
+- 알림 UI에 티파니 블루 시그니처 컬러 CSS variables를 적용했습니다.
+- `posts`, `guest_posts`에 `image_url` 컬럼을 추가했습니다.
+- 게시글 작성/수정 시 이미지 업로드와 본문 이미지 표시를 지원합니다.
+- Supabase Storage `post-images` 버킷을 게시글 이미지 첨부에 사용합니다.
+- `.github/workflows/e2e.yml`을 추가해 GitHub Actions push 시 Playwright E2E를 실행합니다.
+- GitHub Repository Variable `PLAYWRIGHT_BASE_URL`을 E2E 대상 URL로 사용합니다.
+- `lib/env.ts`에 `SUPABASE_CHAT_IMAGES_BUCKET`, `SUPABASE_POST_IMAGES_BUCKET`, `SUPABASE_NOTIFICATIONS_TABLE` 상수가 추가되었습니다.
