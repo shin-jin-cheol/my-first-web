@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowLeft, ImagePlus, Send } from "lucide-react";
 import {
   useEffect,
-  useMemo,
   useRef,
   useState,
   useTransition,
@@ -142,8 +141,6 @@ export function ChatPanel({
 
   const trimmedContent = content.trim();
   const canSend = Boolean((trimmedContent || pendingImageUrl) && !isPending && !isUploadingImage);
-  const messageCountLabel = useMemo(() => `${messages.length} messages`, [messages.length]);
-
   useEffect(() => {
     setMessages(initialMessages);
   }, [initialMessages]);
@@ -289,6 +286,7 @@ export function ChatPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)]">
+    <div className="flex h-screen min-h-0 flex-1 flex-col overflow-hidden rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)]">
       <header className="shrink-0 flex items-center justify-between gap-3 border-b-[0.5px] border-[var(--color-border-tertiary)] px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
           {showBackLink ? (
@@ -303,9 +301,6 @@ export function ChatPanel({
           <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={36} />
           <div className="min-w-0">
             <h1 className="truncate text-base font-bold text-[var(--color-text-primary)]">{otherUser.name}</h1>
-            <p className="truncate text-xs text-text-muted dark:text-text-subtle">
-              {messageCountLabel}
-            </p>
           </div>
         </div>
 
@@ -316,7 +311,6 @@ export function ChatPanel({
         ) : null}
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
         {messages.length > 0 ? (
           <ol className="flex flex-col gap-1">
             {messages.map((message, index) => {

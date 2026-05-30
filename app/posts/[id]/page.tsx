@@ -214,17 +214,17 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
         toggleCommentReactionAction={togglePostCommentReactionAction}
       />
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <Link
           href="/posts"
-          className="inline-flex rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
+          className="inline-flex min-w-28 justify-center whitespace-nowrap rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
         >
           {tk(locale, "backToList")}
         </Link>
         {canManagePostResult ? (
           <Link
             href={`/posts/${post.id}/edit`}
-            className="inline-flex rounded-full border border-[var(--accent-light)] bg-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.12)] transition hover:-translate-y-0.5 hover:bg-[var(--accent-light-sub)]"
+            className="inline-flex min-w-28 justify-center whitespace-nowrap rounded-full border border-[var(--accent-light)] bg-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.12)] transition hover:-translate-y-0.5 hover:bg-[var(--accent-light-sub)]"
           >
             {tk(locale, "edit")}
           </Link>
@@ -233,7 +233,7 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           <form action={boundDeletePostAction}>
             <Button
               type="submit"
-              className="inline-flex rounded-full border border-border-base dark:border-danger-border bg-surface-strong dark:bg-danger-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-danger-sub transition hover:bg-surface-muted dark:hover:bg-danger-soft"
+              className="inline-flex min-w-28 whitespace-nowrap rounded-full border border-border-base dark:border-danger-border bg-surface-strong dark:bg-danger-soft px-4 py-2 text-sm font-semibold text-text-sub dark:text-danger-sub transition hover:bg-surface-muted dark:hover:bg-danger-soft"
             >
               {tk(locale, "delete")}
             </Button>

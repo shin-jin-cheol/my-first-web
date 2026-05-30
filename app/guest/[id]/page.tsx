@@ -215,17 +215,17 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
         toggleCommentReactionAction={toggleGuestCommentReactionAction}
       />
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <Link
           href="/guest"
-          className="inline-flex rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
+          className="inline-flex min-w-28 justify-center whitespace-nowrap rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
         >
           {t(locale, "목록으로 돌아가기", "Back to List")}
         </Link>
         {canManage ? (
           <Link
             href={`/guest/${post.id}/edit`}
-            className="inline-flex rounded-full border border-accent-border bg-accent-soft px-4 py-2 text-sm font-semibold text-accent-sub"
+            className="inline-flex min-w-28 justify-center whitespace-nowrap rounded-full border border-accent-border bg-accent-soft px-4 py-2 text-sm font-semibold text-accent-sub"
           >
             {t(locale, "수정하기", "Edit")}
           </Link>
@@ -234,7 +234,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
           <form action={boundDeleteGuestPostAction}>
             <Button
               type="submit"
-              className="inline-flex rounded-full border border-danger-border bg-danger-soft px-4 py-2 text-sm font-semibold text-danger-sub"
+              className="inline-flex min-w-28 whitespace-nowrap rounded-full border border-danger-border bg-danger-soft px-4 py-2 text-sm font-semibold text-danger-sub"
             >
               {t(locale, "삭제하기", "Delete")}
             </Button>

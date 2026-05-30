@@ -65,9 +65,12 @@ export default function BgmPlayer() {
     event.stopPropagation();
     togglePlayback();
   }
+  const containerClassName = isMinimized
+    ? "fixed bottom-4 left-1/2 z-50 flex w-[min(calc(100vw-2rem),320px)] -translate-x-1/2 flex-col md:left-auto md:right-4 md:translate-x-0"
+    : "fixed inset-x-0 bottom-0 z-50 flex w-full flex-col md:bottom-4 md:left-auto md:right-4 md:w-[min(calc(100vw-2rem),320px)] md:translate-x-0";
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex w-[min(calc(100vw-2rem),320px)] flex-col">
+    <div className={containerClassName}>
       <audio ref={audioRef} src={selectedSrc} preload="auto" autoPlay muted playsInline />
 
       {isMinimized ? (
@@ -95,7 +98,7 @@ export default function BgmPlayer() {
           <Maximize2 aria-hidden="true" size={16} className="shrink-0" />
         </div>
       ) : (
-        <section className="overflow-hidden rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)]">
+        <section className="overflow-hidden rounded-t-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)] md:rounded-[var(--border-radius-lg)]">
           <header className="flex items-center justify-between gap-3 border-b-[0.5px] border-[var(--color-border-tertiary)] px-4 py-3">
             <div className="flex min-w-0 items-center gap-3">
               <Music aria-hidden="true" size={20} className="shrink-0" />
