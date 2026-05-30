@@ -226,7 +226,7 @@ export function NotificationBell({
       </button>
 
       {isOpen ? (
-        <section className="absolute right-0 top-11 z-50 w-[min(22rem,calc(100vw-1rem))] overflow-hidden rounded-2xl border border-border-base bg-surface-muted/95 text-text-base shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_14px_30px_rgba(0,0,0,0.16)] backdrop-blur dark:border-border-base dark:bg-surface-sub/95 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_14px_30px_rgba(0,0,0,0.38)]">
+        <section className="absolute left-1/2 top-11 z-50 w-[calc(100vw-2rem)] -translate-x-1/2 overflow-hidden rounded-2xl border border-border-base bg-surface-muted/95 text-text-base shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_14px_30px_rgba(0,0,0,0.16)] backdrop-blur dark:border-border-base dark:bg-surface-sub/95 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_14px_30px_rgba(0,0,0,0.38)] md:left-auto md:right-0 md:w-[min(22rem,calc(100vw-1rem))] md:translate-x-0">
           <header className="flex items-center justify-between gap-3 border-b border-border-base px-4 py-3 dark:border-border-sub">
             <h2 className="text-sm font-bold text-text-base">알림</h2>
             <button

@@ -35,14 +35,16 @@ export default async function ChatPage({ params }: ChatPageProps) {
   };
 
   return (
-    <section className="mx-auto flex h-dvh w-full max-w-3xl flex-col overflow-hidden">
-      <ChatWindow
-        roomId={decodedRoomId}
-        initialMessages={initialMessages}
-        currentUserId={session.userId}
-        otherUser={otherUser}
-        chatImagesBucket={SUPABASE_CHAT_IMAGES_BUCKET}
-      />
+    <section className="fixed inset-x-0 bottom-0 top-[4.25rem] flex overflow-hidden md:top-[5rem]">
+      <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col pb-24">
+        <ChatWindow
+          roomId={decodedRoomId}
+          initialMessages={initialMessages}
+          currentUserId={session.userId}
+          otherUser={otherUser}
+          chatImagesBucket={SUPABASE_CHAT_IMAGES_BUCKET}
+        />
+      </div>
     </section>
   );
 }
