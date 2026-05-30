@@ -12,6 +12,8 @@ import { UserAvatar } from "@/app/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { useChat } from "@/lib/context/ChatContext";
 
+const chatOffsetClass = "bottom-60";
+
 export function GlobalChatWindow() {
   const { state, setMode, closeChat } = useChat();
   const [data, setData] = useState<(ChatWindowData & { roomId: string }) | null>(null);
@@ -76,7 +78,7 @@ export function GlobalChatWindow() {
       <button
         type="button"
         onClick={() => setMode("floating")}
-        className="fixed bottom-32 right-4 z-50 hidden max-w-72 items-center gap-3 rounded-full border border-border-base bg-surface-muted/95 px-4 py-3 text-sm font-semibold text-text-sub shadow-[0_10px_24px_rgb(from_var(--foreground)_r_g_b_/_0.14)] backdrop-blur transition hover:bg-surface-sub hover:text-text-base dark:border-border-sub dark:bg-surface-sub/90 dark:shadow-[0_10px_24px_rgb(from_var(--foreground)_r_g_b_/_0.08)] md:flex"
+        className={`fixed ${chatOffsetClass} right-4 z-50 hidden max-w-72 items-center gap-3 rounded-full border border-border-base bg-surface-muted/95 px-4 py-3 text-sm font-semibold text-text-sub shadow-[0_10px_24px_rgb(from_var(--foreground)_r_g_b_/_0.14)] backdrop-blur transition hover:bg-surface-sub hover:text-text-base dark:border-border-sub dark:bg-surface-sub/90 dark:shadow-[0_10px_24px_rgb(from_var(--foreground)_r_g_b_/_0.08)] md:flex`}
         aria-label={`${otherUser.name} 채팅 열기`}
       >
         <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={28} />
@@ -129,7 +131,7 @@ export function GlobalChatWindow() {
   );
 
   return (
-    <aside className="fixed bottom-32 right-4 z-50 hidden h-[min(75vh,620px)] min-h-[480px] w-80 md:block">
+    <aside className={`fixed ${chatOffsetClass} right-4 z-50 hidden h-[min(60vh,620px)] min-h-[480px] w-80 md:block`}>
       {activeData ? (
         <ChatPanel
           roomId={state.roomId}
