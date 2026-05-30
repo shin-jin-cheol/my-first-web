@@ -16,7 +16,6 @@ import {
 import { sendChatMessageAction } from "@/app/chat/[roomId]/actions";
 import { UserAvatar } from "@/app/components/UserAvatar";
 import { Button } from "@/components/ui/button";
-import { usePlayer } from "@/lib/context/PlayerContext";
 import type { Message } from "@/lib/chat";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
@@ -139,11 +138,9 @@ export function ChatPanel({
   const formRef = useRef<HTMLFormElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const listEndRef = useRef<HTMLDivElement | null>(null);
-  const { isMinimized: isPlayerMinimized } = usePlayer();
 
   const trimmedContent = content.trim();
   const canSend = Boolean((trimmedContent || pendingImageUrl) && !isPending && !isUploadingImage);
-  const formPaddingClass = isPlayerMinimized ? "pb-12 md:pb-3" : "pb-28 md:pb-3";
 
   useEffect(() => {
     setMessages(initialMessages);
@@ -382,7 +379,7 @@ export function ChatPanel({
         <form
           ref={formRef}
           onSubmit={handleSubmit}
-          className={`shrink-0 border-t-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-3 py-3 ${formPaddingClass}`}
+          className="shrink-0 border-t-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-3 py-3"
         >
           {error ? (
             <p className="mb-2 text-sm text-danger-sub" role="status">
