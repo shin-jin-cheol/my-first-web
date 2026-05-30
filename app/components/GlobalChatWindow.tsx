@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Expand, Loader2, Minus, X } from "lucide-react";
+import { Expand, Loader2, Maximize2, Minus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
   getChatWindowDataAction,
@@ -76,11 +76,12 @@ export function GlobalChatWindow() {
       <button
         type="button"
         onClick={() => setMode("floating")}
-        className="fixed bottom-32 right-5 z-50 hidden max-w-72 items-center gap-3 rounded-full border border-border-base bg-surface-muted/95 px-4 py-3 text-sm font-semibold text-text-sub shadow-[0_10px_24px_rgb(from_var(--foreground)_r_g_b_/_0.14)] backdrop-blur transition hover:bg-surface-sub hover:text-text-base dark:border-border-sub dark:bg-surface-sub/90 dark:shadow-[0_10px_24px_rgb(from_var(--foreground)_r_g_b_/_0.08)] md:flex"
+        className="fixed bottom-32 right-4 z-50 hidden max-w-72 items-center gap-3 rounded-full border border-border-base bg-surface-muted/95 px-4 py-3 text-sm font-semibold text-text-sub shadow-[0_10px_24px_rgb(from_var(--foreground)_r_g_b_/_0.14)] backdrop-blur transition hover:bg-surface-sub hover:text-text-base dark:border-border-sub dark:bg-surface-sub/90 dark:shadow-[0_10px_24px_rgb(from_var(--foreground)_r_g_b_/_0.08)] md:flex"
         aria-label={`${otherUser.name} 채팅 열기`}
       >
         <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={28} />
         <span className="truncate">{otherUser.name}</span>
+        <Maximize2 aria-hidden="true" size={16} className="shrink-0" />
       </button>
     );
   }
@@ -128,7 +129,7 @@ export function GlobalChatWindow() {
   );
 
   return (
-    <aside className="fixed bottom-32 right-5 z-50 hidden h-[min(70vh,560px)] w-80 md:block">
+    <aside className="fixed bottom-32 right-4 z-50 hidden h-[min(75vh,620px)] min-h-[480px] w-80 md:block">
       {activeData ? (
         <ChatPanel
           roomId={state.roomId}

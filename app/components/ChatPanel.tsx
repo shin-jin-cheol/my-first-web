@@ -286,8 +286,8 @@ export function ChatPanel({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border-base bg-surface-sub shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)] dark:border-border-base dark:bg-surface-strong">
-      <header className="flex items-center justify-between gap-3 border-b border-border-base px-4 py-3 dark:border-border-sub">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border-base bg-surface-sub shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)] dark:border-border-base dark:bg-surface-strong">
+      <header className="shrink-0 flex items-center justify-between gap-3 border-b border-border-base px-4 py-3 dark:border-border-sub">
         <div className="flex min-w-0 items-center gap-3">
           {showBackLink ? (
             <Link
@@ -385,7 +385,7 @@ export function ChatPanel({
       <form
         ref={formRef}
         onSubmit={handleSubmit}
-        className="border-t border-border-base bg-surface px-3 py-3 dark:border-border-sub dark:bg-surface-muted"
+        className="shrink-0 border-t border-border-base bg-surface px-3 py-3 dark:border-border-sub dark:bg-surface-muted"
       >
         {error ? (
           <p className="mb-2 text-sm text-danger-sub" role="status">
