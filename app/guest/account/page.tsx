@@ -124,8 +124,8 @@ export default async function GuestAccountPage({ searchParams }: GuestAccountPag
         </Button>
       </form>
 
-      <Link href="/guest" className="inline-flex rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong">
-        {t(locale, "게스트 게시판으로 돌아가기", "Back to Guest Board")}
+      <Link href="/" className="inline-flex rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-semibold text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong">
+        {t(locale, "홈으로 나가기", "Back to Home")}
       </Link>
     </section>
   );

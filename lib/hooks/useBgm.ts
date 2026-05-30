@@ -14,6 +14,7 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
   const isPlayingRef = useRef(false);
   const hasInitializedRef = useRef(false);
   const autoplayRetryCountRef = useRef(0);
+  const hasUserPausedRef = useRef(false);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -77,6 +78,7 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
       }
 
       isPlayingRef.current = true;
+      hasUserPausedRef.current = false;
       setIsPlaying(true);
       autoplayRetryCountRef.current = 0;
       return true;
@@ -190,7 +192,7 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
   useEffect(() => {
     const handleGesture = () => {
       const audio = audioRef.current;
-      if (!audio || isPlayingRef.current || !audio.paused) {
+      if (!audio || hasUserPausedRef.current || isPlayingRef.current || !audio.paused) {
         return;
       }
 
@@ -222,7 +224,7 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
     }
 
     const retryAutoplay = () => {
-      if (!isPlayingRef.current) {
+      if (!isPlayingRef.current && !hasUserPausedRef.current) {
         void startPlayback({ allowMutedFallback: true, unmuteDelayMs: 900 });
       }
     };
@@ -264,6 +266,10 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
   useEffect(() => {
     const attemptAutoplay = () => {
       if (isPlayingRef.current) {
+        return;
+      }
+
+      if (hasUserPausedRef.current) {
         return;
       }
 
@@ -313,6 +319,7 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
 
     if (audio.paused) {
       try {
+        hasUserPausedRef.current = false;
         audio.muted = false;
         await audio.play();
         isPlayingRef.current = true;
@@ -325,6 +332,7 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
     }
 
     audio.pause();
+    hasUserPausedRef.current = true;
     isPlayingRef.current = false;
     setIsPlaying(false);
   };
@@ -341,6 +349,7 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
   const playPreviousTrack = () => {
     if (!tracks || tracks.length === 0) return;
     setSelectedIndex((prev) => (prev - 1 + tracks.length) % tracks.length);
+    hasUserPausedRef.current = false;
     isPlayingRef.current = true;
     setIsPlaying(true);
   };
@@ -348,6 +357,7 @@ export default function useBgm(audioRef: React.RefObject<HTMLAudioElement | null
   const playNextTrack = () => {
     if (!tracks || tracks.length === 0) return;
     setSelectedIndex((prev) => (prev + 1) % tracks.length);
+    hasUserPausedRef.current = false;
     isPlayingRef.current = true;
     setIsPlaying(true);
   };

@@ -95,7 +95,7 @@ export function NavMenuMobile({
             href={`/profile/${encodeURIComponent(session.userId)}`}
             className="block rounded-lg px-2 py-1.5 text-text-muted transition hover:bg-surface-sub hover:text-text-sub dark:text-text-subtle dark:hover:bg-surface-strong dark:hover:text-text-base"
           >
-            {t('프로필', 'Profile')}
+            {t('내 프로필', 'My Profile')}
           </Link>
         ) : null}
 
@@ -104,16 +104,7 @@ export function NavMenuMobile({
             href="/friends"
             className="block rounded-lg px-2 py-1.5 text-text-muted transition hover:bg-surface-sub hover:text-text-sub dark:text-text-subtle dark:hover:bg-surface-strong dark:hover:text-text-base"
           >
-            {t('친구', 'Friends')}
-          </Link>
-        ) : null}
-
-        {session ? (
-          <Link
-            href="/friends"
-            className="block rounded-lg px-2 py-1.5 text-text-muted transition hover:bg-surface-sub hover:text-text-sub dark:text-text-subtle dark:hover:bg-surface-strong dark:hover:text-text-base"
-          >
-            {t('채팅', 'Chat')}
+            {t('친구 / 채팅', 'Friends / Chat')}
           </Link>
         ) : null}
 
@@ -134,16 +125,16 @@ export function NavMenuMobile({
           </Link>
         ) : null}
 
-        <form action={setLanguageAction} className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface p-1 text-xs dark:border-border-strong dark:bg-surface-muted">
+        <form action={setLanguageAction} className="inline-flex items-center gap-1 rounded-full bg-[var(--color-background-secondary)] p-1 text-xs">
           <Button
             type="submit"
             variant="ghost"
             name="lang"
             value="ko"
             aria-label={t('한국어 선택', 'Select Korean')}
-            className={`rounded-full px-2 py-1 transition ${locale === 'ko' ? 'bg-surface-strong text-text-base ring-1 ring-border-strong dark:bg-surface-strong dark:text-highlight dark:ring-border-strong' : 'text-text-base hover:text-highlight dark:text-text-base dark:hover:text-highlight'}`}
+            className={`rounded-full bg-transparent px-3 py-1 transition hover:bg-transparent ${locale === 'ko' ? 'bg-[var(--color-background-primary)] text-text-base shadow-[0_1px_4px_rgb(from_var(--color-foreground)_r_g_b_/_0.14)] hover:bg-[var(--color-background-primary)]' : 'text-text-sub hover:text-text-base'}`}
           >
-            KO
+            한국어
           </Button>
           <Button
             type="submit"
@@ -151,9 +142,9 @@ export function NavMenuMobile({
             name="lang"
             value="en"
             aria-label={t('영어 선택', 'Select English')}
-            className={`rounded-full px-2 py-1 transition ${locale === 'en' ? 'bg-surface-strong text-text-base ring-1 ring-border-strong dark:bg-surface-strong dark:text-highlight dark:ring-border-strong' : 'text-text-base hover:text-highlight dark:text-text-base dark:hover:text-highlight'}`}
+            className={`rounded-full bg-transparent px-3 py-1 transition hover:bg-transparent ${locale === 'en' ? 'bg-[var(--color-background-primary)] text-text-base shadow-[0_1px_4px_rgb(from_var(--color-foreground)_r_g_b_/_0.14)] hover:bg-[var(--color-background-primary)]' : 'text-text-sub hover:text-text-base'}`}
           >
-            EN
+            English
           </Button>
         </form>
 
