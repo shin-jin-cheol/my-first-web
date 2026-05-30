@@ -18,6 +18,7 @@ export type Message = {
   room_id: string;
   sender_id: string;
   content: string;
+  image_url?: string | null;
   created_at: string;
 };
 
@@ -161,7 +162,7 @@ export async function getMessages(roomId: string): Promise<Message[]> {
   const encodedRoomId = encodeURIComponent(normalizedRoomId);
   const result = await requestMessages<Message[]>(
     "GET",
-    `?select=id,room_id,sender_id,content,created_at&room_id=eq.${encodedRoomId}&order=created_at.desc&limit=100`,
+    `?select=id,room_id,sender_id,content,image_url,created_at&room_id=eq.${encodedRoomId}&order=created_at.desc&limit=100`,
   );
 
   if (!result.ok || !Array.isArray(result.data)) {
@@ -175,12 +176,14 @@ export async function sendMessage(
   roomId: string,
   senderId: string,
   content: string,
+  imageUrl = "",
 ): Promise<Message> {
   assertSupabaseChatStorage();
 
   const normalizedRoomId = roomId.trim();
   const normalizedSenderId = senderId.trim();
   const normalizedContent = content.trim();
+  const normalizedImageUrl = imageUrl.trim();
 
   if (!normalizedRoomId) {
     throw new Error("Message room id is required");
@@ -190,8 +193,8 @@ export async function sendMessage(
     throw new Error("Message sender id is required");
   }
 
-  if (!normalizedContent) {
-    throw new Error("Message content is required");
+  if (!normalizedContent && !normalizedImageUrl) {
+    throw new Error("Message content or image is required");
   }
 
   const result = await requestMessages<Message[]>(
@@ -202,6 +205,7 @@ export async function sendMessage(
         room_id: normalizedRoomId,
         sender_id: normalizedSenderId,
         content: normalizedContent,
+        image_url: normalizedImageUrl || null,
       },
     ],
     "return=representation",

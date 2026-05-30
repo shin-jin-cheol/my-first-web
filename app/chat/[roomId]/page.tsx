@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import { requireSession } from "@/lib/auth";
+import { getMemberById, ownerAccount } from "@/lib/auth/core";
 import { getMessages, getRoom, isChatRoomParticipant } from "@/lib/chat";
+import { SUPABASE_CHAT_IMAGES_BUCKET } from "@/lib/env";
+import { getOwnerAvatarUrl } from "@/lib/owner-settings";
 import ChatWindow from "@/app/chat/[roomId]/ChatWindow";
 
 type ChatPageProps = {
@@ -18,6 +21,18 @@ export default async function ChatPage({ params }: ChatPageProps) {
   }
 
   const initialMessages = await getMessages(decodedRoomId);
+  const otherUserId = room.user_a_id === session.userId ? room.user_b_id : room.user_a_id;
+  const isOwner = otherUserId === ownerAccount.id;
+  const [otherMember, ownerAvatarUrl] = await Promise.all([
+    isOwner ? Promise.resolve(undefined) : getMemberById(otherUserId),
+    isOwner ? getOwnerAvatarUrl() : Promise.resolve(null),
+  ]);
+
+  const otherUser = {
+    id: otherUserId,
+    name: isOwner ? ownerAccount.name || otherUserId : otherMember?.name || otherUserId,
+    avatarUrl: isOwner ? ownerAvatarUrl : otherMember?.avatarUrl ?? null,
+  };
 
   return (
     <section className="mx-auto flex min-h-[calc(100vh-12rem)] w-full max-w-3xl flex-col gap-4">
@@ -25,6 +40,8 @@ export default async function ChatPage({ params }: ChatPageProps) {
         roomId={decodedRoomId}
         initialMessages={initialMessages}
         currentUserId={session.userId}
+        otherUser={otherUser}
+        chatImagesBucket={SUPABASE_CHAT_IMAGES_BUCKET}
       />
     </section>
   );

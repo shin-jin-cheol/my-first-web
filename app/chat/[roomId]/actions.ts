@@ -9,8 +9,9 @@ export async function sendChatMessageAction(formData: FormData): Promise<Message
   const session = await requireSession();
   const roomId = getFormString(formData, "roomId");
   const content = getFormString(formData, "content");
+  const imageUrl = getFormString(formData, "imageUrl");
 
-  if (!roomId || !content) {
+  if (!roomId || (!content && !imageUrl)) {
     return null;
   }
 
@@ -19,7 +20,7 @@ export async function sendChatMessageAction(formData: FormData): Promise<Message
     return null;
   }
 
-  const message = await sendMessage(roomId, session.userId, content);
+  const message = await sendMessage(roomId, session.userId, content, imageUrl);
   revalidatePath(`/chat/${encodeURIComponent(roomId)}`, "page");
 
   return message;
