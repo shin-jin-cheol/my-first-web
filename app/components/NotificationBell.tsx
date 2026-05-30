@@ -10,7 +10,7 @@ import {
 } from "@/app/components/notification-actions";
 import { UserAvatar } from "@/app/components/UserAvatar";
 import type { Notification } from "@/lib/notifications";
-import { supabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type NotificationBellProps = {
   userId: string;
@@ -119,7 +119,9 @@ export function NotificationBell({
   }, []);
 
   useEffect(() => {
-    const channel = supabaseBrowserClient
+    const supabase = getSupabaseBrowserClient();
+
+    const channel = supabase
       .channel("notifications:" + userId)
       .on(
         "postgres_changes",
@@ -151,7 +153,7 @@ export function NotificationBell({
       .subscribe();
 
     return () => {
-      supabaseBrowserClient.removeChannel(channel);
+      supabase.removeChannel(channel);
     };
   }, [userId]);
 

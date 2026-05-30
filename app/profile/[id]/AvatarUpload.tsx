@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
+import { useRef, useState } from "react";
 import { saveAvatarUrlAction } from "./actions";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type AvatarUploadProps = {
   userId: string;
@@ -38,14 +38,7 @@ function getFileExtension(file: File) {
 
 export function AvatarUpload({ userId }: AvatarUploadProps) {
   const router = useRouter();
-  const supabase = useMemo(
-    () =>
-      createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      ),
-    [],
-  );
+  const supabase = getSupabaseBrowserClient();
   const inputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [message, setMessage] = useState("");

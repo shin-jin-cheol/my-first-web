@@ -18,9 +18,8 @@ import { sendChatMessageAction } from "@/app/chat/[roomId]/actions";
 import { UserAvatar } from "@/app/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import type { Message } from "@/lib/chat";
-import { supabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
-const supabase = supabaseBrowserClient;
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 const GROUP_GAP_MS = 60 * 1000;
 
@@ -150,6 +149,8 @@ export function ChatPanel({
   }, [initialMessages]);
 
   useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+
     const addMessage = (message: Message) => {
       setMessages((currentMessages) => {
         if (currentMessages.some((currentMessage) => currentMessage.id === message.id)) {
@@ -213,6 +214,7 @@ export function ChatPanel({
     setIsUploadingImage(true);
 
     try {
+      const supabase = getSupabaseBrowserClient();
       const path = `${roomId}/${Date.now()}.${getFileExtension(file)}`;
       const { error: uploadError } = await supabase.storage.from(chatImagesBucket).upload(path, file, {
         contentType: file.type || "application/octet-stream",
