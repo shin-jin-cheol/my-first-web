@@ -66,7 +66,7 @@ export default function BgmPlayer() {
     togglePlayback();
   }
   const containerClassName = isMinimized
-    ? "fixed bottom-4 left-1/2 z-50 flex w-[min(calc(100vw-2rem),320px)] -translate-x-1/2 flex-col md:left-auto md:right-4 md:translate-x-0"
+    ? "fixed bottom-[10.5rem] left-1/2 z-50 flex w-[min(calc(100vw-2rem),320px)] -translate-x-1/2 flex-col md:bottom-4 md:left-auto md:right-4 md:translate-x-0"
     : "fixed inset-x-0 bottom-0 z-50 flex w-full flex-col md:bottom-4 md:left-auto md:right-4 md:w-[min(calc(100vw-2rem),320px)] md:translate-x-0";
 
   return (
