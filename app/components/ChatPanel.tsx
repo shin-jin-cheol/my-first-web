@@ -286,13 +286,13 @@ export function ChatPanel({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-border-base bg-surface-sub shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)] dark:border-border-base dark:bg-surface-strong">
-      <header className="shrink-0 flex items-center justify-between gap-3 border-b border-border-base px-4 py-3 dark:border-border-sub">
+    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)]">
+      <header className="shrink-0 flex items-center justify-between gap-3 border-b-[0.5px] border-[var(--color-border-tertiary)] px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
           {showBackLink ? (
             <Link
               href="/friends"
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border-base bg-surface text-text-sub transition hover:bg-surface-muted hover:text-text-base dark:border-border-sub dark:bg-surface-muted"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition hover:bg-[var(--color-background-secondary)]"
               aria-label="친구 목록으로 돌아가기"
             >
               <ArrowLeft aria-hidden="true" size={17} />
@@ -300,7 +300,7 @@ export function ChatPanel({
           ) : null}
           <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={36} />
           <div className="min-w-0">
-            <h1 className="truncate text-base font-bold text-text-base">{otherUser.name}</h1>
+            <h1 className="truncate text-base font-bold text-[var(--color-text-primary)]">{otherUser.name}</h1>
             <p className="truncate text-xs text-text-muted dark:text-text-subtle">
               {messageCountLabel}
             </p>
@@ -385,7 +385,7 @@ export function ChatPanel({
       <form
         ref={formRef}
         onSubmit={handleSubmit}
-        className="shrink-0 border-t border-border-base bg-surface px-3 py-3 dark:border-border-sub dark:bg-surface-muted"
+        className="shrink-0 border-t-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-3 py-3"
       >
         {error ? (
           <p className="mb-2 text-sm text-danger-sub" role="status">
@@ -393,7 +393,7 @@ export function ChatPanel({
           </p>
         ) : null}
         {pendingImageUrl ? (
-          <div className="mb-2 flex items-center gap-2 rounded-xl border border-border-base bg-surface-sub p-2 dark:border-border-sub dark:bg-surface-strong">
+          <div className="mb-2 flex items-center gap-2 rounded-[calc(var(--border-radius-lg)*0.75)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-secondary)] p-2">
             <Image
               src={pendingImageUrl}
               alt="전송할 이미지"
@@ -445,7 +445,7 @@ export function ChatPanel({
             onKeyDown={handleKeyDown}
             placeholder={isUploadingImage ? "이미지 업로드 중..." : "메시지 입력"}
             rows={1}
-            className="max-h-32 min-h-10 flex-1 resize-none rounded-lg border border-border-base bg-surface-sub px-3 py-2 text-sm text-text-base outline-none transition placeholder:text-text-muted focus:border-accent-border dark:border-border-sub dark:bg-surface-strong dark:placeholder:text-text-subtle"
+            className="max-h-32 min-h-10 flex-1 resize-none rounded-[calc(var(--border-radius-lg)*0.75)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)] outline-none transition placeholder:text-text-muted focus:border-accent-border dark:placeholder:text-text-subtle"
           />
           <input type="hidden" name="roomId" value={roomId} />
           <Button type="submit" size="icon-lg" disabled={!canSend} aria-label="메시지 보내기">

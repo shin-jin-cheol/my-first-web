@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Expand, Loader2, Maximize2, Minus, X } from "lucide-react";
+import { Expand, Loader2, Maximize2, MessageCircle, Minus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
   getChatWindowDataAction,
@@ -9,7 +9,6 @@ import {
 } from "@/app/chat/[roomId]/actions";
 import { ChatPanel } from "@/app/components/ChatPanel";
 import { UserAvatar } from "@/app/components/UserAvatar";
-import { Button } from "@/components/ui/button";
 import { useChat } from "@/lib/context/ChatContext";
 import { usePlayer } from "@/lib/context/PlayerContext";
 
@@ -18,7 +17,7 @@ export function GlobalChatWindow() {
   const { isMinimized: isPlayerMinimized } = usePlayer();
   const [data, setData] = useState<(ChatWindowData & { roomId: string }) | null>(null);
   const [error, setError] = useState<{ roomId: string; message: string } | null>(null);
-  const chatOffsetClass = isPlayerMinimized ? "bottom-16" : "bottom-60";
+  const chatOffsetClass = isPlayerMinimized ? "bottom-[4.75rem]" : "bottom-[16rem]";
 
   const shouldRender = Boolean(
     state.roomId && (state.mode === "floating" || state.mode === "minimized"),
@@ -79,11 +78,12 @@ export function GlobalChatWindow() {
       <button
         type="button"
         onClick={() => setMode("floating")}
-        className={`fixed ${chatOffsetClass} right-4 z-50 hidden max-w-72 items-center gap-3 rounded-full border border-border-base bg-surface-muted/95 px-4 py-3 text-sm font-semibold text-text-sub shadow-[0_10px_24px_rgb(from_var(--foreground)_r_g_b_/_0.14)] backdrop-blur transition hover:bg-surface-sub hover:text-text-base dark:border-border-sub dark:bg-surface-sub/90 dark:shadow-[0_10px_24px_rgb(from_var(--foreground)_r_g_b_/_0.08)] md:flex`}
+        className={`fixed ${chatOffsetClass} right-4 z-50 hidden w-80 max-w-[calc(100vw-2rem)] items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110 md:flex`}
         aria-label={`${otherUser.name} 채팅 열기`}
       >
         <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={28} />
-        <span className="truncate">{otherUser.name}</span>
+        <span className="min-w-0 flex-1 truncate text-left">{otherUser.name}</span>
+        <MessageCircle aria-hidden="true" size={16} className="shrink-0" />
         <Maximize2 aria-hidden="true" size={16} className="shrink-0" />
       </button>
     );
@@ -91,43 +91,33 @@ export function GlobalChatWindow() {
 
   const headerActions = (
     <div className="flex items-center gap-1">
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="icon"
         onClick={() => setMode("minimized")}
         aria-label="채팅창 최소화"
         title="Minimize"
-        className="rounded-full"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-text-primary)] transition hover:bg-[var(--color-background-secondary)]"
       >
         <Minus aria-hidden="true" size={17} />
-      </Button>
-      <Button
-        asChild
-        variant="ghost"
-        size="icon"
+      </button>
+      <Link
+        href={`/chat/${encodeURIComponent(state.roomId)}`}
+        onClick={() => setMode("fullscreen")}
         aria-label="채팅창 전체화면"
         title="Fullscreen"
-        className="rounded-full"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-text-primary)] transition hover:bg-[var(--color-background-secondary)]"
       >
-        <Link
-          href={`/chat/${encodeURIComponent(state.roomId)}`}
-          onClick={() => setMode("fullscreen")}
-        >
-          <Expand aria-hidden="true" size={17} />
-        </Link>
-      </Button>
-      <Button
+        <Expand aria-hidden="true" size={17} />
+      </Link>
+      <button
         type="button"
-        variant="ghost"
-        size="icon"
         onClick={closeChat}
         aria-label="채팅창 닫기"
         title="Close"
-        className="rounded-full"
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[var(--color-text-primary)] transition hover:bg-[var(--color-background-secondary)]"
       >
         <X aria-hidden="true" size={17} />
-      </Button>
+      </button>
     </div>
   );
 
@@ -144,12 +134,12 @@ export function GlobalChatWindow() {
           showBackLink={false}
         />
       ) : (
-        <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border-base bg-surface-sub shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)] dark:border-border-base dark:bg-surface-strong">
-          <header className="flex items-center justify-between gap-3 border-b border-border-base px-4 py-3 dark:border-border-sub">
+        <div className="flex h-full flex-col overflow-hidden rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)]">
+          <header className="flex items-center justify-between gap-3 border-b-[0.5px] border-[var(--color-border-tertiary)] px-4 py-3">
             <div className="flex min-w-0 items-center gap-3">
               <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={36} />
               <div className="min-w-0">
-                <h2 className="truncate text-base font-bold text-text-base">{otherUser.name}</h2>
+                <h2 className="truncate text-base font-bold text-[var(--color-text-primary)]">{otherUser.name}</h2>
                 <p className="truncate text-xs text-text-muted dark:text-text-subtle">loading</p>
               </div>
             </div>
