@@ -1,4 +1,5 @@
 ﻿import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   getPostById,
@@ -141,6 +142,18 @@ export default async function PostDetailPage({ params }: PostDetailPageProps) {
           </p>
         </div>
       </header>
+
+      {post.imageUrl ? (
+        <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border border-border-base bg-surface-muted dark:border-border-sub dark:bg-surface-sub">
+          <Image
+            src={post.imageUrl}
+            alt={post.title}
+            fill
+            sizes="(max-width: 768px) 100vw, 768px"
+            className="object-cover"
+          />
+        </div>
+      ) : null}
 
       <p className="leading-7 text-text-sub dark:text-text-muted">{post.content}</p>
 

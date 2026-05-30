@@ -20,6 +20,7 @@ export type GuestPost = {
   category: GuestPostCategory;
   date: string;
   linkUrl?: string;
+  imageUrl?: string;
   fileUrl?: string;
   fileName?: string;
   comments?: GuestComment[];
@@ -58,6 +59,7 @@ type NewGuestPostInput = {
   authorName?: string;
   category: GuestPostCategory;
   linkUrl?: string;
+  imageUrl?: string;
   attachmentFile?: File | null;
 };
 
@@ -66,6 +68,7 @@ type UpdateGuestPostInput = {
   content: string;
   category: GuestPostCategory;
   linkUrl?: string;
+  imageUrl?: string;
   attachmentFile?: File | null;
   removeAttachment?: boolean;
 };
@@ -79,6 +82,7 @@ type SupabaseGuestPostRow = {
   category: string | null;
   date: string;
   link_url: string | null;
+  image_url: string | null;
   file_url: string | null;
   file_name: string | null;
   views: number | null;
@@ -210,6 +214,7 @@ function mapSupabaseRowToGuestPost(
     category: normalizeGuestPostCategory(row.category ?? undefined),
     date: row.date,
     linkUrl: row.link_url ?? undefined,
+    imageUrl: row.image_url ?? undefined,
     fileUrl: row.file_url ?? undefined,
     fileName: row.file_name ?? undefined,
     comments: "comments" in row && Array.isArray(row.comments) ? row.comments : [],
@@ -227,6 +232,7 @@ function mapGuestPostToSupabaseRow(post: GuestPost) {
     category: post.category,
     date: post.date,
     link_url: post.linkUrl ?? null,
+    image_url: post.imageUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
     views: post.views,
@@ -242,6 +248,7 @@ function mapGuestPostToSupabaseInsertRow(post: Omit<GuestPost, "id">) {
     category: post.category,
     date: post.date,
     link_url: post.linkUrl ?? null,
+    image_url: post.imageUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
     views: post.views,
@@ -257,6 +264,7 @@ function mapGuestPostToSupabaseLegacyRow(post: GuestPost) {
     author_name: post.authorName ?? null,
     date: post.date,
     link_url: post.linkUrl ?? null,
+    image_url: post.imageUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
   };
@@ -270,6 +278,7 @@ function mapGuestPostToSupabaseLegacyInsertRow(post: Omit<GuestPost, "id">) {
     author_name: post.authorName ?? null,
     date: post.date,
     link_url: post.linkUrl ?? null,
+    image_url: post.imageUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
   };
@@ -353,7 +362,7 @@ async function readGuestCommentsFromSupabase(postId?: number): Promise<Map<numbe
 async function readGuestPostsFromSupabase(): Promise<GuestPost[]> {
   const result = await requestSupabase<SupabaseGuestPostRow[]>(
     "GET",
-    "?select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name,views&order=id.desc",
+    "?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views&order=id.desc",
   );
 
   if (result.ok && Array.isArray(result.data)) {
@@ -361,7 +370,7 @@ async function readGuestPostsFromSupabase(): Promise<GuestPost[]> {
     if (!commentsByPostId) {
       const commentsResult = await requestSupabase<SupabaseGuestPostWithCommentsRow[]>(
         "GET",
-        "?select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name,views,comments&order=id.desc",
+        "?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,comments&order=id.desc",
       );
 
       if (commentsResult.ok && Array.isArray(commentsResult.data)) {
@@ -377,13 +386,13 @@ async function readGuestPostsFromSupabase(): Promise<GuestPost[]> {
 
   const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
     "GET",
-    "?select=id,title,content,author_id,author_name,date,link_url,file_url,file_name&order=id.desc",
+    "?select=id,title,content,author_id,author_name,date,link_url,image_url,file_url,file_name&order=id.desc",
   );
 
   if (!legacyResult.ok || !Array.isArray(legacyResult.data)) {
     const commentsResult = await requestSupabase<SupabaseGuestPostWithCommentsRow[]>(
       "GET",
-      "?select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name,comments&order=id.desc",
+      "?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,comments&order=id.desc",
     );
 
     if (!commentsResult.ok || !Array.isArray(commentsResult.data)) {
@@ -397,7 +406,7 @@ async function readGuestPostsFromSupabase(): Promise<GuestPost[]> {
   if (!commentsByPostId) {
     const legacyCommentsResult = await requestSupabase<SupabaseLegacyGuestPostWithCommentsRow[]>(
       "GET",
-      "?select=id,title,content,author_id,author_name,date,link_url,file_url,file_name,comments&order=id.desc",
+      "?select=id,title,content,author_id,author_name,date,link_url,image_url,file_url,file_name,comments&order=id.desc",
     );
 
     if (legacyCommentsResult.ok && Array.isArray(legacyCommentsResult.data)) {
@@ -499,7 +508,7 @@ export async function getGuestPostById(id: number): Promise<GuestPost | undefine
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabaseGuestPostRow[]>(
       "GET",
-      `?select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name,views&id=eq.${id}&limit=1`,
+      `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views&id=eq.${id}&limit=1`,
     );
 
     if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
@@ -512,7 +521,7 @@ export async function getGuestPostById(id: number): Promise<GuestPost | undefine
 
     const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
       "GET",
-      `?select=id,title,content,author_id,author_name,date,link_url,file_url,file_name&id=eq.${id}&limit=1`,
+      `?select=id,title,content,author_id,author_name,date,link_url,image_url,file_url,file_name&id=eq.${id}&limit=1`,
     );
 
     if (!legacyResult.ok || !Array.isArray(legacyResult.data) || legacyResult.data.length === 0) {
@@ -574,6 +583,7 @@ export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost>
     category: normalizeGuestPostCategory(input.category),
     date: getKstDateString(),
     linkUrl: normalizeLinkUrl(input.linkUrl),
+    imageUrl: input.imageUrl,
     fileUrl: attachment?.fileUrl,
     fileName: attachment?.fileName,
     views: 0,
@@ -621,7 +631,7 @@ export async function deleteGuestPostById(id: number): Promise<boolean> {
     const targetPost = await getGuestPostById(id);
     const result = await requestSupabase<SupabaseGuestPostRow[]>(
       "DELETE",
-      `?id=eq.${id}&select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name,views`,
+      `?id=eq.${id}&select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views`,
       undefined,
       "return=representation",
     );
@@ -629,7 +639,7 @@ export async function deleteGuestPostById(id: number): Promise<boolean> {
     if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
       const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
         "DELETE",
-        `?id=eq.${id}&select=id,title,content,author_id,author_name,date,link_url,file_url,file_name`,
+        `?id=eq.${id}&select=id,title,content,author_id,author_name,date,link_url,image_url,file_url,file_name`,
         undefined,
         "return=representation",
       );
@@ -691,6 +701,7 @@ export async function updateGuestPostById(
     content: input.content,
     category: normalizeGuestPostCategory(input.category),
     linkUrl: normalizeLinkUrl(input.linkUrl),
+    imageUrl: input.imageUrl,
     fileUrl: nextFileUrl,
     fileName: nextFileName,
   };
@@ -698,7 +709,7 @@ export async function updateGuestPostById(
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabaseGuestPostRow[]>(
       "PATCH",
-      `?id=eq.${id}&select=id,title,content,author_id,author_name,category,date,link_url,file_url,file_name,views`,
+      `?id=eq.${id}&select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views`,
       mapGuestPostToSupabaseRow(updatedPost),
       "return=representation",
     );
@@ -713,7 +724,7 @@ export async function updateGuestPostById(
 
     const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
       "PATCH",
-      `?id=eq.${id}&select=id,title,content,author_id,author_name,date,link_url,file_url,file_name`,
+      `?id=eq.${id}&select=id,title,content,author_id,author_name,date,link_url,image_url,file_url,file_name`,
       mapGuestPostToSupabaseLegacyRow(updatedPost),
       "return=representation",
     );

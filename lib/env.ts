@@ -31,6 +31,7 @@ export const SUPABASE_NOTIFICATIONS_TABLE = process.env.SUPABASE_NOTIFICATIONS_T
 export const SUPABASE_UPLOADS_BUCKET = process.env.SUPABASE_UPLOADS_BUCKET || "uploads";
 export const SUPABASE_AVATARS_BUCKET = process.env.SUPABASE_AVATARS_BUCKET ?? "avatars";
 export const SUPABASE_CHAT_IMAGES_BUCKET = process.env.SUPABASE_CHAT_IMAGES_BUCKET || "chat-images";
+export const SUPABASE_POST_IMAGES_BUCKET = process.env.SUPABASE_POST_IMAGES_BUCKET ?? "post-images";
 
 export const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 export const SESSION_SECRET = process.env.SESSION_SECRET ?? "";

@@ -20,6 +20,7 @@ export type Post = {
   category: BlogPostCategory;
   date: string;
   linkUrl?: string;
+  imageUrl?: string;
   fileUrl?: string;
   fileName?: string;
   views: number;
@@ -58,6 +59,7 @@ type NewPostInput = {
   authorId?: string;
   category: BlogPostCategory;
   linkUrl?: string;
+  imageUrl?: string;
   attachmentFile?: File | null;
 };
 
@@ -67,6 +69,7 @@ type UpdatePostInput = {
   author: string;
   category: BlogPostCategory;
   linkUrl?: string;
+  imageUrl?: string;
   attachmentFile?: File | null;
   removeAttachment?: boolean;
 };
@@ -80,6 +83,7 @@ type SupabasePostRow = {
   category: string | null;
   date: string;
   link_url: string | null;
+  image_url: string | null;
   file_url: string | null;
   file_name: string | null;
   views: number | null;
@@ -211,6 +215,7 @@ function mapSupabaseRowToPost(row: SupabasePostRow | SupabaseLegacyPostRow): Pos
     category: normalizeBlogPostCategory(row.category ?? undefined),
     date: row.date,
     linkUrl: row.link_url ?? undefined,
+    imageUrl: row.image_url ?? undefined,
     fileUrl: row.file_url ?? undefined,
     fileName: row.file_name ?? undefined,
     views: row.views ?? 0,
@@ -227,6 +232,7 @@ function mapPostToSupabaseRow(post: Post) {
     category: post.category,
     date: post.date,
     link_url: post.linkUrl ?? null,
+    image_url: post.imageUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
     views: post.views,
@@ -242,6 +248,7 @@ function mapPostToSupabaseInsertRow(post: Omit<Post, "id">) {
     category: post.category,
     date: post.date,
     link_url: post.linkUrl ?? null,
+    image_url: post.imageUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
     views: post.views,
@@ -257,6 +264,7 @@ function mapPostToSupabaseLegacyRow(post: Post) {
     author_id: post.authorId ?? null,
     date: post.date,
     link_url: post.linkUrl ?? null,
+    image_url: post.imageUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
   };
@@ -270,6 +278,7 @@ function mapPostToSupabaseLegacyInsertRow(post: Omit<Post, "id">) {
     author_id: post.authorId ?? null,
     date: post.date,
     link_url: post.linkUrl ?? null,
+    image_url: post.imageUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
   };
@@ -288,7 +297,7 @@ function normalizePostRecord(
 async function readPostsFromSupabase(): Promise<Post[]> {
   const result = await requestSupabase<SupabasePostRow[]>(
     "GET",
-    "?select=id,title,content,author,author_id,category,date,link_url,file_url,file_name,views&order=id.desc",
+      "?select=id,title,content,author,author_id,category,date,link_url,image_url,file_url,file_name,views&order=id.desc",
   );
 
   if (result.ok && Array.isArray(result.data)) {
@@ -297,7 +306,7 @@ async function readPostsFromSupabase(): Promise<Post[]> {
 
   const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
     "GET",
-    "?select=id,title,content,author,author_id,date,link_url,file_url,file_name&order=id.desc",
+      "?select=id,title,content,author,author_id,date,link_url,image_url,file_url,file_name&order=id.desc",
   );
 
   if (!legacyResult.ok || !Array.isArray(legacyResult.data)) {
@@ -587,7 +596,7 @@ export async function getPostById(id: number): Promise<Post | undefined> {
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabasePostRow[]>(
       "GET",
-      `?select=id,title,content,author,author_id,category,date,link_url,file_url,file_name,views&id=eq.${id}&limit=1`,
+      `?select=id,title,content,author,author_id,category,date,link_url,image_url,file_url,file_name,views&id=eq.${id}&limit=1`,
     );
 
     if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
@@ -596,7 +605,7 @@ export async function getPostById(id: number): Promise<Post | undefined> {
 
     const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
       "GET",
-      `?select=id,title,content,author,author_id,date,link_url,file_url,file_name&id=eq.${id}&limit=1`,
+      `?select=id,title,content,author,author_id,date,link_url,image_url,file_url,file_name&id=eq.${id}&limit=1`,
     );
 
     if (!legacyResult.ok || !Array.isArray(legacyResult.data) || legacyResult.data.length === 0) {
@@ -654,6 +663,7 @@ export async function addPost(input: NewPostInput): Promise<Post> {
     category: normalizeBlogPostCategory(input.category),
     date: getKstDateString(),
     linkUrl: normalizeLinkUrl(input.linkUrl),
+    imageUrl: input.imageUrl,
     fileUrl: attachment?.fileUrl,
     fileName: attachment?.fileName,
     views: 0,
@@ -701,7 +711,7 @@ export async function deletePostById(id: number): Promise<boolean> {
     const targetPost = await getPostById(id);
     const result = await requestSupabase<SupabasePostRow[]>(
       "DELETE",
-      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,file_url,file_name,views`,
+      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,image_url,file_url,file_name,views`,
       undefined,
       "return=representation",
     );
@@ -709,7 +719,7 @@ export async function deletePostById(id: number): Promise<boolean> {
     if (!result.ok || !Array.isArray(result.data) || result.data.length === 0) {
       const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
         "DELETE",
-        `?id=eq.${id}&select=id,title,content,author,author_id,date,link_url,file_url,file_name`,
+        `?id=eq.${id}&select=id,title,content,author,author_id,date,link_url,image_url,file_url,file_name`,
         undefined,
         "return=representation",
       );
@@ -770,6 +780,7 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
     author: input.author,
     category: normalizeBlogPostCategory(input.category),
     linkUrl: normalizeLinkUrl(input.linkUrl),
+    imageUrl: input.imageUrl,
     fileUrl: nextFileUrl,
     fileName: nextFileName,
   };
@@ -777,7 +788,7 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabasePostRow[]>(
       "PATCH",
-      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,file_url,file_name,views`,
+      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,image_url,file_url,file_name,views`,
       mapPostToSupabaseRow(updatedPost),
       "return=representation",
     );
@@ -788,7 +799,7 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
 
     const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
       "PATCH",
-      `?id=eq.${id}&select=id,title,content,author,author_id,date,link_url,file_url,file_name`,
+      `?id=eq.${id}&select=id,title,content,author,author_id,date,link_url,image_url,file_url,file_name`,
       mapPostToSupabaseLegacyRow(updatedPost),
       "return=representation",
     );

@@ -3,10 +3,12 @@ import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import { BLOG_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
-import { getLocale, tk } from "@/lib/i18n";
+import { getLocale, t, tk } from "@/lib/i18n";
+import { SUPABASE_POST_IMAGES_BUCKET } from "@/lib/env";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createPost } from "@/app/posts/actions";
+import { PostImageUploader } from "@/app/components/PostImageUploader";
 
 type NewPostPageProps = {
   searchParams: Promise<{ error?: string }>;
@@ -127,6 +129,19 @@ export default async function NewPostPage({ searchParams }: NewPostPageProps) {
             className="min-h-12 w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-3 text-sm text-text-sub dark:text-text-base file:mr-4 file:rounded-full file:border-0 file:bg-surface-strong dark:file:bg-surface-sub file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-text-sub dark:file:text-text-base hover:file:bg-surface-muted dark:hover:file:bg-surface-muted"
           />
         </div>
+
+        <PostImageUploader
+          userId={session.userId}
+          bucketName={SUPABASE_POST_IMAGES_BUCKET}
+          fieldName="imageUrl"
+          label={t(locale, "게시글 이미지", "Post Image")}
+          helperText={t(locale, "이미지는 10MB 이하만 업로드할 수 있습니다.", "Images must be 10MB or smaller.")}
+          uploadText={t(locale, "이미지 첨부", "Attach Image")}
+          uploadingText={t(locale, "업로드 중...", "Uploading...")}
+          removeText={t(locale, "이미지 제거", "Remove Image")}
+          emptyText={t(locale, "첨부된 이미지가 없습니다.", "No image attached.")}
+          previewAlt={t(locale, "게시글 이미지 미리보기", "Post image preview")}
+        />
 
         <div className="flex items-center gap-3 pt-2">
           <Button

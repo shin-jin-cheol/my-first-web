@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { canManagePost } from "@/lib/permissions";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import { updateGuestPostAction } from "@/app/guest/actions";
+import { SUPABASE_POST_IMAGES_BUCKET } from "@/lib/env";
+import { PostImageUploader } from "@/app/components/PostImageUploader";
 
 type EditGuestPostPageProps = {
   params: Promise<{ id: string }>;
@@ -141,6 +143,20 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
             </label>
           ) : null}
         </div>
+
+        <PostImageUploader
+          userId={session.userId}
+          bucketName={SUPABASE_POST_IMAGES_BUCKET}
+          fieldName="imageUrl"
+          label={t(locale, "게시글 이미지", "Post Image")}
+          helperText={t(locale, "이미지는 10MB 이하만 업로드할 수 있습니다.", "Images must be 10MB or smaller.")}
+          uploadText={t(locale, "이미지 첨부", "Attach Image")}
+          uploadingText={t(locale, "업로드 중...", "Uploading...")}
+          removeText={t(locale, "이미지 제거", "Remove Image")}
+          emptyText={t(locale, "첨부된 이미지가 없습니다.", "No image attached.")}
+          previewAlt={t(locale, "게시글 이미지 미리보기", "Post image preview")}
+          initialImageUrl={post.imageUrl}
+        />
 
         <div className="flex items-center gap-3 pt-2">
           <Button
