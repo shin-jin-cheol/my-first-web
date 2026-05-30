@@ -68,10 +68,10 @@ export default async function RootLayout({
 
   return (
     <html lang="ko" className={cn("font-sans", geist.variable)} suppressHydrationWarning>
-      <body className="flex h-dvh flex-col overflow-hidden bg-surface-muted text-text-base shadow-[inset_0_140px_140px_-120px_rgb(from_var(--accent-primary)_r_g_b_/_0.2)] dark:bg-surface dark:text-text-base dark:shadow-[inset_0_120px_120px_-120px_rgb(from_var(--accent-primary)_r_g_b_/_0.22)]">
+      <body className="flex min-h-screen flex-col bg-surface-muted text-text-base shadow-[inset_0_140px_140px_-120px_rgb(from_var(--accent-primary)_r_g_b_/_0.2)] dark:bg-surface dark:text-text-base dark:shadow-[inset_0_120px_120px_-120px_rgb(from_var(--accent-primary)_r_g_b_/_0.22)] pb-24">
         <ClientLayout>
         <Header session={session} locale={locale} setLanguageAction={setLanguageAction} />
-        <main className="mx-auto w-full max-w-4xl flex-1 min-h-0 overflow-hidden px-6 py-0">{children}</main>
+        <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">{children}</main>
         <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-border-strong bg-surface-muted/95 py-4 pb-20 text-center text-sm text-text-base shadow-[0_-8px_16px_-8px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] backdrop-blur dark:border-border-base dark:bg-surface/95 dark:text-text-muted dark:shadow-[0_-6px_12px_-12px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] md:pb-4">
           <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-3 px-6">
             <p>{t(locale, "© 2026 공인재 신진철의 생존일기", "© 2026 SJC Survival Log")}</p>
@@ -128,6 +128,7 @@ export default async function RootLayout({
             </div>
           </div>
         </footer>
+        <div className="h-24" />
         <GlobalChatWindow />
         <BgmPlayer />
         </ClientLayout>
