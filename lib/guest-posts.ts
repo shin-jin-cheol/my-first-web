@@ -10,7 +10,7 @@ import { getKstDateString, getKstDateTimeString } from "@/lib/date";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
 import { normalizeLinkUrl } from "@/lib/attachment-utils";
 import { deleteFile, hasSupabaseStorage, readJsonStorage, saveFile, writeJsonStorage } from "@/lib/storage";
-import { normalizePostSort, type PostSortKey } from "@/lib/post-sort";
+import { getPostSortOrder, normalizePostSort, type PostSortKey } from "@/lib/post-sort";
 
 export type GuestPost = {
   id: number;
@@ -361,24 +361,6 @@ function normalizeGuestPostRecord(
   };
 }
 
-function getGuestPostSortColumn(sort: PostSortKey) {
-  switch (sort) {
-    case "views":
-      return "view_count";
-    case "likes":
-      return "like_count";
-    case "comments":
-      return "comment_count";
-    case "latest":
-    default:
-      return "created_at";
-  }
-}
-
-function getGuestPostSortOrder(sort: PostSortKey) {
-  return `${getGuestPostSortColumn(sort)}.desc`;
-}
-
 function getGuestPostSortValue(post: GuestPost, sort: PostSortKey) {
   switch (sort) {
     case "views":
@@ -428,7 +410,7 @@ async function readGuestCommentsFromSupabase(postId?: number): Promise<Map<numbe
 async function readGuestPostsFromSupabase(sort: PostSortKey = "latest"): Promise<GuestPost[]> {
   const result = await requestSupabase<SupabaseGuestPostRow[]>(
     "GET",
-    `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&order=${getGuestPostSortOrder(sort)}`,
+    `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&order=${getPostSortOrder(sort)}`,
   );
 
   if (result.ok && Array.isArray(result.data)) {
@@ -436,7 +418,7 @@ async function readGuestPostsFromSupabase(sort: PostSortKey = "latest"): Promise
     if (!commentsByPostId) {
       const commentsResult = await requestSupabase<SupabaseGuestPostWithCommentsRow[]>(
         "GET",
-        `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count,comments&order=${getGuestPostSortOrder(sort)}`,
+        `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count,comments&order=${getPostSortOrder(sort)}`,
       );
 
       if (commentsResult.ok && Array.isArray(commentsResult.data)) {
@@ -452,13 +434,13 @@ async function readGuestPostsFromSupabase(sort: PostSortKey = "latest"): Promise
 
   const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
     "GET",
-    `?select=id,title,content,author_id,author_name,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&order=${getGuestPostSortOrder(sort)}`,
+    `?select=id,title,content,author_id,author_name,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&order=${getPostSortOrder(sort)}`,
   );
 
   if (!legacyResult.ok || !Array.isArray(legacyResult.data)) {
     const commentsResult = await requestSupabase<SupabaseGuestPostWithCommentsRow[]>(
       "GET",
-      `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count,comments&order=${getGuestPostSortOrder(sort)}`,
+      `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count,comments&order=${getPostSortOrder(sort)}`,
     );
 
     if (!commentsResult.ok || !Array.isArray(commentsResult.data)) {
@@ -472,7 +454,7 @@ async function readGuestPostsFromSupabase(sort: PostSortKey = "latest"): Promise
   if (!commentsByPostId) {
     const legacyCommentsResult = await requestSupabase<SupabaseLegacyGuestPostWithCommentsRow[]>(
       "GET",
-        `?select=id,title,content,author_id,author_name,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count,comments&order=${getGuestPostSortOrder(sort)}`,
+        `?select=id,title,content,author_id,author_name,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count,comments&order=${getPostSortOrder(sort)}`,
     );
 
     if (legacyCommentsResult.ok && Array.isArray(legacyCommentsResult.data)) {

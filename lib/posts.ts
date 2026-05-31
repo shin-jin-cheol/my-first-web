@@ -10,7 +10,7 @@ import { getKstDateString, getKstDateTimeString } from "@/lib/date";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
 import { normalizeLinkUrl } from "@/lib/attachment-utils";
 import { deleteFile, hasSupabaseStorage, readJsonStorage, saveFile, writeJsonStorage } from "@/lib/storage";
-import { normalizePostSort, type PostSortKey } from "@/lib/post-sort";
+import { getPostSortOrder, normalizePostSort, type PostSortKey } from "@/lib/post-sort";
 
 export type Post = {
   id: number;
@@ -315,24 +315,6 @@ function normalizePostRecord(
     category: normalizeBlogPostCategory(post.category),
     views: post.views ?? 0,
   };
-}
-
-function getPostSortColumn(sort: PostSortKey) {
-  switch (sort) {
-    case "views":
-      return "view_count";
-    case "likes":
-      return "like_count";
-    case "comments":
-      return "comment_count";
-    case "latest":
-    default:
-      return "created_at";
-  }
-}
-
-function getPostSortOrder(sort: PostSortKey) {
-  return `${getPostSortColumn(sort)}.desc`;
 }
 
 function getPostSortValue(post: Post, sort: PostSortKey) {
