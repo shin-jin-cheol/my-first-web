@@ -1,4 +1,5 @@
-﻿import Link from "next/link";
+﻿import { Suspense } from "react";
+import Link from "next/link";
 import { getGuestPosts } from "@/lib/guest-posts";
 import { requireSession } from "@/lib/auth";
 import { readMembers } from "@/lib/auth/core";
@@ -9,12 +10,21 @@ import GuestPostsSearchList from "@/app/components/GuestPostsSearchList";
 import { deleteGuestPostAction } from "@/app/guest/actions";
 import { getOwnerAvatarUrl } from "@/lib/owner-settings";
 import { OWNER_ID } from "@/lib/env";
+import { Skeleton } from "@/app/components/Skeleton";
 
 type GuestBoardPageProps = {
   searchParams: Promise<{ error?: string }>;
 };
 
 export default async function GuestBoardPage({ searchParams }: GuestBoardPageProps) {
+  return (
+    <Suspense fallback={<GuestBoardPageSkeleton />}>
+      <GuestBoardPageContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function GuestBoardPageContent({ searchParams }: GuestBoardPageProps) {
   const [locale, session, guestBoardPosts, members, params, ownerAvatarUrl] = await Promise.all([
     getLocale(),
     requireSession(),
@@ -104,6 +114,27 @@ export default async function GuestBoardPage({ searchParams }: GuestBoardPagePro
         }}
         deleteAction={deleteGuestPostAction}
       />
+    </section>
+  );
+}
+
+function GuestBoardPageSkeleton() {
+  return (
+    <section className="space-y-8">
+      <header className="space-y-3">
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-10 w-56" />
+        <Skeleton className="h-9 w-36" />
+      </header>
+
+      <div className="space-y-4 rounded-2xl border border-border-base bg-surface p-4 dark:border-border-sub dark:bg-surface-sub">
+        <Skeleton className="h-10 w-full" />
+        <div className="space-y-3">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      </div>
     </section>
   );
 }

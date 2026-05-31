@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getGuestPosts } from "@/lib/guest-posts";
 import { ownerAccount } from "@/lib/auth";
 import { readMembers } from "@/lib/auth/core";
@@ -6,8 +7,17 @@ import { getPosts } from "@/lib/posts";
 import { getLocale, t } from "@/lib/i18n";
 import { getOwnerAvatarUrl } from "@/lib/owner-settings";
 import PostsSearchContent from "@/app/components/PostsSearchContent";
+import { Skeleton } from "@/app/components/Skeleton";
 
 export default async function PostsPage() {
+  return (
+    <Suspense fallback={<PostsPageSkeleton />}>
+      <PostsPageContent />
+    </Suspense>
+  );
+}
+
+async function PostsPageContent() {
   const [locale, posts, guestPosts, members, ownerAvatarUrl] = await Promise.all([
     getLocale(),
     getPosts(),
@@ -121,6 +131,34 @@ export default async function PostsPage() {
           views: t(locale, "조회수", "Views"),
         }}
       />
+    </div>
+  );
+}
+
+function PostsPageSkeleton() {
+  return (
+    <div className="space-y-8">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-10 w-56" />
+      </div>
+
+      <div className="space-y-4 rounded-2xl border border-border-base bg-surface p-4 dark:border-border-sub dark:bg-surface-sub">
+        <Skeleton className="h-10 w-full" />
+        <div className="space-y-3">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      </div>
+
+      <div className="space-y-4 rounded-2xl border border-border-base bg-surface p-4 dark:border-border-sub dark:bg-surface-sub">
+        <Skeleton className="h-7 w-40" />
+        <div className="space-y-3">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+        </div>
+      </div>
     </div>
   );
 }

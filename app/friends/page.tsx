@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import {
   acceptFriendRequestAction,
@@ -12,6 +13,7 @@ import { requireSession } from "@/lib/auth";
 import { getMemberById, getMemberByName, ownerAccount, readMembers } from "@/lib/auth/core";
 import { type Friend, getFriends, getPendingRequests } from "@/lib/friends";
 import { getOwnerAvatarUrl } from "@/lib/owner-settings";
+import { Skeleton } from "@/app/components/Skeleton";
 
 type FriendsPageProps = {
   searchParams: Promise<{ q?: string }>;
@@ -75,6 +77,14 @@ async function submitSendFriendRequestAction(formData: FormData) {
 }
 
 export default async function FriendsPage({ searchParams }: FriendsPageProps) {
+  return (
+    <Suspense fallback={<FriendsPageSkeleton />}>
+      <FriendsPageContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function FriendsPageContent({ searchParams }: FriendsPageProps) {
   const session = await requireSession();
   const resolvedSearchParams = await searchParams;
   const query = resolvedSearchParams.q?.trim() || "";
@@ -281,6 +291,38 @@ export default async function FriendsPage({ searchParams }: FriendsPageProps) {
             아직 친구가 없습니다.
           </p>
         )}
+      </section>
+    </section>
+  );
+}
+
+function FriendsPageSkeleton() {
+  return (
+    <section className="space-y-8">
+      <header className="space-y-2 rounded-2xl border border-border-base bg-surface-sub p-6 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)] dark:border-border-base dark:bg-surface-strong">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-8 w-24" />
+      </header>
+
+      <section className="space-y-4 rounded-2xl border border-border-base bg-surface-sub p-4 dark:border-border-base dark:bg-surface-strong">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-24 w-full" />
+      </section>
+
+      <section className="space-y-4">
+        <Skeleton className="h-8 w-36" />
+        <div className="grid gap-5 md:grid-cols-2">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <Skeleton className="h-8 w-28" />
+        <div className="grid gap-5 md:grid-cols-2">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
       </section>
     </section>
   );

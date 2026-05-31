@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useRef, useState, type ChangeEvent } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { resizeImageForUpload } from "@/lib/image-resize";
 
 type PostImageUploaderProps = {
   userId: string;
@@ -65,34 +66,44 @@ export function PostImageUploader({
   const [isUploading, setIsUploading] = useState(false);
 
   async function handleChange(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    const sourceFile = event.target.files?.[0];
     setMessage("");
 
-    if (!file) {
+    if (!sourceFile) {
       return;
     }
 
-    if (!file.type.startsWith("image/")) {
+    if (!sourceFile.type.startsWith("image/")) {
       setMessage("이미지 파일만 업로드할 수 있습니다.");
       event.target.value = "";
       return;
     }
 
-    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+    if (sourceFile.size > MAX_IMAGE_SIZE_BYTES) {
       setMessage("이미지는 10MB 이하만 업로드할 수 있습니다.");
       event.target.value = "";
       return;
     }
 
-    const objectUrl = URL.createObjectURL(file);
+    let uploadFile = sourceFile;
+
+    try {
+      uploadFile = await resizeImageForUpload(sourceFile);
+    } catch (resizeError) {
+      setMessage(resizeError instanceof Error ? resizeError.message : "이미지 리사이징에 실패했습니다.");
+      event.target.value = "";
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(uploadFile);
     setPreviewUrl(objectUrl);
     setIsUploading(true);
 
     try {
       const supabase = getSupabaseBrowserClient();
-      const path = `${userId}/${Date.now()}.${getFileExtension(file)}`;
-      const { error } = await supabase.storage.from(bucketName).upload(path, file, {
-        contentType: file.type || "application/octet-stream",
+      const path = `${userId}/${Date.now()}.${getFileExtension(uploadFile)}`;
+      const { error } = await supabase.storage.from(bucketName).upload(path, uploadFile, {
+        contentType: uploadFile.type || "application/octet-stream",
         upsert: true,
       });
 
