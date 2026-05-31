@@ -18,9 +18,11 @@ export function GlobalChatWindow() {
   const { isMinimized: isPlayerMinimized, setMinimized: setPlayerMinimized } = usePlayer();
   const [data, setData] = useState<(ChatWindowData & { roomId: string }) | null>(null);
   const [error, setError] = useState<{ roomId: string; message: string } | null>(null);
-  const chatOffsetClass = isPlayerMinimized ? "md:bottom-[5.5rem]" : "md:bottom-[17.5rem]";
-  const floatingChatFrameClass =
-    "top-[4.75rem] bottom-[4.75rem] h-auto min-h-0 p-1 md:top-auto md:bottom-auto md:h-[min(60vh,620px)] md:min-h-[480px]";
+  const chatOffsetClass = isPlayerMinimized ? "md:bottom-[6.75rem]" : "md:bottom-[17.5rem]";
+  const floatingChatFrameClass = cn(
+    "top-[4.75rem] h-auto min-h-0 p-1 md:top-auto md:bottom-auto md:h-[min(60vh,620px)] md:min-h-[480px]",
+    isPlayerMinimized ? "bottom-[6rem]" : "bottom-[4.75rem]",
+  );
 
   const shouldRenderChat = Boolean(
     state.roomId && (state.mode === "floating" || state.mode === "minimized"),
