@@ -1,5 +1,39 @@
 # Architecture
 
+## 0. 2026-05-31 최신 아키텍처 반영
+
+### 모바일 첫인상 및 전역 UI
+
+- `BgmPlayer`는 모바일 첫 진입 시 `PlayerContext`를 통해 최소화 상태로 시작합니다.
+- `ClientLayout` 계층의 전역 UI는 오프라인 감지 배너와 스크롤 방향 기반 nav 숨김/표시를 담당합니다. 채팅 페이지에서는 채팅 사용성을 위해 nav 숨김 동작을 제외합니다.
+- 모바일 footer는 더 낮은 높이와 작은 액션 영역으로 정리되었고, 모바일 nav 제목은 중앙 정렬됩니다.
+- 채팅/음악 최소화 탭은 모바일에서 좌우 배열로 표시되며 상태에 따라 `채팅 중`, `재생 중`, `음악` 텍스트를 표시합니다.
+
+### 채팅 레이아웃 및 Realtime
+
+- `app/components/ChatPanel.tsx`는 전체화면과 플로팅 채팅이 공유하는 메시지 패널입니다.
+- 채팅 입력창은 iOS 자동 확대를 막기 위해 16px 이상 폰트 크기를 유지합니다.
+- 채팅 이미지는 메시지 영역에서 탭하면 모달 형태로 크게 볼 수 있습니다.
+- `app/chat/[roomId]/ChatWindow.tsx`는 전체화면 진입 시 전역 채팅 상태를 fullscreen으로 설정하고, 최소화 전환 시 `router.back()`을 우선 사용해 이전 페이지로 돌아갑니다.
+- `app/components/GlobalChatWindow.tsx`는 플로팅/최소화 채팅 UI를 담당하며, `PlayerContext.isMinimized`에 따라 BGM 플레이어와 겹치지 않게 bottom 값을 조정합니다.
+- 플로팅 채팅창은 roomId별 Supabase Realtime `messages` INSERT 구독을 보강해 전체화면이 아닌 상태에서도 새 메시지를 반영합니다.
+- 데스크탑에서는 footer 위에 BGM 최소화 탭을 배치하고, 그 위에 채팅 최소화 탭 또는 플로팅 채팅창을 배치합니다.
+- 모바일에서 BGM 플레이어가 펼쳐진 경우 채팅 탭과 플로팅 채팅창을 플레이어 높이만큼 위로 올립니다.
+
+### 작성/업로드/성능
+
+- `PostNewForm`, `GuestNewForm`은 작성 중 내용을 `localStorage`에 자동 저장합니다.
+- 게시글 및 채팅 이미지 업로드는 canvas API로 최대 1200px 기준 자동 리사이징을 수행합니다.
+- 게시글 목록, 게스트 게시판 목록, 친구 목록에는 스켈레톤 UI가 적용되어 로딩 중 레이아웃 안정성을 높입니다.
+
+### 게시글 필터/정렬과 카운트
+
+- `lib/post-sort.ts`는 정렬 기준을 `latest`, `views`, `likes`, `comments`로 관리합니다.
+- `/posts`, `/guest` 목록은 URL `searchParams` 기반 정렬을 사용하며 카테고리 필터와 동시에 동작합니다.
+- 실제 DB 컬럼 기준은 최신순 `date`, 조회순 `views`, 좋아요순 `like_count`, 댓글순 `comment_count`입니다.
+- 로컬 fallback 정렬도 동일한 컬럼 의미를 따릅니다.
+- 좋아요/댓글 추가 및 삭제 시 `posts`, `guest_posts`의 `like_count`, `comment_count`가 자동 갱신됩니다.
+
 ## 1. 개요
  - `app/components/UserAvatar.tsx`: 이름 기반 아바타와 업로드된 프로필 사진 표시
  - `app/profile/[id]/AvatarUpload.tsx`: 프로필 아바타 업로드 버튼과 이미지 업로드 처리

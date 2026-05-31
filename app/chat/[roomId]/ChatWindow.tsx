@@ -43,7 +43,7 @@ export default function ChatWindow({
       return;
     }
 
-    router.push("/friends");
+    router.push("/");
   }
 
   return (
