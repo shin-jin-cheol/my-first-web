@@ -137,6 +137,10 @@ type SupabaseGuestCommentReactionRow = {
   created_at: string;
 };
 
+type GuestPostWithLocalReactions = GuestPost & {
+  reactions?: GuestPostReaction[];
+};
+
 const GUEST_POSTS_BLOB_KEY = "guest/guest-posts.json";
 // SUPABASE_* constants are centralized in lib/env.ts
 let hasTriedSupabaseGuestBootstrap = false;
@@ -357,18 +361,22 @@ function normalizeGuestPostRecord(
   };
 }
 
-function getGuestPostSortOrder(sort: PostSortKey) {
+function getGuestPostSortColumn(sort: PostSortKey) {
   switch (sort) {
     case "views":
-      return "view_count.desc";
+      return "view_count";
     case "likes":
-      return "like_count.desc";
+      return "like_count";
     case "comments":
-      return "comment_count.desc";
+      return "comment_count";
     case "latest":
     default:
-      return "created_at.desc";
+      return "created_at";
   }
+}
+
+function getGuestPostSortOrder(sort: PostSortKey) {
+  return `${getGuestPostSortColumn(sort)}.desc`;
 }
 
 function getGuestPostSortValue(post: GuestPost, sort: PostSortKey) {
@@ -444,7 +452,7 @@ async function readGuestPostsFromSupabase(sort: PostSortKey = "latest"): Promise
 
   const legacyResult = await requestSupabase<SupabaseLegacyGuestPostRow[]>(
     "GET",
-    "?select=id,title,content,author_id,author_name,date,link_url,image_url,file_url,file_name&order=id.desc",
+    `?select=id,title,content,author_id,author_name,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&order=${getGuestPostSortOrder(sort)}`,
   );
 
   if (!legacyResult.ok || !Array.isArray(legacyResult.data)) {
@@ -939,7 +947,7 @@ export async function deleteGuestCommentById(postId: number, commentId: number):
       "return=representation",
     );
 
-    if (result.ok) {
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
       const currentPost = await getGuestPostById(postId);
       await requestSupabase(
         "PATCH",
@@ -1051,7 +1059,37 @@ export async function addGuestPostReaction(
     return mapSupabaseRowToGuestPostReaction(result.data[0]);
   }
 
-  return undefined;
+  const posts = await readGuestPosts();
+  const index = posts.findIndex((post) => post.id === postId);
+  if (index === -1) {
+    return undefined;
+  }
+
+  const currentPost = posts[index] as GuestPostWithLocalReactions;
+  const currentReactions = currentPost.reactions ?? [];
+  const hasReaction = currentReactions.some(
+    (reaction) => reaction.memberId === memberId && reaction.emoji === emoji,
+  );
+  if (hasReaction) {
+    return currentReactions.find((reaction) => reaction.memberId === memberId && reaction.emoji === emoji);
+  }
+
+  const reaction: GuestPostReaction = {
+    id: currentReactions.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1,
+    postId,
+    memberId,
+    emoji,
+    createdAt: new Date().toISOString(),
+  };
+
+  posts[index] = {
+    ...currentPost,
+    reactions: [...currentReactions, reaction],
+    likeCount: (currentPost.likeCount ?? 0) + 1,
+  } as GuestPostWithLocalReactions;
+
+  await writeGuestPosts(posts);
+  return reaction;
 }
 
 export async function removeGuestPostReaction(
@@ -1076,7 +1114,29 @@ export async function removeGuestPostReaction(
     return result.ok;
   }
 
-  return false;
+  const posts = await readGuestPosts();
+  const index = posts.findIndex((post) => post.id === postId);
+  if (index === -1) {
+    return false;
+  }
+
+  const currentPost = posts[index] as GuestPostWithLocalReactions;
+  const currentReactions = currentPost.reactions ?? [];
+  const nextReactions = currentReactions.filter(
+    (reaction) => !(reaction.memberId === memberId && reaction.emoji === emoji),
+  );
+  if (nextReactions.length === currentReactions.length) {
+    return false;
+  }
+
+  posts[index] = {
+    ...currentPost,
+    reactions: nextReactions,
+    likeCount: Math.max((currentPost.likeCount ?? 0) - 1, 0),
+  } as GuestPostWithLocalReactions;
+
+  await writeGuestPosts(posts);
+  return true;
 }
 
 export async function getGuestPostReactions(postId: number): Promise<GuestPostReaction[]> {
@@ -1093,7 +1153,9 @@ export async function getGuestPostReactions(postId: number): Promise<GuestPostRe
     return result.data.map(mapSupabaseRowToGuestPostReaction);
   }
 
-  return [];
+  const posts = await readGuestPosts();
+  const post = posts.find((item) => item.id === postId) as GuestPostWithLocalReactions | undefined;
+  return post?.reactions ?? [];
 }
 
 export async function addGuestCommentReaction(

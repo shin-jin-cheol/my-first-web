@@ -130,6 +130,10 @@ type SupabasePostCommentReactionRow = {
   created_at: string;
 };
 
+type PostWithLocalReactions = Post & {
+  reactions?: PostReaction[];
+};
+
 // SUPABASE_* constants are centralized in lib/env.ts
 const initialPosts: Post[] = [
   {
@@ -313,18 +317,22 @@ function normalizePostRecord(
   };
 }
 
-function getPostSortOrder(sort: PostSortKey) {
+function getPostSortColumn(sort: PostSortKey) {
   switch (sort) {
     case "views":
-      return "view_count.desc";
+      return "view_count";
     case "likes":
-      return "like_count.desc";
+      return "like_count";
     case "comments":
-      return "comment_count.desc";
+      return "comment_count";
     case "latest":
     default:
-      return "created_at.desc";
+      return "created_at";
   }
+}
+
+function getPostSortOrder(sort: PostSortKey) {
+  return `${getPostSortColumn(sort)}.desc`;
 }
 
 function getPostSortValue(post: Post, sort: PostSortKey) {
@@ -531,10 +539,11 @@ export async function addPostCommentByPostId(
       return undefined;
     }
 
+    const currentPost = await getPostById(postId);
     await requestSupabase(
       "PATCH",
       `?id=eq.${postId}`,
-      { comment_count: 1 },
+      { comment_count: (currentPost?.commentCount ?? 0) + 1 },
       "return=minimal",
     );
 
@@ -629,7 +638,7 @@ export async function deletePostCommentById(postId: number, commentId: number): 
       "return=representation",
     );
 
-    if (result.ok) {
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
       const currentPost = await getPostById(postId);
       await requestSupabase(
         "PATCH",
@@ -977,7 +986,37 @@ export async function addPostReaction(
     return mapSupabaseRowToPostReaction(result.data[0]);
   }
 
-  return undefined;
+  const posts = await readPosts();
+  const index = posts.findIndex((post) => post.id === postId);
+  if (index === -1) {
+    return undefined;
+  }
+
+  const currentPost = posts[index] as PostWithLocalReactions;
+  const currentReactions = currentPost.reactions ?? [];
+  const hasReaction = currentReactions.some(
+    (reaction) => reaction.memberId === memberId && reaction.emoji === emoji,
+  );
+  if (hasReaction) {
+    return currentReactions.find((reaction) => reaction.memberId === memberId && reaction.emoji === emoji);
+  }
+
+  const reaction: PostReaction = {
+    id: currentReactions.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1,
+    postId,
+    memberId,
+    emoji,
+    createdAt: new Date().toISOString(),
+  };
+
+  posts[index] = {
+    ...currentPost,
+    reactions: [...currentReactions, reaction],
+    likeCount: (currentPost.likeCount ?? 0) + 1,
+  } as PostWithLocalReactions;
+
+  await writePosts(posts);
+  return reaction;
 }
 
 export async function removePostReaction(
@@ -1002,7 +1041,29 @@ export async function removePostReaction(
     return result.ok;
   }
 
-  return false;
+  const posts = await readPosts();
+  const index = posts.findIndex((post) => post.id === postId);
+  if (index === -1) {
+    return false;
+  }
+
+  const currentPost = posts[index] as PostWithLocalReactions;
+  const currentReactions = currentPost.reactions ?? [];
+  const nextReactions = currentReactions.filter(
+    (reaction) => !(reaction.memberId === memberId && reaction.emoji === emoji),
+  );
+  if (nextReactions.length === currentReactions.length) {
+    return false;
+  }
+
+  posts[index] = {
+    ...currentPost,
+    reactions: nextReactions,
+    likeCount: Math.max((currentPost.likeCount ?? 0) - 1, 0),
+  } as PostWithLocalReactions;
+
+  await writePosts(posts);
+  return true;
 }
 
 export async function getPostReactions(postId: number): Promise<PostReaction[]> {
@@ -1019,7 +1080,9 @@ export async function getPostReactions(postId: number): Promise<PostReaction[]> 
     return result.data.map(mapSupabaseRowToPostReaction);
   }
 
-  return [];
+  const posts = await readPosts();
+  const post = posts.find((item) => item.id === postId) as PostWithLocalReactions | undefined;
+  return post?.reactions ?? [];
 }
 
 export async function addPostCommentReaction(

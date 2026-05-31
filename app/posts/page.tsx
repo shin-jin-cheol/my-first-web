@@ -83,6 +83,9 @@ async function PostsPageContent({ searchParams }: PostsPageProps) {
       categoryLabel: getCategoryLabel(category),
       sourceLabel: t(locale, "회원 블로그", "Member Blog"),
       views: post.views,
+      viewCount: post.viewCount ?? post.views ?? 0,
+      likeCount: post.likeCount ?? 0,
+      commentCount: post.commentCount ?? 0,
     };
   });
 
@@ -103,7 +106,35 @@ async function PostsPageContent({ searchParams }: PostsPageProps) {
       categoryLabel: getCategoryLabel(category),
       sourceLabel: t(locale, "게스트 게시글", "Guest Post"),
       views: post.views,
+      viewCount: post.viewCount ?? post.views ?? 0,
+      likeCount: post.likeCount ?? 0,
+      commentCount: post.commentCount ?? 0,
     };
+  });
+
+  const getCommunitySortValue = (
+    post: (typeof memberBlogItems)[number] | (typeof guestBoardItems)[number],
+  ) => {
+    switch (sort) {
+      case "views":
+        return post.viewCount ?? post.views ?? 0;
+      case "likes":
+        return post.likeCount ?? 0;
+      case "comments":
+        return post.commentCount ?? 0;
+      case "latest":
+      default:
+        return new Date(post.date).getTime() || 0;
+    }
+  };
+
+  const communityPosts = [...memberBlogItems, ...guestBoardItems].sort((first, second) => {
+    const difference = getCommunitySortValue(second) - getCommunitySortValue(first);
+    if (difference !== 0) {
+      return difference;
+    }
+
+    return String(second.id).localeCompare(String(first.id));
   });
 
   const sortOptions: Array<{ value: PostSortKey; label: string }> = [
@@ -142,7 +173,7 @@ async function PostsPageContent({ searchParams }: PostsPageProps) {
 
       <PostsSearchContent
         ownerPosts={ownerPostItems}
-        communityPosts={[...memberBlogItems, ...guestBoardItems]}
+        communityPosts={communityPosts}
         categoryOptions={[
           { value: "all", label: t(locale, "전체", "All") },
           ...BLOG_POST_CATEGORIES.map((category) => ({
