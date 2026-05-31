@@ -11,7 +11,7 @@ export function normalizePostSort(value: string | null | undefined): PostSortKey
 export function getPostSortColumn(sort: PostSortKey) {
   switch (sort) {
     case "views":
-      return "view_count";
+      return "views";
     case "likes":
       return "like_count";
     case "comments":

@@ -364,7 +364,7 @@ function normalizeGuestPostRecord(
 function getGuestPostSortValue(post: GuestPost, sort: PostSortKey) {
   switch (sort) {
     case "views":
-      return post.viewCount ?? post.views ?? 0;
+      return post.views ?? 0;
     case "likes":
       return post.likeCount ?? 0;
     case "comments":
