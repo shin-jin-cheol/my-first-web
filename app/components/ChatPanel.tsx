@@ -500,7 +500,7 @@ export function ChatPanel({
               onKeyDown={handleKeyDown}
               placeholder={isUploadingImage ? "이미지 업로드 중..." : "메시지 입력"}
               rows={1}
-              className="max-h-32 min-h-10 flex-1 resize-none rounded-[calc(var(--border-radius-lg)*0.75)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-secondary)] px-3 py-2 text-sm text-[var(--color-text-primary)] outline-none transition placeholder:text-text-muted focus:border-accent-border dark:placeholder:text-text-subtle"
+              className="max-h-32 min-h-10 flex-1 resize-none rounded-[calc(var(--border-radius-lg)*0.75)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-secondary)] px-3 py-2 text-base text-[var(--color-text-primary)] outline-none transition placeholder:text-text-muted focus:border-accent-border dark:placeholder:text-text-subtle"
             />
             <input type="hidden" name="roomId" value={roomId} />
             <Button type="submit" size="icon-lg" disabled={!canSend} aria-label="메시지 보내기">
