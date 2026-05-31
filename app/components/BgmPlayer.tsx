@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, type KeyboardEvent, type MouseEvent } from "react";
+import { useLayoutEffect, useRef, type KeyboardEvent, type MouseEvent } from "react";
 import { Maximize2, Minimize2, Music, Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { usePlayer } from "@/lib/context/PlayerContext";
 import useBgm from "@/lib/hooks/useBgm";
@@ -34,6 +34,10 @@ function formatTime(seconds: number) {
 export default function BgmPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const { isMinimized, setMinimized } = usePlayer();
+
+  useLayoutEffect(() => {
+    setMinimized(window.innerWidth < 768);
+  }, [setMinimized]);
 
   const {
     selectedIndex,
