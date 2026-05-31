@@ -351,6 +351,34 @@ function mapSupabaseRowToGuestCommentReaction(
   };
 }
 
+async function updateGuestPostLikeCount(postId: number, delta: number) {
+  const currentPost = await getGuestPostById(postId);
+  if (!currentPost) {
+    return;
+  }
+
+  await requestSupabase(
+    "PATCH",
+    `?id=eq.${postId}`,
+    { like_count: Math.max((currentPost.likeCount ?? 0) + delta, 0) },
+    "return=minimal",
+  );
+}
+
+async function updateGuestPostCommentCount(postId: number, delta: number) {
+  const currentPost = await getGuestPostById(postId);
+  if (!currentPost) {
+    return;
+  }
+
+  await requestSupabase(
+    "PATCH",
+    `?id=eq.${postId}`,
+    { comment_count: Math.max((currentPost.commentCount ?? 0) + delta, 0) },
+    "return=minimal",
+  );
+}
+
 function normalizeGuestPostRecord(
   post: Omit<GuestPost, "category" | "views"> & { category?: string; views?: number },
 ): GuestPost {
@@ -827,13 +855,7 @@ export async function addGuestCommentById(
       return undefined;
     }
 
-    const currentPost = await getGuestPostById(postId);
-    await requestSupabase(
-      "PATCH",
-      `?id=eq.${postId}`,
-      { comment_count: (currentPost?.commentCount ?? 0) + 1 },
-      "return=minimal",
-    );
+    await updateGuestPostCommentCount(postId, 1);
 
     return mapSupabaseRowToGuestComment(result.data[0]);
   }
@@ -930,13 +952,7 @@ export async function deleteGuestCommentById(postId: number, commentId: number):
     );
 
     if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
-      const currentPost = await getGuestPostById(postId);
-      await requestSupabase(
-        "PATCH",
-        `?id=eq.${postId}`,
-        { comment_count: Math.max((currentPost?.commentCount ?? 0) - 1, 0) },
-        "return=minimal",
-      );
+      await updateGuestPostCommentCount(postId, -1);
     }
 
     return Boolean(result.ok && Array.isArray(result.data) && result.data.length > 0);
@@ -1030,13 +1046,7 @@ export async function addGuestPostReaction(
       return undefined;
     }
 
-    const currentPost = await getGuestPostById(postId);
-    await requestSupabase(
-      "PATCH",
-      `?id=eq.${postId}`,
-      { like_count: (currentPost?.likeCount ?? 0) + 1 },
-      "return=minimal",
-    );
+    await updateGuestPostLikeCount(postId, 1);
 
     return mapSupabaseRowToGuestPostReaction(result.data[0]);
   }
@@ -1080,20 +1090,16 @@ export async function removeGuestPostReaction(
   emoji: string,
 ): Promise<boolean> {
   if (hasSupabaseStorage()) {
-    const result = await requestSupabaseGuestPostReactions(
+    const result = await requestSupabaseGuestPostReactions<SupabaseGuestPostReactionRow[]>(
       "DELETE",
-      `?guest_post_id=eq.${postId}&member_id=eq.${encodeURIComponent(memberId)}&emoji=eq.${encodeURIComponent(emoji)}`,
+      `?guest_post_id=eq.${postId}&member_id=eq.${encodeURIComponent(memberId)}&emoji=eq.${encodeURIComponent(emoji)}&select=id,guest_post_id,member_id,emoji,created_at`,
+      undefined,
+      "return=representation",
     );
-    if (result.ok) {
-      const currentPost = await getGuestPostById(postId);
-      await requestSupabase(
-        "PATCH",
-        `?id=eq.${postId}`,
-        { like_count: Math.max((currentPost?.likeCount ?? 0) - 1, 0) },
-        "return=minimal",
-      );
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+      await updateGuestPostLikeCount(postId, -1);
     }
-    return result.ok;
+    return Boolean(result.ok && Array.isArray(result.data) && result.data.length > 0);
   }
 
   const posts = await readGuestPosts();

@@ -477,6 +477,34 @@ function mapSupabaseRowToPostCommentReaction(
   };
 }
 
+async function updatePostLikeCount(postId: number, delta: number) {
+  const currentPost = await getPostById(postId);
+  if (!currentPost) {
+    return;
+  }
+
+  await requestSupabase(
+    "PATCH",
+    `?id=eq.${postId}`,
+    { like_count: Math.max((currentPost.likeCount ?? 0) + delta, 0) },
+    "return=minimal",
+  );
+}
+
+async function updatePostCommentCount(postId: number, delta: number) {
+  const currentPost = await getPostById(postId);
+  if (!currentPost) {
+    return;
+  }
+
+  await requestSupabase(
+    "PATCH",
+    `?id=eq.${postId}`,
+    { comment_count: Math.max((currentPost.commentCount ?? 0) + delta, 0) },
+    "return=minimal",
+  );
+}
+
 export async function getPostCommentsByPostId(postId: number): Promise<PostComment[]> {
   if (hasSupabaseStorage()) {
     const result = await requestSupabasePostComments<SupabasePostCommentRow[]>(
@@ -521,13 +549,7 @@ export async function addPostCommentByPostId(
       return undefined;
     }
 
-    const currentPost = await getPostById(postId);
-    await requestSupabase(
-      "PATCH",
-      `?id=eq.${postId}`,
-      { comment_count: (currentPost?.commentCount ?? 0) + 1 },
-      "return=minimal",
-    );
+    await updatePostCommentCount(postId, 1);
 
     return mapSupabaseRowToPostComment(result.data[0]);
   }
@@ -621,13 +643,7 @@ export async function deletePostCommentById(postId: number, commentId: number): 
     );
 
     if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
-      const currentPost = await getPostById(postId);
-      await requestSupabase(
-        "PATCH",
-        `?id=eq.${postId}`,
-        { comment_count: Math.max((currentPost?.commentCount ?? 0) - 1, 0) },
-        "return=minimal",
-      );
+      await updatePostCommentCount(postId, -1);
     }
 
     return Boolean(result.ok && Array.isArray(result.data) && result.data.length > 0);
@@ -957,13 +973,7 @@ export async function addPostReaction(
       return undefined;
     }
 
-    const currentPost = await getPostById(postId);
-    await requestSupabase(
-      "PATCH",
-      `?id=eq.${postId}`,
-      { like_count: (currentPost?.likeCount ?? 0) + 1 },
-      "return=minimal",
-    );
+    await updatePostLikeCount(postId, 1);
 
     return mapSupabaseRowToPostReaction(result.data[0]);
   }
@@ -1007,20 +1017,16 @@ export async function removePostReaction(
   emoji: string,
 ): Promise<boolean> {
   if (hasSupabaseStorage()) {
-    const result = await requestSupabasePostReactions(
+    const result = await requestSupabasePostReactions<SupabasePostReactionRow[]>(
       "DELETE",
-      `?post_id=eq.${postId}&member_id=eq.${encodeURIComponent(memberId)}&emoji=eq.${encodeURIComponent(emoji)}`,
+      `?post_id=eq.${postId}&member_id=eq.${encodeURIComponent(memberId)}&emoji=eq.${encodeURIComponent(emoji)}&select=id,post_id,member_id,emoji,created_at`,
+      undefined,
+      "return=representation",
     );
-    if (result.ok) {
-      const currentPost = await getPostById(postId);
-      await requestSupabase(
-        "PATCH",
-        `?id=eq.${postId}`,
-        { like_count: Math.max((currentPost?.likeCount ?? 0) - 1, 0) },
-        "return=minimal",
-      );
+    if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
+      await updatePostLikeCount(postId, -1);
     }
-    return result.ok;
+    return Boolean(result.ok && Array.isArray(result.data) && result.data.length > 0);
   }
 
   const posts = await readPosts();
