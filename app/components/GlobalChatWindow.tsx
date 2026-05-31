@@ -44,7 +44,7 @@ export function GlobalChatWindow() {
   const minimizedChatOffsetClass = isPlayerMinimized ? "md:bottom-[10.5rem]" : "md:bottom-[18rem]";
   const floatingChatFrameClass = cn(
     "top-[4.75rem] h-auto min-h-0 p-1 md:top-auto md:h-[min(60vh,620px)] md:min-h-[480px]",
-    isPlayerMinimized ? "bottom-[6rem]" : "bottom-[18rem]",
+    isPlayerMinimized ? "bottom-[6rem]" : "bottom-[22rem]",
   );
 
   const shouldRenderChat = Boolean(
@@ -55,7 +55,7 @@ export function GlobalChatWindow() {
   const isChatActive = state.mode === "floating";
   const isMusicActive = !isPlayerMinimized;
   const showMusicDockTab = isPlayerMinimized;
-  const mobileDockBottomClass = isPlayerMinimized ? "bottom-[3.25rem]" : "bottom-[18rem]";
+  const mobileDockBottomClass = isPlayerMinimized ? "bottom-[3.25rem]" : "bottom-[19rem]";
 
   useEffect(() => {
     let isCurrent = true;
@@ -280,15 +280,15 @@ export function GlobalChatWindow() {
                 <MessageCircle aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">{isChatActive ? "채팅 중" : "채팅"}</span>
               </button>
-              <button type="button" onClick={handleMusicTabClick} className={cn(musicDockClassName, !showMusicDockTab && "hidden")} aria-label="뮤직 상태 전환">
+              <button type="button" onClick={handleMusicTabClick} className={cn(musicDockClassName, !showMusicDockTab && "hidden")} aria-label="음악 상태 전환">
                 <Maximize2 aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-                <span className="truncate">{isMusicActive ? "재생 중" : "뮤직"}</span>
+                <span className="truncate">{isMusicActive ? "재생 중" : "음악"}</span>
               </button>
             </div>
           ) : (
-            <button type="button" onClick={handleMusicTabClick} className={`${musicDockClassName} max-w-[80vw]`} aria-label="뮤직 상태 전환">
+            <button type="button" onClick={handleMusicTabClick} className={`${musicDockClassName} max-w-[80vw]`} aria-label="음악 상태 전환">
               <Maximize2 aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{isMusicActive ? "재생 중" : "뮤직"}</span>
+              <span className="truncate">{isMusicActive ? "재생 중" : "음악"}</span>
             </button>
           )}
         </div>
