@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, ImagePlus, Send } from "lucide-react";
 import {
   useEffect,
@@ -128,6 +128,7 @@ export function ChatPanel({
   headerActions,
   showBackLink = true,
 }: ChatPanelProps) {
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [content, setContent] = useState("");
   const [error, setError] = useState("");
@@ -339,13 +340,20 @@ export function ChatPanel({
       <header className="shrink-0 flex items-center justify-between gap-3 border-b-[0.5px] border-[var(--color-border-tertiary)] px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
           {showBackLink ? (
-            <Link
-              href="/friends"
+            <button
+              type="button"
+              onClick={() => {
+                if (window.history.length > 1) {
+                  router.back();
+                } else {
+                  router.push("/");
+                }
+              }}
               className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition hover:bg-[var(--color-background-secondary)]"
-              aria-label="친구 목록으로 돌아가기"
+              aria-label="이전 페이지로 돌아가기"
             >
               <ArrowLeft aria-hidden="true" size={17} />
-            </Link>
+            </button>
           ) : null}
           <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={36} />
           <div className="min-w-0">
