@@ -18,7 +18,8 @@ export function GlobalChatWindow() {
   const { isMinimized: isPlayerMinimized, setMinimized: setPlayerMinimized } = usePlayer();
   const [data, setData] = useState<(ChatWindowData & { roomId: string }) | null>(null);
   const [error, setError] = useState<{ roomId: string; message: string } | null>(null);
-  const chatOffsetClass = isPlayerMinimized ? "md:bottom-[6.75rem]" : "md:bottom-[18rem]";
+  const floatingChatOffsetClass = isPlayerMinimized ? "md:bottom-[6.75rem]" : "md:bottom-[18rem]";
+  const minimizedChatOffsetClass = isPlayerMinimized ? "md:bottom-[10.5rem]" : "md:bottom-[18rem]";
   const floatingChatFrameClass = cn(
     "top-[4.75rem] h-auto min-h-0 p-1 md:top-auto md:h-[min(60vh,620px)] md:min-h-[480px]",
     isPlayerMinimized ? "bottom-[6rem]" : "bottom-[18rem]",
@@ -147,7 +148,7 @@ export function GlobalChatWindow() {
   return (
     <>
       {state.mode === "floating" && state.roomId ? (
-        <aside className={`fixed ${chatOffsetClass} ${floatingChatFrameClass} left-1/2 z-50 w-[calc(100vw-2rem)] -translate-x-1/2 md:left-auto md:right-4 md:w-80 md:translate-x-0`}>
+        <aside className={`fixed ${floatingChatOffsetClass} ${floatingChatFrameClass} left-1/2 z-50 w-[calc(100vw-2rem)] -translate-x-1/2 md:left-auto md:right-4 md:w-80 md:translate-x-0`}>
           {activeData ? (
             <ChatPanel
               roomId={state.roomId}
@@ -189,7 +190,7 @@ export function GlobalChatWindow() {
         <button
           type="button"
           onClick={() => setMode("floating")}
-          className={`fixed ${chatOffsetClass} right-4 z-50 hidden w-80 items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110 md:flex`}
+          className={`fixed ${minimizedChatOffsetClass} right-4 z-50 hidden w-80 items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110 md:flex`}
           aria-label={`${otherUser.name} 채팅 열기`}
         >
           <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={28} />
