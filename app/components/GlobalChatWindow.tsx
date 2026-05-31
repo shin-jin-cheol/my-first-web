@@ -29,6 +29,8 @@ export function GlobalChatWindow() {
   const hasChatTab = Boolean(state.roomId && (state.mode === "floating" || state.mode === "minimized"));
   const isChatActive = state.mode === "floating";
   const isMusicActive = !isPlayerMinimized;
+  const showMusicDockTab = isPlayerMinimized;
+  const mobileDockBottomClass = isPlayerMinimized ? "bottom-[3.25rem]" : "bottom-[18rem]";
 
   useEffect(() => {
     let isCurrent = true;
@@ -195,15 +197,15 @@ export function GlobalChatWindow() {
         </button>
       ) : null}
 
-      {showMobileDock ? (
-        <div className="fixed inset-x-0 bottom-[3.25rem] z-[55] flex justify-center px-3 md:hidden">
+      {showMobileDock && (hasChatTab || showMusicDockTab) ? (
+        <div className={`fixed inset-x-0 ${mobileDockBottomClass} z-[55] flex justify-center px-3 md:hidden`}>
           {hasChatTab ? (
-            <div className="flex w-full max-w-sm items-center justify-between gap-2">
+            <div className={cn("flex w-full max-w-sm items-center gap-2", showMusicDockTab ? "justify-between" : "justify-center")}>
               <button type="button" onClick={handleChatTabClick} className={chatDockClassName} aria-label="채팅 상태 전환">
                 <MessageCircle aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">{isChatActive ? "채팅 중" : "채팅"}</span>
               </button>
-              <button type="button" onClick={handleMusicTabClick} className={musicDockClassName} aria-label="뮤직 상태 전환">
+              <button type="button" onClick={handleMusicTabClick} className={cn(musicDockClassName, !showMusicDockTab && "hidden")} aria-label="뮤직 상태 전환">
                 <Maximize2 aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">{isMusicActive ? "재생 중" : "뮤직"}</span>
               </button>
