@@ -10,6 +10,7 @@ import { getKstDateString, getKstDateTimeString } from "@/lib/date";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
 import { normalizeLinkUrl } from "@/lib/attachment-utils";
 import { deleteFile, hasSupabaseStorage, readJsonStorage, saveFile, writeJsonStorage } from "@/lib/storage";
+import { normalizePostSort, type PostSortKey } from "@/lib/post-sort";
 
 export type Post = {
   id: number;
@@ -24,6 +25,9 @@ export type Post = {
   fileUrl?: string;
   fileName?: string;
   views: number;
+  viewCount?: number;
+  likeCount?: number;
+  commentCount?: number;
 };
 
 export type PostComment = {
@@ -87,11 +91,17 @@ type SupabasePostRow = {
   file_url: string | null;
   file_name: string | null;
   views: number | null;
+  view_count: number | null;
+  like_count: number | null;
+  comment_count: number | null;
 };
 
 type SupabaseLegacyPostRow = Omit<SupabasePostRow, "category" | "views"> & {
   category?: string | null;
   views?: number | null;
+  view_count?: number | null;
+  like_count?: number | null;
+  comment_count?: number | null;
 };
 
 type SupabasePostCommentRow = {
@@ -218,7 +228,10 @@ function mapSupabaseRowToPost(row: SupabasePostRow | SupabaseLegacyPostRow): Pos
     imageUrl: row.image_url ?? undefined,
     fileUrl: row.file_url ?? undefined,
     fileName: row.file_name ?? undefined,
-    views: row.views ?? 0,
+    views: row.views ?? row.view_count ?? 0,
+    viewCount: row.view_count ?? row.views ?? 0,
+    likeCount: row.like_count ?? 0,
+    commentCount: row.comment_count ?? 0,
   };
 }
 
@@ -236,6 +249,9 @@ function mapPostToSupabaseRow(post: Post) {
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
     views: post.views,
+    view_count: post.viewCount ?? post.views ?? 0,
+    like_count: post.likeCount ?? 0,
+    comment_count: post.commentCount ?? 0,
   };
 }
 
@@ -252,6 +268,9 @@ function mapPostToSupabaseInsertRow(post: Omit<Post, "id">) {
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
     views: post.views,
+    view_count: post.viewCount ?? post.views ?? 0,
+    like_count: post.likeCount ?? 0,
+    comment_count: post.commentCount ?? 0,
   };
 }
 
@@ -294,10 +313,49 @@ function normalizePostRecord(
   };
 }
 
-async function readPostsFromSupabase(): Promise<Post[]> {
+function getPostSortOrder(sort: PostSortKey) {
+  switch (sort) {
+    case "views":
+      return "view_count.desc";
+    case "likes":
+      return "like_count.desc";
+    case "comments":
+      return "comment_count.desc";
+    case "latest":
+    default:
+      return "created_at.desc";
+  }
+}
+
+function getPostSortValue(post: Post, sort: PostSortKey) {
+  switch (sort) {
+    case "views":
+      return post.viewCount ?? post.views ?? 0;
+    case "likes":
+      return post.likeCount ?? 0;
+    case "comments":
+      return post.commentCount ?? 0;
+    case "latest":
+    default:
+      return new Date(post.date).getTime() || 0;
+  }
+}
+
+function sortPosts(posts: Post[], sort: PostSortKey) {
+  return [...posts].sort((first, second) => {
+    const difference = getPostSortValue(second, sort) - getPostSortValue(first, sort);
+    if (difference !== 0) {
+      return difference;
+    }
+
+    return second.id - first.id;
+  });
+}
+
+async function readPostsFromSupabase(sort: PostSortKey = "latest"): Promise<Post[]> {
   const result = await requestSupabase<SupabasePostRow[]>(
     "GET",
-      "?select=id,title,content,author,author_id,category,date,link_url,image_url,file_url,file_name,views&order=id.desc",
+      `?select=id,title,content,author,author_id,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&order=${getPostSortOrder(sort)}`,
   );
 
   if (result.ok && Array.isArray(result.data)) {
@@ -306,7 +364,7 @@ async function readPostsFromSupabase(): Promise<Post[]> {
 
   const legacyResult = await requestSupabase<SupabaseLegacyPostRow[]>(
     "GET",
-      "?select=id,title,content,author,author_id,date,link_url,image_url,file_url,file_name&order=id.desc",
+      `?select=id,title,content,author,author_id,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&order=${getPostSortOrder(sort)}`,
   );
 
   if (!legacyResult.ok || !Array.isArray(legacyResult.data)) {
@@ -353,12 +411,12 @@ async function writePostsToLegacyStorage(posts: Post[]) {
   });
 }
 
-async function readPosts(): Promise<Post[]> {
+async function readPosts(sort: PostSortKey = "latest"): Promise<Post[]> {
   if (!hasSupabaseStorage()) {
-    return readPostsFromLegacyStorage();
+    return sortPosts(await readPostsFromLegacyStorage(), sort);
   }
 
-  const supabasePosts = await readPostsFromSupabase();
+  const supabasePosts = await readPostsFromSupabase(sort);
   if (supabasePosts.length > 0 || hasTriedSupabasePostsBootstrap) {
     return supabasePosts;
   }
@@ -370,7 +428,7 @@ async function readPosts(): Promise<Post[]> {
   }
 
   await upsertPostsToSupabase(legacyPosts);
-  return readPostsFromSupabase();
+  return readPostsFromSupabase(sort);
 }
 
 async function writePosts(posts: Post[]) {
@@ -473,6 +531,13 @@ export async function addPostCommentByPostId(
       return undefined;
     }
 
+    await requestSupabase(
+      "PATCH",
+      `?id=eq.${postId}`,
+      { comment_count: 1 },
+      "return=minimal",
+    );
+
     return mapSupabaseRowToPostComment(result.data[0]);
   }
 
@@ -498,6 +563,7 @@ export async function addPostCommentByPostId(
   posts[index] = {
     ...posts[index],
     comments: [...currentComments, comment],
+    commentCount: (posts[index].commentCount ?? 0) + 1,
   } as Post;
 
   await writePosts(posts);
@@ -563,6 +629,16 @@ export async function deletePostCommentById(postId: number, commentId: number): 
       "return=representation",
     );
 
+    if (result.ok) {
+      const currentPost = await getPostById(postId);
+      await requestSupabase(
+        "PATCH",
+        `?id=eq.${postId}`,
+        { comment_count: Math.max((currentPost?.commentCount ?? 0) - 1, 0) },
+        "return=minimal",
+      );
+    }
+
     return Boolean(result.ok && Array.isArray(result.data) && result.data.length > 0);
   }
 
@@ -582,21 +658,22 @@ export async function deletePostCommentById(postId: number, commentId: number): 
   posts[postIndex] = {
     ...posts[postIndex],
     comments: filteredComments,
+    commentCount: Math.max((posts[postIndex].commentCount ?? 0) - 1, 0),
   } as Post;
 
   await writePosts(posts);
   return true;
 }
 
-export async function getPosts(): Promise<Post[]> {
-  return readPosts();
+export async function getPosts(sort: string | null | undefined = "latest"): Promise<Post[]> {
+  return readPosts(normalizePostSort(sort));
 }
 
 export async function getPostById(id: number): Promise<Post | undefined> {
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabasePostRow[]>(
       "GET",
-      `?select=id,title,content,author,author_id,category,date,link_url,image_url,file_url,file_name,views&id=eq.${id}&limit=1`,
+      `?select=id,title,content,author,author_id,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&id=eq.${id}&limit=1`,
     );
 
     if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
@@ -633,7 +710,7 @@ export async function incrementPostViews(postId: number): Promise<void> {
     await requestSupabase(
       "PATCH",
       `?id=eq.${postId}`,
-      { views: currentPost.views + 1 },
+      { views: currentPost.views + 1, view_count: (currentPost.viewCount ?? currentPost.views ?? 0) + 1 },
       "return=minimal",
     );
     return;
@@ -648,6 +725,7 @@ export async function incrementPostViews(postId: number): Promise<void> {
   posts[index] = {
     ...posts[index],
     views: posts[index].views + 1,
+    viewCount: (posts[index].viewCount ?? posts[index].views ?? 0) + 1,
   };
   await writePosts(posts);
 }
@@ -699,6 +777,9 @@ export async function addPost(input: NewPostInput): Promise<Post> {
   const post: Post = {
     id: posts.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1,
     ...postInput,
+    viewCount: 0,
+    likeCount: 0,
+    commentCount: 0,
   };
 
   posts.unshift(post);
@@ -885,6 +966,14 @@ export async function addPostReaction(
       return undefined;
     }
 
+    const currentPost = await getPostById(postId);
+    await requestSupabase(
+      "PATCH",
+      `?id=eq.${postId}`,
+      { like_count: (currentPost?.likeCount ?? 0) + 1 },
+      "return=minimal",
+    );
+
     return mapSupabaseRowToPostReaction(result.data[0]);
   }
 
@@ -901,6 +990,15 @@ export async function removePostReaction(
       "DELETE",
       `?post_id=eq.${postId}&member_id=eq.${encodeURIComponent(memberId)}&emoji=eq.${encodeURIComponent(emoji)}`,
     );
+    if (result.ok) {
+      const currentPost = await getPostById(postId);
+      await requestSupabase(
+        "PATCH",
+        `?id=eq.${postId}`,
+        { like_count: Math.max((currentPost?.likeCount ?? 0) - 1, 0) },
+        "return=minimal",
+      );
+    }
     return result.ok;
   }
 

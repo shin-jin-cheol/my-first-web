@@ -11,9 +11,10 @@ import { deleteGuestPostAction } from "@/app/guest/actions";
 import { getOwnerAvatarUrl } from "@/lib/owner-settings";
 import { OWNER_ID } from "@/lib/env";
 import { Skeleton } from "@/app/components/Skeleton";
+import { normalizePostSort, type PostSortKey } from "@/lib/post-sort";
 
 type GuestBoardPageProps = {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; sort?: string }>;
 };
 
 export default async function GuestBoardPage({ searchParams }: GuestBoardPageProps) {
@@ -28,14 +29,33 @@ async function GuestBoardPageContent({ searchParams }: GuestBoardPageProps) {
   const [locale, session, guestBoardPosts, members, params, ownerAvatarUrl] = await Promise.all([
     getLocale(),
     requireSession(),
-    getGuestPosts(),
+    searchParams.then((query) => getGuestPosts(query.sort)),
     readMembers(),
     searchParams,
     getOwnerAvatarUrl(),
   ]);
   const errorMessage = params.error ? safeDecodeURIComponent(params.error) : "";
+  const sort = normalizePostSort(params.sort);
   const memberNameById = new Map(members.map((member) => [member.id, member.name.trim()]));
   const memberAvatarById = new Map(members.map((member) => [member.id, member.avatarUrl ?? null]));
+
+  const sortOptions: Array<{ value: PostSortKey; label: string }> = [
+    { value: "latest", label: t(locale, "최신", "Latest") },
+    { value: "views", label: t(locale, "조회수", "Views") },
+    { value: "likes", label: t(locale, "좋아요", "Likes") },
+    { value: "comments", label: t(locale, "댓글순", "Comments") },
+  ];
+
+  const buildSortHref = (sortValue: PostSortKey) => {
+    const query = new URLSearchParams();
+
+    if (params.error) {
+      query.set("error", params.error);
+    }
+
+    query.set("sort", sortValue);
+    return `?${query.toString()}`;
+  };
 
   if (ownerAvatarUrl) {
     memberAvatarById.set(OWNER_ID, ownerAvatarUrl);
@@ -66,6 +86,21 @@ async function GuestBoardPageContent({ searchParams }: GuestBoardPageProps) {
         <h1 className="text-4xl font-extrabold text-text-sub dark:text-text-base drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)]">
           {t(locale, "게스트 게시판", "Guest Board")}
         </h1>
+        <div className="flex flex-wrap gap-2">
+          {sortOptions.map((option) => (
+            <Link
+              key={option.value}
+              href={buildSortHref(option.value)}
+              className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                sort === option.value
+                  ? "border-[var(--accent-primary)] bg-[var(--accent-primary)] text-text-base"
+                  : "border-border-sub bg-surface text-text-sub hover:border-[var(--accent-primary)] hover:text-text-base dark:bg-surface-sub"
+              }`}
+            >
+              {option.label}
+            </Link>
+          ))}
+        </div>
         {session.role === "member" ? (
           <div>
             <Link

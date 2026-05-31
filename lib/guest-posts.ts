@@ -10,6 +10,7 @@ import { getKstDateString, getKstDateTimeString } from "@/lib/date";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
 import { normalizeLinkUrl } from "@/lib/attachment-utils";
 import { deleteFile, hasSupabaseStorage, readJsonStorage, saveFile, writeJsonStorage } from "@/lib/storage";
+import { normalizePostSort, type PostSortKey } from "@/lib/post-sort";
 
 export type GuestPost = {
   id: number;
@@ -25,6 +26,9 @@ export type GuestPost = {
   fileName?: string;
   comments?: GuestComment[];
   views: number;
+  viewCount?: number;
+  likeCount?: number;
+  commentCount?: number;
 };
 
 export type GuestComment = {
@@ -86,11 +90,17 @@ type SupabaseGuestPostRow = {
   file_url: string | null;
   file_name: string | null;
   views: number | null;
+  view_count: number | null;
+  like_count: number | null;
+  comment_count: number | null;
 };
 
 type SupabaseLegacyGuestPostRow = Omit<SupabaseGuestPostRow, "category" | "views"> & {
   category?: string | null;
   views?: number | null;
+  view_count?: number | null;
+  like_count?: number | null;
+  comment_count?: number | null;
 };
 
 type SupabaseGuestPostWithCommentsRow = SupabaseGuestPostRow & {
@@ -218,7 +228,10 @@ function mapSupabaseRowToGuestPost(
     fileUrl: row.file_url ?? undefined,
     fileName: row.file_name ?? undefined,
     comments: "comments" in row && Array.isArray(row.comments) ? row.comments : [],
-    views: row.views ?? 0,
+    views: row.views ?? row.view_count ?? 0,
+    viewCount: row.view_count ?? row.views ?? 0,
+    likeCount: row.like_count ?? 0,
+    commentCount: row.comment_count ?? 0,
   };
 }
 
@@ -236,6 +249,9 @@ function mapGuestPostToSupabaseRow(post: GuestPost) {
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
     views: post.views,
+    view_count: post.viewCount ?? post.views ?? 0,
+    like_count: post.likeCount ?? 0,
+    comment_count: post.commentCount ?? 0,
   };
 }
 
@@ -252,6 +268,9 @@ function mapGuestPostToSupabaseInsertRow(post: Omit<GuestPost, "id">) {
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
     views: post.views,
+    view_count: post.viewCount ?? post.views ?? 0,
+    like_count: post.likeCount ?? 0,
+    comment_count: post.commentCount ?? 0,
   };
 }
 
@@ -338,6 +357,45 @@ function normalizeGuestPostRecord(
   };
 }
 
+function getGuestPostSortOrder(sort: PostSortKey) {
+  switch (sort) {
+    case "views":
+      return "view_count.desc";
+    case "likes":
+      return "like_count.desc";
+    case "comments":
+      return "comment_count.desc";
+    case "latest":
+    default:
+      return "created_at.desc";
+  }
+}
+
+function getGuestPostSortValue(post: GuestPost, sort: PostSortKey) {
+  switch (sort) {
+    case "views":
+      return post.viewCount ?? post.views ?? 0;
+    case "likes":
+      return post.likeCount ?? 0;
+    case "comments":
+      return post.commentCount ?? 0;
+    case "latest":
+    default:
+      return new Date(post.date).getTime() || 0;
+  }
+}
+
+function sortGuestPosts(posts: GuestPost[], sort: PostSortKey) {
+  return [...posts].sort((first, second) => {
+    const difference = getGuestPostSortValue(second, sort) - getGuestPostSortValue(first, sort);
+    if (difference !== 0) {
+      return difference;
+    }
+
+    return second.id - first.id;
+  });
+}
+
 async function readGuestCommentsFromSupabase(postId?: number): Promise<Map<number, GuestComment[]> | null> {
   const postFilter = typeof postId === "number" ? `&guest_post_id=eq.${postId}` : "";
   const result = await requestSupabaseGuestComments<SupabaseGuestCommentRow[]>(
@@ -359,10 +417,10 @@ async function readGuestCommentsFromSupabase(postId?: number): Promise<Map<numbe
   return commentsByPostId;
 }
 
-async function readGuestPostsFromSupabase(): Promise<GuestPost[]> {
+async function readGuestPostsFromSupabase(sort: PostSortKey = "latest"): Promise<GuestPost[]> {
   const result = await requestSupabase<SupabaseGuestPostRow[]>(
     "GET",
-    "?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views&order=id.desc",
+    `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&order=${getGuestPostSortOrder(sort)}`,
   );
 
   if (result.ok && Array.isArray(result.data)) {
@@ -370,7 +428,7 @@ async function readGuestPostsFromSupabase(): Promise<GuestPost[]> {
     if (!commentsByPostId) {
       const commentsResult = await requestSupabase<SupabaseGuestPostWithCommentsRow[]>(
         "GET",
-        "?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,comments&order=id.desc",
+        `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count,comments&order=${getGuestPostSortOrder(sort)}`,
       );
 
       if (commentsResult.ok && Array.isArray(commentsResult.data)) {
@@ -392,7 +450,7 @@ async function readGuestPostsFromSupabase(): Promise<GuestPost[]> {
   if (!legacyResult.ok || !Array.isArray(legacyResult.data)) {
     const commentsResult = await requestSupabase<SupabaseGuestPostWithCommentsRow[]>(
       "GET",
-      "?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,comments&order=id.desc",
+      `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count,comments&order=${getGuestPostSortOrder(sort)}`,
     );
 
     if (!commentsResult.ok || !Array.isArray(commentsResult.data)) {
@@ -406,7 +464,7 @@ async function readGuestPostsFromSupabase(): Promise<GuestPost[]> {
   if (!commentsByPostId) {
     const legacyCommentsResult = await requestSupabase<SupabaseLegacyGuestPostWithCommentsRow[]>(
       "GET",
-      "?select=id,title,content,author_id,author_name,date,link_url,image_url,file_url,file_name,comments&order=id.desc",
+        `?select=id,title,content,author_id,author_name,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count,comments&order=${getGuestPostSortOrder(sort)}`,
     );
 
     if (legacyCommentsResult.ok && Array.isArray(legacyCommentsResult.data)) {
@@ -471,12 +529,12 @@ async function writeGuestPostsToLegacyStorage(posts: GuestPost[]) {
   });
 }
 
-async function readGuestPosts(): Promise<GuestPost[]> {
+async function readGuestPosts(sort: PostSortKey = "latest"): Promise<GuestPost[]> {
   if (!hasSupabaseStorage()) {
-    return readGuestPostsFromLegacyStorage();
+    return sortGuestPosts(await readGuestPostsFromLegacyStorage(), sort);
   }
 
-  const supabasePosts = await readGuestPostsFromSupabase();
+  const supabasePosts = await readGuestPostsFromSupabase(sort);
   if (supabasePosts.length > 0 || hasTriedSupabaseGuestBootstrap) {
     return supabasePosts;
   }
@@ -488,7 +546,7 @@ async function readGuestPosts(): Promise<GuestPost[]> {
   }
 
   await syncGuestPostsToSupabase(legacyPosts);
-  return readGuestPostsFromSupabase();
+  return readGuestPostsFromSupabase(sort);
 }
 
 async function writeGuestPosts(posts: GuestPost[]) {
@@ -500,15 +558,15 @@ async function writeGuestPosts(posts: GuestPost[]) {
   await writeGuestPostsToLegacyStorage(posts);
 }
 
-export async function getGuestPosts(): Promise<GuestPost[]> {
-  return readGuestPosts();
+export async function getGuestPosts(sort: string | null | undefined = "latest"): Promise<GuestPost[]> {
+  return readGuestPosts(normalizePostSort(sort));
 }
 
 export async function getGuestPostById(id: number): Promise<GuestPost | undefined> {
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabaseGuestPostRow[]>(
       "GET",
-      `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views&id=eq.${id}&limit=1`,
+      `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&id=eq.${id}&limit=1`,
     );
 
     if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
@@ -553,7 +611,7 @@ export async function incrementGuestPostViews(postId: number): Promise<void> {
     await requestSupabase(
       "PATCH",
       `?id=eq.${postId}`,
-      { views: currentPost.views + 1 },
+      { views: currentPost.views + 1, view_count: (currentPost.viewCount ?? currentPost.views ?? 0) + 1 },
       "return=minimal",
     );
     return;
@@ -568,6 +626,7 @@ export async function incrementGuestPostViews(postId: number): Promise<void> {
   posts[index] = {
     ...posts[index],
     views: posts[index].views + 1,
+    viewCount: (posts[index].viewCount ?? posts[index].views ?? 0) + 1,
   };
   await writeGuestPosts(posts);
 }
@@ -619,6 +678,9 @@ export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost>
   const post: GuestPost = {
     id: posts.reduce((maxId, item) => Math.max(maxId, item.id), 0) + 1,
     ...postInput,
+    viewCount: 0,
+    likeCount: 0,
+    commentCount: 0,
   };
 
   posts.unshift(post);
@@ -775,6 +837,14 @@ export async function addGuestCommentById(
       return undefined;
     }
 
+    const currentPost = await getGuestPostById(postId);
+    await requestSupabase(
+      "PATCH",
+      `?id=eq.${postId}`,
+      { comment_count: (currentPost?.commentCount ?? 0) + 1 },
+      "return=minimal",
+    );
+
     return mapSupabaseRowToGuestComment(result.data[0]);
   }
 
@@ -801,6 +871,7 @@ export async function addGuestCommentById(
   posts[index] = {
     ...currentPost,
     comments: [...currentComments, comment],
+    commentCount: (currentPost.commentCount ?? 0) + 1,
   };
 
   await writeGuestPosts(posts);
@@ -868,6 +939,16 @@ export async function deleteGuestCommentById(postId: number, commentId: number):
       "return=representation",
     );
 
+    if (result.ok) {
+      const currentPost = await getGuestPostById(postId);
+      await requestSupabase(
+        "PATCH",
+        `?id=eq.${postId}`,
+        { comment_count: Math.max((currentPost?.commentCount ?? 0) - 1, 0) },
+        "return=minimal",
+      );
+    }
+
     return Boolean(result.ok && Array.isArray(result.data) && result.data.length > 0);
   }
 
@@ -889,6 +970,7 @@ export async function deleteGuestCommentById(postId: number, commentId: number):
   posts[index] = {
     ...currentPost,
     comments: filteredComments,
+    commentCount: Math.max((currentPost.commentCount ?? 0) - 1, 0),
   };
 
   await writeGuestPosts(posts);
@@ -958,6 +1040,14 @@ export async function addGuestPostReaction(
       return undefined;
     }
 
+    const currentPost = await getGuestPostById(postId);
+    await requestSupabase(
+      "PATCH",
+      `?id=eq.${postId}`,
+      { like_count: (currentPost?.likeCount ?? 0) + 1 },
+      "return=minimal",
+    );
+
     return mapSupabaseRowToGuestPostReaction(result.data[0]);
   }
 
@@ -974,6 +1064,15 @@ export async function removeGuestPostReaction(
       "DELETE",
       `?guest_post_id=eq.${postId}&member_id=eq.${encodeURIComponent(memberId)}&emoji=eq.${encodeURIComponent(emoji)}`,
     );
+    if (result.ok) {
+      const currentPost = await getGuestPostById(postId);
+      await requestSupabase(
+        "PATCH",
+        `?id=eq.${postId}`,
+        { like_count: Math.max((currentPost?.likeCount ?? 0) - 1, 0) },
+        "return=minimal",
+      );
+    }
     return result.ok;
   }
 

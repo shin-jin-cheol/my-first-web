@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { getGuestPosts } from "@/lib/guest-posts";
 import { ownerAccount } from "@/lib/auth";
 import { readMembers } from "@/lib/auth/core";
@@ -8,23 +9,30 @@ import { getLocale, t } from "@/lib/i18n";
 import { getOwnerAvatarUrl } from "@/lib/owner-settings";
 import PostsSearchContent from "@/app/components/PostsSearchContent";
 import { Skeleton } from "@/app/components/Skeleton";
+import { normalizePostSort, type PostSortKey } from "@/lib/post-sort";
 
-export default async function PostsPage() {
+type PostsPageProps = {
+  searchParams: Promise<{ sort?: string }>;
+};
+
+export default async function PostsPage({ searchParams }: PostsPageProps) {
   return (
     <Suspense fallback={<PostsPageSkeleton />}>
-      <PostsPageContent />
+      <PostsPageContent searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function PostsPageContent() {
+async function PostsPageContent({ searchParams }: PostsPageProps) {
   const [locale, posts, guestPosts, members, ownerAvatarUrl] = await Promise.all([
     getLocale(),
-    getPosts(),
-    getGuestPosts(),
+    searchParams.then((params) => getPosts(params.sort)),
+    searchParams.then((params) => getGuestPosts(params.sort)),
     readMembers(),
     getOwnerAvatarUrl(),
   ]);
+  const params = await searchParams;
+  const sort = normalizePostSort(params.sort);
   const memberNameById = new Map(
     members
       .map((member) => [member.id, member.name.trim()] as const)
@@ -98,6 +106,13 @@ async function PostsPageContent() {
     };
   });
 
+  const sortOptions: Array<{ value: PostSortKey; label: string }> = [
+    { value: "latest", label: t(locale, "최신", "Latest") },
+    { value: "views", label: t(locale, "조회수", "Views") },
+    { value: "likes", label: t(locale, "좋아요", "Likes") },
+    { value: "comments", label: t(locale, "댓글순", "Comments") },
+  ];
+
   return (
     <div className="space-y-8">
       <div className="space-y-2">
@@ -107,6 +122,22 @@ async function PostsPageContent() {
         <h1 className="text-4xl font-extrabold text-text-sub dark:text-text-base drop-shadow-[0_0_14px_rgba(129,216,208,0.45)]">
           {t(locale, "블로그 게시글", "Blog Posts")}
         </h1>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {sortOptions.map((option) => (
+          <Link
+            key={option.value}
+            href={`?sort=${option.value}`}
+            className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+              sort === option.value
+                ? "border-[var(--accent-primary)] bg-[var(--accent-primary)] text-text-base"
+                : "border-border-sub bg-surface text-text-sub hover:border-[var(--accent-primary)] hover:text-text-base dark:bg-surface-sub"
+            }`}
+          >
+            {option.label}
+          </Link>
+        ))}
       </div>
 
       <PostsSearchContent
