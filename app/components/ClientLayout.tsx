@@ -94,7 +94,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
       <PlayerProvider>
         <ChatProvider>
           <div
-            className="group transition-[padding-top] duration-300"
+            className="app-shell group transition-[padding-top] duration-300"
             data-nav-hidden={shouldHideNav ? "true" : "false"}
             style={{ paddingTop: isOffline ? "2.75rem" : "0px" }}
           >
