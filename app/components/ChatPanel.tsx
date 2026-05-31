@@ -10,7 +10,7 @@ import {
   useTransition,
   type ChangeEvent,
   type FormEvent,
-  type KeyboardEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
 } from "react";
 import { sendChatMessageAction } from "@/app/chat/[roomId]/actions";
@@ -134,6 +134,8 @@ export function ChatPanel({
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [pendingImageUrl, setPendingImageUrl] = useState("");
   const [pendingImageName, setPendingImageName] = useState("");
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
+  const [activeImage, setActiveImage] = useState<{ src: string; alt: string } | null>(null);
   const [isPending, startTransition] = useTransition();
   const formRef = useRef<HTMLFormElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
@@ -188,6 +190,50 @@ export function ChatPanel({
   useEffect(() => {
     listEndRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+
+    const updateKeyboardOffset = () => {
+      if (!viewport) {
+        setKeyboardOffset(0);
+        return;
+      }
+
+      const nextOffset = Math.max(
+        window.innerHeight - viewport.height - viewport.offsetTop,
+        0,
+      );
+      setKeyboardOffset(nextOffset);
+    };
+
+    updateKeyboardOffset();
+    viewport?.addEventListener("resize", updateKeyboardOffset);
+    viewport?.addEventListener("scroll", updateKeyboardOffset);
+
+    return () => {
+      viewport?.removeEventListener("resize", updateKeyboardOffset);
+      viewport?.removeEventListener("scroll", updateKeyboardOffset);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!activeImage) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setActiveImage(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activeImage]);
 
   async function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -274,7 +320,7 @@ export function ChatPanel({
     });
   }
 
-  function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+  function handleKeyDown(event: ReactKeyboardEvent<HTMLTextAreaElement>) {
     if (event.key !== "Enter" || event.shiftKey) {
       return;
     }
@@ -286,7 +332,10 @@ export function ChatPanel({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)]">
+    <div
+      className="flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)]"
+      style={{ paddingBottom: keyboardOffset }}
+    >
       <header className="shrink-0 flex items-center justify-between gap-3 border-b-[0.5px] border-[var(--color-border-tertiary)] px-4 py-3">
         <div className="flex min-w-0 items-center gap-3">
           {showBackLink ? (
@@ -345,14 +394,26 @@ export function ChatPanel({
                         }`}
                       >
                         {hasImage ? (
-                          <Image
-                            src={message.image_url || ""}
-                            alt="채팅 이미지"
-                            width={320}
-                            height={240}
-                            className="max-h-72 w-full object-cover"
-                            unoptimized
-                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setActiveImage({
+                                src: message.image_url || "",
+                                alt: message.content?.trim() || "채팅 이미지",
+                              })
+                            }
+                            className="block w-full overflow-hidden rounded-none"
+                            aria-label="이미지 크게 보기"
+                          >
+                            <Image
+                              src={message.image_url || ""}
+                              alt="채팅 이미지"
+                              width={320}
+                              height={240}
+                              className="max-h-72 w-full object-cover transition hover:brightness-95"
+                              unoptimized
+                            />
+                          </button>
                         ) : null}
                         {hasText ? (
                           <p className="whitespace-pre-wrap break-words px-4 pt-2 text-sm leading-6">
@@ -448,6 +509,30 @@ export function ChatPanel({
           </div>
         </form>
       </div>
+
+      {activeImage ? (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-[rgb(0_0_0_/_0.72)] px-4 py-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label="채팅 이미지 크게 보기"
+          onClick={() => setActiveImage(null)}
+        >
+          <div
+            className="max-h-[90vh] max-w-[92vw] overflow-hidden rounded-[var(--border-radius-lg)] border border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] shadow-[0_20px_60px_rgb(0_0_0_/_0.35)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <Image
+              src={activeImage.src}
+              alt={activeImage.alt}
+              width={1200}
+              height={1200}
+              className="h-auto max-h-[90vh] w-auto max-w-[92vw] object-contain"
+              unoptimized
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

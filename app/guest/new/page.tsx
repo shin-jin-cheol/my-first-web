@@ -1,17 +1,11 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import { GUEST_POST_CATEGORIES, getCategoryLabel } from "@/lib/post-categories";
 import { safeDecodeURIComponent } from "@/lib/safe-decode";
 import { getLocale, t, tk } from "@/lib/i18n";
 import { SUPABASE_POST_IMAGES_BUCKET } from "@/lib/env";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { createGuestPost } from "@/app/guest/actions";
-import { PostImageUploader } from "@/app/components/PostImageUploader";
-
-
-
+import { GuestNewForm } from "@/app/components/GuestNewForm";
 type NewGuestPostPageProps = {
   searchParams: Promise<{ error?: string }>;
 };
@@ -42,110 +36,28 @@ export default async function NewGuestPostPage({ searchParams }: NewGuestPostPag
         </p>
       ) : null}
 
-      <form
+      <GuestNewForm
         action={createGuestPost}
-        className="space-y-5 rounded-2xl border border-border-base dark:border-border-base bg-surface dark:bg-surface-strong p-6 shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)]"
-      >
-        <div className="space-y-2">
-          <label htmlFor="category" className="text-sm font-medium text-text-sub dark:text-text-sub">
-            {tk(locale, "category")}
-          </label>
-          <select
-            id="category"
-            name="category"
-            defaultValue="study"
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[var(--accent-primary)] dark:[color-scheme:dark] dark:[&>option]:bg-surface-sub dark:[&>option]:text-text-base"
-          >
-            {GUEST_POST_CATEGORIES.map((category) => (
-              <option key={category} value={category} style={{ color: "var(--foreground)", background: "var(--background)" }}>
-                {getCategoryLabel(category)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="title" className="text-sm font-medium text-text-sub dark:text-text-sub">
-            {tk(locale, "title")}
-          </label>
-          <Input
-            id="title"
-            name="title"
-            type="text"
-            placeholder={tk(locale, "enterTitle")}
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[var(--accent-primary)]"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="content" className="text-sm font-medium text-text-sub dark:text-text-sub">
-            {tk(locale, "content")}
-          </label>
-          <textarea
-            id="content"
-            name="content"
-            required
-            rows={10}
-            placeholder={tk(locale, "enterContent")}
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-3 text-text-sub dark:text-text-base outline-none transition focus:border-[var(--accent-primary)]"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="linkUrl" className="text-sm font-medium text-text-sub dark:text-text-sub">
-            {tk(locale, "linkUrlOptional")}
-          </label>
-          <Input
-            id="linkUrl"
-            name="linkUrl"
-            type="text"
-            inputMode="url"
-            autoComplete="url"
-            placeholder="https://example.com"
-            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none transition focus:border-[var(--accent-primary)]"
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label htmlFor="attachment" className="text-sm font-medium text-text-sub dark:text-text-sub">
-            {tk(locale, "uploadFileOptional")}
-          </label>
-          <Input
-            id="attachment"
-            name="attachment"
-            type="file"
-            className="min-h-12 w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-sub dark:bg-surface-sub px-4 py-3 text-sm text-text-sub dark:text-text-base file:mr-4 file:rounded-full file:border-0 file:bg-surface-strong dark:file:bg-surface-sub file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-text-sub dark:file:text-text-base hover:file:bg-surface-muted dark:hover:file:bg-surface-muted"
-          />
-        </div>
-
-        <PostImageUploader
-          userId={session.userId}
-          bucketName={SUPABASE_POST_IMAGES_BUCKET}
-          fieldName="imageUrl"
-          label={t(locale, "게시글 이미지", "Post Image")}
-          helperText={t(locale, "이미지는 10MB 이하만 업로드할 수 있습니다.", "Images must be 10MB or smaller.")}
-          uploadText={t(locale, "이미지 첨부", "Attach Image")}
-          uploadingText={t(locale, "업로드 중...", "Uploading...")}
-          removeText={t(locale, "이미지 제거", "Remove Image")}
-          emptyText={t(locale, "첨부된 이미지가 없습니다.", "No image attached.")}
-          previewAlt={t(locale, "게시글 이미지 미리보기", "Post image preview")}
-        />
-
-        <div className="flex items-center gap-3 pt-2">
-          <Button
-            type="submit"
-            className="rounded-full border border-[var(--accent-light)] bg-[var(--accent-primary)] px-4 py-2 text-sm font-semibold text-text-base shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.18)] transition hover:-translate-y-0.5 hover:bg-[var(--accent-light-sub)]"
-          >
-            {tk(locale, "publish")}
-          </Button>
-          <Link
-            href="/guest"
-            className="rounded-full border border-border-base dark:border-border-strong bg-surface-strong dark:bg-surface-sub px-4 py-2 text-sm font-medium text-text-sub dark:text-text-base transition hover:bg-surface-muted dark:hover:bg-surface-strong"
-          >
-            {tk(locale, "cancel")}
-          </Link>
-        </div>
-      </form>
+        errorMessage={errorMessage}
+        storageKey="draft_guest_post"
+        cancelHref="/guest"
+        categoryOptions={GUEST_POST_CATEGORIES.map((category) => ({ value: category, label: getCategoryLabel(category) }))}
+        userId={session.userId}
+        bucketName={SUPABASE_POST_IMAGES_BUCKET}
+        titleLabel={tk(locale, "title")}
+        contentLabel={tk(locale, "content")}
+        linkLabel={tk(locale, "linkUrlOptional")}
+        fileLabel={tk(locale, "uploadFileOptional")}
+        submitLabel={tk(locale, "publish")}
+        cancelLabel={tk(locale, "cancel")}
+        imageLabel={t(locale, "게시글 이미지", "Post Image")}
+        imageHelperText={t(locale, "이미지는 10MB 이하만 업로드할 수 있습니다.", "Images must be 10MB or smaller.")}
+        imageUploadText={t(locale, "이미지 첨부", "Attach Image")}
+        imageUploadingText={t(locale, "업로드 중...", "Uploading...")}
+        imageRemoveText={t(locale, "이미지 제거", "Remove Image")}
+        imageEmptyText={t(locale, "첨부된 이미지가 없습니다.", "No image attached.")}
+        imagePreviewAlt={t(locale, "게시글 이미지 미리보기", "Post image preview")}
+      />
     </section>
   );
 }

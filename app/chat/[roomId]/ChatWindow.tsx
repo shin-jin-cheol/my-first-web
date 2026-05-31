@@ -37,6 +37,12 @@ export default function ChatWindow({
   function handleMinimizeChat() {
     openChat(roomId, otherUser.name, otherUser.avatarUrl ?? null);
     setMode("minimized");
+
+    if (window.history.length > 1) {
+      router.back();
+      return;
+    }
+
     router.push("/friends");
   }
 
