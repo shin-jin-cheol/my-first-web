@@ -342,6 +342,7 @@ npx vercel --prod
 ### 보안/안정화
 
 - 환경 변수 접근 중앙화(`lib/env.ts`)
+
 - `lib/env.ts` 환경 변수 중앙화 강화
 - 세션 서명 유틸(`lib/auth/session.ts`)
 - Supabase Auth 연동(`lib/auth/core.ts`)
