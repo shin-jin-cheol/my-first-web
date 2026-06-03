@@ -10,6 +10,7 @@ const ALLOWED_ATTACHMENT_MIME_TYPES = new Set([
   "image/webp",
   "application/pdf",
   "text/plain",
+  "text/html",
   "video/mp4",
 ]);
 
