@@ -47,6 +47,7 @@ export default async function NewGuestPostPage({ searchParams }: NewGuestPostPag
         titleLabel={tk(locale, "title")}
         contentLabel={tk(locale, "content")}
         linkLabel={tk(locale, "linkUrlOptional")}
+        youtubeLabel={t(locale, "YouTube 영상 URL (선택)", "YouTube video URL (optional)")}
         fileLabel={tk(locale, "uploadFileOptional")}
         submitLabel={tk(locale, "publish")}
         cancelLabel={tk(locale, "cancel")}

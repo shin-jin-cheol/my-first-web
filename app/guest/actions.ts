@@ -44,6 +44,7 @@ export async function createGuestPost(formData: FormData) {
     const content = getFormString(formData, "content");
     const category = getFormString(formData, "category", "study");
     const linkUrl = getFormString(formData, "linkUrl");
+    const youtubeUrl = getFormString(formData, "youtubeUrl");
     const imageUrl = getFormString(formData, "imageUrl");
     const attachmentFile = formData.get("attachment");
     const profile = await getMemberProfile(session.userId);
@@ -60,6 +61,7 @@ export async function createGuestPost(formData: FormData) {
       authorName,
       category: normalizeCategory(category, "guest"),
       linkUrl,
+      youtubeUrl,
       imageUrl: imageUrl || undefined,
       attachmentFile: normalizeAttachment(attachmentFile),
     });
@@ -205,6 +207,7 @@ export async function updateGuestPostAction(postId: number, formData: FormData) 
   const content = getFormString(formData, "content");
   const category = getFormString(formData, "category", "study");
   const linkUrl = getFormString(formData, "linkUrl");
+  const youtubeUrl = getFormString(formData, "youtubeUrl");
   const imageUrl = getFormString(formData, "imageUrl");
   const attachmentFile = formData.get("attachment");
   const removeAttachment = formData.get("removeAttachment") === "on";
@@ -224,6 +227,7 @@ export async function updateGuestPostAction(postId: number, formData: FormData) 
     content,
     category: normalizeCategory(category, "guest"),
     linkUrl,
+    youtubeUrl,
     imageUrl: imageUrl || undefined,
     attachmentFile: normalizeAttachment(attachmentFile),
     removeAttachment,

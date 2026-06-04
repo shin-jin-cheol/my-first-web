@@ -244,3 +244,55 @@ export function normalizeLinkUrl(input?: string): string | undefined {
 
   return normalizeUrlCandidate(input);
 }
+
+const YOUTUBE_VIDEO_ID_PATTERN = /^[a-zA-Z0-9_-]{11}$/;
+
+function normalizeYouTubeHost(hostname: string): string {
+  return hostname.toLowerCase().replace(/^www\./, "");
+}
+
+export function getYouTubeVideoId(input?: string | null): string | undefined {
+  if (!input) {
+    return undefined;
+  }
+
+  const normalized = normalizeUrlCandidate(input);
+  if (!normalized) {
+    return undefined;
+  }
+
+  try {
+    const parsedUrl = new URL(normalized);
+    const hostname = normalizeYouTubeHost(parsedUrl.hostname);
+
+    if (hostname === "youtu.be") {
+      const videoId = parsedUrl.pathname.split("/").filter(Boolean)[0];
+      return videoId && YOUTUBE_VIDEO_ID_PATTERN.test(videoId) ? videoId : undefined;
+    }
+
+    if (hostname === "youtube.com" || hostname === "m.youtube.com") {
+      const videoId =
+        parsedUrl.searchParams.get("v") ??
+        (parsedUrl.pathname.startsWith("/embed/") ? parsedUrl.pathname.split("/")[2] : undefined);
+      return videoId && YOUTUBE_VIDEO_ID_PATTERN.test(videoId) ? videoId : undefined;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
+}
+
+export function normalizeYouTubeUrl(input?: string): string | undefined {
+  const normalized = input ? normalizeUrlCandidate(input) : undefined;
+  if (!normalized || !getYouTubeVideoId(normalized)) {
+    return undefined;
+  }
+
+  return normalized;
+}
+
+export function getYouTubeEmbedUrl(input?: string | null): string | undefined {
+  const videoId = getYouTubeVideoId(input);
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : undefined;
+}

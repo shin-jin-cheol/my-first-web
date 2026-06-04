@@ -8,7 +8,7 @@ import {
 } from "@/lib/env";
 import { getKstDateString, getKstDateTimeString } from "@/lib/date";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
-import { normalizeLinkUrl } from "@/lib/attachment-utils";
+import { normalizeLinkUrl, normalizeYouTubeUrl } from "@/lib/attachment-utils";
 import { deleteFile, hasSupabaseStorage, readJsonStorage, saveFile, writeJsonStorage } from "@/lib/storage";
 import { getPostSortOrder, normalizePostSort, type PostSortKey } from "@/lib/post-sort";
 
@@ -21,6 +21,7 @@ export type Post = {
   category: BlogPostCategory;
   date: string;
   linkUrl?: string;
+  youtubeUrl?: string;
   imageUrl?: string;
   fileUrl?: string;
   fileName?: string;
@@ -63,6 +64,7 @@ type NewPostInput = {
   authorId?: string;
   category: BlogPostCategory;
   linkUrl?: string;
+  youtubeUrl?: string;
   imageUrl?: string;
   attachmentFile?: File | null;
 };
@@ -73,6 +75,7 @@ type UpdatePostInput = {
   author: string;
   category: BlogPostCategory;
   linkUrl?: string;
+  youtubeUrl?: string;
   imageUrl?: string;
   attachmentFile?: File | null;
   removeAttachment?: boolean;
@@ -87,6 +90,7 @@ type SupabasePostRow = {
   category: string | null;
   date: string;
   link_url: string | null;
+  youtube_url?: string | null;
   image_url: string | null;
   file_url: string | null;
   file_name: string | null;
@@ -229,6 +233,7 @@ function mapSupabaseRowToPost(row: SupabasePostRow | SupabaseLegacyPostRow): Pos
     category: normalizeBlogPostCategory(row.category ?? undefined),
     date: row.date,
     linkUrl: row.link_url ?? undefined,
+    youtubeUrl: row.youtube_url ?? undefined,
     imageUrl: row.image_url ?? undefined,
     fileUrl: row.file_url ?? undefined,
     fileName: row.file_name ?? undefined,
@@ -249,6 +254,7 @@ function mapPostToSupabaseRow(post: Post) {
     category: post.category,
     date: post.date,
     link_url: post.linkUrl ?? null,
+    youtube_url: post.youtubeUrl ?? null,
     image_url: post.imageUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
@@ -268,6 +274,7 @@ function mapPostToSupabaseInsertRow(post: Omit<Post, "id">) {
     category: post.category,
     date: post.date,
     link_url: post.linkUrl ?? null,
+    youtube_url: post.youtubeUrl ?? null,
     image_url: post.imageUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
@@ -345,7 +352,7 @@ function sortPosts(posts: Post[], sort: PostSortKey) {
 async function readPostsFromSupabase(sort: PostSortKey = "latest"): Promise<Post[]> {
   const result = await requestSupabase<SupabasePostRow[]>(
     "GET",
-      `?select=id,title,content,author,author_id,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&order=${getPostSortOrder(sort)}`,
+      `?select=id,title,content,author,author_id,category,date,link_url,youtube_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&order=${getPostSortOrder(sort)}`,
   );
 
   if (result.ok && Array.isArray(result.data)) {
@@ -680,7 +687,7 @@ export async function getPostById(id: number): Promise<Post | undefined> {
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabasePostRow[]>(
       "GET",
-      `?select=id,title,content,author,author_id,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&id=eq.${id}&limit=1`,
+      `?select=id,title,content,author,author_id,category,date,link_url,youtube_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&id=eq.${id}&limit=1`,
     );
 
     if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
@@ -748,6 +755,7 @@ export async function addPost(input: NewPostInput): Promise<Post> {
     category: normalizeBlogPostCategory(input.category),
     date: getKstDateString(),
     linkUrl: normalizeLinkUrl(input.linkUrl),
+    youtubeUrl: normalizeYouTubeUrl(input.youtubeUrl),
     imageUrl: input.imageUrl,
     fileUrl: attachment?.fileUrl,
     fileName: attachment?.fileName,
@@ -799,7 +807,7 @@ export async function deletePostById(id: number): Promise<boolean> {
     const targetPost = await getPostById(id);
     const result = await requestSupabase<SupabasePostRow[]>(
       "DELETE",
-      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,image_url,file_url,file_name,views`,
+      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,youtube_url,image_url,file_url,file_name,views`,
       undefined,
       "return=representation",
     );
@@ -868,6 +876,7 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
     author: input.author,
     category: normalizeBlogPostCategory(input.category),
     linkUrl: normalizeLinkUrl(input.linkUrl),
+    youtubeUrl: normalizeYouTubeUrl(input.youtubeUrl),
     imageUrl: input.imageUrl,
     fileUrl: nextFileUrl,
     fileName: nextFileName,
@@ -876,7 +885,7 @@ export async function updatePostById(id: number, input: UpdatePostInput): Promis
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabasePostRow[]>(
       "PATCH",
-      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,image_url,file_url,file_name,views`,
+      `?id=eq.${id}&select=id,title,content,author,author_id,category,date,link_url,youtube_url,image_url,file_url,file_name,views`,
       mapPostToSupabaseRow(updatedPost),
       "return=representation",
     );

@@ -127,6 +127,22 @@ export default async function EditGuestPostPage({ params, searchParams }: EditGu
         </div>
 
         <div className="space-y-2">
+          <label htmlFor="youtubeUrl" className="text-sm font-medium text-text-sub dark:text-text-sub">
+            {t(locale, "YouTube 영상 URL (선택)", "YouTube video URL (optional)")}
+          </label>
+          <Input
+            id="youtubeUrl"
+            name="youtubeUrl"
+            type="text"
+            inputMode="url"
+            autoComplete="url"
+            defaultValue={post.youtubeUrl ?? ""}
+            placeholder="https://www.youtube.com/watch?v=..."
+            className="w-full rounded-xl border border-border-base dark:border-border-sub bg-surface-strong dark:bg-surface-sub px-4 py-2.5 text-text-sub dark:text-text-base outline-none focus:border-[var(--accent-primary)]"
+          />
+        </div>
+
+        <div className="space-y-2">
           <label htmlFor="attachment" className="text-sm font-medium text-text-sub dark:text-text-sub">
             {tk(locale, "replaceFileOptional")}
           </label>

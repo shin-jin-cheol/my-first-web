@@ -8,7 +8,7 @@ import {
 } from "@/lib/env";
 import { getKstDateString, getKstDateTimeString } from "@/lib/date";
 import { requestSupabaseHttp } from "@/lib/supabase/http";
-import { normalizeLinkUrl } from "@/lib/attachment-utils";
+import { normalizeLinkUrl, normalizeYouTubeUrl } from "@/lib/attachment-utils";
 import { deleteFile, hasSupabaseStorage, readJsonStorage, saveFile, writeJsonStorage } from "@/lib/storage";
 import { getPostSortOrder, normalizePostSort, type PostSortKey } from "@/lib/post-sort";
 
@@ -21,6 +21,7 @@ export type GuestPost = {
   category: GuestPostCategory;
   date: string;
   linkUrl?: string;
+  youtubeUrl?: string;
   imageUrl?: string;
   fileUrl?: string;
   fileName?: string;
@@ -63,6 +64,7 @@ type NewGuestPostInput = {
   authorName?: string;
   category: GuestPostCategory;
   linkUrl?: string;
+  youtubeUrl?: string;
   imageUrl?: string;
   attachmentFile?: File | null;
 };
@@ -72,6 +74,7 @@ type UpdateGuestPostInput = {
   content: string;
   category: GuestPostCategory;
   linkUrl?: string;
+  youtubeUrl?: string;
   imageUrl?: string;
   attachmentFile?: File | null;
   removeAttachment?: boolean;
@@ -86,6 +89,7 @@ type SupabaseGuestPostRow = {
   category: string | null;
   date: string;
   link_url: string | null;
+  youtube_url?: string | null;
   image_url: string | null;
   file_url: string | null;
   file_name: string | null;
@@ -228,6 +232,7 @@ function mapSupabaseRowToGuestPost(
     category: normalizeGuestPostCategory(row.category ?? undefined),
     date: row.date,
     linkUrl: row.link_url ?? undefined,
+    youtubeUrl: row.youtube_url ?? undefined,
     imageUrl: row.image_url ?? undefined,
     fileUrl: row.file_url ?? undefined,
     fileName: row.file_name ?? undefined,
@@ -249,6 +254,7 @@ function mapGuestPostToSupabaseRow(post: GuestPost) {
     category: post.category,
     date: post.date,
     link_url: post.linkUrl ?? null,
+    youtube_url: post.youtubeUrl ?? null,
     image_url: post.imageUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
@@ -268,6 +274,7 @@ function mapGuestPostToSupabaseInsertRow(post: Omit<GuestPost, "id">) {
     category: post.category,
     date: post.date,
     link_url: post.linkUrl ?? null,
+    youtube_url: post.youtubeUrl ?? null,
     image_url: post.imageUrl ?? null,
     file_url: post.fileUrl ?? null,
     file_name: post.fileName ?? null,
@@ -438,7 +445,7 @@ async function readGuestCommentsFromSupabase(postId?: number): Promise<Map<numbe
 async function readGuestPostsFromSupabase(sort: PostSortKey = "latest"): Promise<GuestPost[]> {
   const result = await requestSupabase<SupabaseGuestPostRow[]>(
     "GET",
-    `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&order=${getPostSortOrder(sort)}`,
+    `?select=id,title,content,author_id,author_name,category,date,link_url,youtube_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&order=${getPostSortOrder(sort)}`,
   );
 
   if (result.ok && Array.isArray(result.data)) {
@@ -446,7 +453,7 @@ async function readGuestPostsFromSupabase(sort: PostSortKey = "latest"): Promise
     if (!commentsByPostId) {
       const commentsResult = await requestSupabase<SupabaseGuestPostWithCommentsRow[]>(
         "GET",
-        `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count,comments&order=${getPostSortOrder(sort)}`,
+        `?select=id,title,content,author_id,author_name,category,date,link_url,youtube_url,image_url,file_url,file_name,views,view_count,like_count,comment_count,comments&order=${getPostSortOrder(sort)}`,
       );
 
       if (commentsResult.ok && Array.isArray(commentsResult.data)) {
@@ -468,7 +475,7 @@ async function readGuestPostsFromSupabase(sort: PostSortKey = "latest"): Promise
   if (!legacyResult.ok || !Array.isArray(legacyResult.data)) {
     const commentsResult = await requestSupabase<SupabaseGuestPostWithCommentsRow[]>(
       "GET",
-      `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count,comments&order=${getPostSortOrder(sort)}`,
+      `?select=id,title,content,author_id,author_name,category,date,link_url,youtube_url,image_url,file_url,file_name,views,view_count,like_count,comment_count,comments&order=${getPostSortOrder(sort)}`,
     );
 
     if (!commentsResult.ok || !Array.isArray(commentsResult.data)) {
@@ -584,7 +591,7 @@ export async function getGuestPostById(id: number): Promise<GuestPost | undefine
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabaseGuestPostRow[]>(
       "GET",
-      `?select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&id=eq.${id}&limit=1`,
+      `?select=id,title,content,author_id,author_name,category,date,link_url,youtube_url,image_url,file_url,file_name,views,view_count,like_count,comment_count&id=eq.${id}&limit=1`,
     );
 
     if (result.ok && Array.isArray(result.data) && result.data.length > 0) {
@@ -660,6 +667,7 @@ export async function addGuestPost(input: NewGuestPostInput): Promise<GuestPost>
     category: normalizeGuestPostCategory(input.category),
     date: getKstDateString(),
     linkUrl: normalizeLinkUrl(input.linkUrl),
+    youtubeUrl: normalizeYouTubeUrl(input.youtubeUrl),
     imageUrl: input.imageUrl,
     fileUrl: attachment?.fileUrl,
     fileName: attachment?.fileName,
@@ -711,7 +719,7 @@ export async function deleteGuestPostById(id: number): Promise<boolean> {
     const targetPost = await getGuestPostById(id);
     const result = await requestSupabase<SupabaseGuestPostRow[]>(
       "DELETE",
-      `?id=eq.${id}&select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views`,
+      `?id=eq.${id}&select=id,title,content,author_id,author_name,category,date,link_url,youtube_url,image_url,file_url,file_name,views`,
       undefined,
       "return=representation",
     );
@@ -781,6 +789,7 @@ export async function updateGuestPostById(
     content: input.content,
     category: normalizeGuestPostCategory(input.category),
     linkUrl: normalizeLinkUrl(input.linkUrl),
+    youtubeUrl: normalizeYouTubeUrl(input.youtubeUrl),
     imageUrl: input.imageUrl,
     fileUrl: nextFileUrl,
     fileName: nextFileName,
@@ -789,7 +798,7 @@ export async function updateGuestPostById(
   if (hasSupabaseStorage()) {
     const result = await requestSupabase<SupabaseGuestPostRow[]>(
       "PATCH",
-      `?id=eq.${id}&select=id,title,content,author_id,author_name,category,date,link_url,image_url,file_url,file_name,views`,
+      `?id=eq.${id}&select=id,title,content,author_id,author_name,category,date,link_url,youtube_url,image_url,file_url,file_name,views`,
       mapGuestPostToSupabaseRow(updatedPost),
       "return=representation",
     );

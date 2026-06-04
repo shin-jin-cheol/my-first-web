@@ -7,6 +7,7 @@ import {
   getGuestPostReactions,
   incrementGuestPostViews,
 } from "@/lib/guest-posts";
+import { getYouTubeEmbedUrl } from "@/lib/attachment-utils";
 import { buildDownloadUrl } from "@/lib/download-url";
 import { Button } from "@/components/ui/button";
 import { PostReaction } from "@/components/post-reaction";
@@ -59,6 +60,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   await incrementGuestPostViews(postId);
 
   const fileDownloadUrl = post.fileUrl ? buildDownloadUrl(post.fileUrl, post.fileName) : undefined;
+  const youtubeEmbedUrl = getYouTubeEmbedUrl(post.youtubeUrl);
 
   const canManage = canManagePost(session, post);
 
@@ -159,6 +161,16 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
       ) : null}
 
       <p className="leading-7 text-text-sub dark:text-text-muted">{post.content}</p>
+
+      {youtubeEmbedUrl ? (
+        <iframe
+          src={youtubeEmbedUrl}
+          title={`${post.title} YouTube video`}
+          className="aspect-video w-full rounded-2xl border border-border-base dark:border-border-sub"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      ) : null}
 
       {post.linkUrl ? (
         <a

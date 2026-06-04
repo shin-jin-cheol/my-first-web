@@ -23,6 +23,7 @@ type PostNewFormProps = {
   authorLabel: string;
   contentLabel: string;
   linkLabel: string;
+  youtubeLabel: string;
   fileLabel: string;
   submitLabel: string;
   cancelLabel: string;
@@ -89,6 +90,7 @@ export function PostNewForm({
   authorLabel,
   contentLabel,
   linkLabel,
+  youtubeLabel,
   fileLabel,
   submitLabel,
   cancelLabel,
@@ -224,6 +226,21 @@ export function PostNewForm({
           inputMode="url"
           autoComplete="url"
           placeholder="https://example.com"
+          className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none transition focus:border-[var(--accent-primary)] dark:border-border-sub dark:bg-surface-sub dark:text-text-base"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="youtubeUrl" className="text-sm font-medium text-text-sub dark:text-text-sub">
+          {youtubeLabel}
+        </label>
+        <Input
+          id="youtubeUrl"
+          name="youtubeUrl"
+          type="text"
+          inputMode="url"
+          autoComplete="url"
+          placeholder="https://www.youtube.com/watch?v=..."
           className="w-full rounded-xl border border-border-base bg-surface-sub px-4 py-2.5 text-text-sub outline-none transition focus:border-[var(--accent-primary)] dark:border-border-sub dark:bg-surface-sub dark:text-text-base"
         />
       </div>
