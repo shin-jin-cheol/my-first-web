@@ -1,7 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useSyncExternalStore, type KeyboardEvent, type MouseEvent } from "react";
-import { createPortal } from "react-dom";
+import { useLayoutEffect, useRef, type KeyboardEvent, type MouseEvent } from "react";
 import { Maximize2, Minimize2, Music, Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { usePlayer } from "@/lib/context/PlayerContext";
 import useBgm from "@/lib/hooks/useBgm";
@@ -32,29 +31,9 @@ function formatTime(seconds: number) {
   return `${minutes}:${remain}`;
 }
 
-function subscribeToDesktopViewport(onStoreChange: () => void) {
-  const mediaQuery = window.matchMedia("(min-width: 768px)");
-  mediaQuery.addEventListener("change", onStoreChange);
-
-  return () => {
-    mediaQuery.removeEventListener("change", onStoreChange);
-  };
-}
-
 export default function BgmPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const { isMinimized, setMinimized } = usePlayer();
-  // SSR: false, client after hydration: true — 포털 렌더를 hydration 이후로 제한
-  const isMounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
-  const isDesktop = useSyncExternalStore(
-    subscribeToDesktopViewport,
-    () => window.innerWidth >= 768,
-    () => false,
-  );
 
   useLayoutEffect(() => {
     setMinimized(window.innerWidth < 768);
@@ -90,169 +69,130 @@ export default function BgmPlayer() {
     event.stopPropagation();
     togglePlayback();
   }
-
-  // footer-slot-right 에 portal로 주입할 md+ 최소화 pill
-  const desktopMinimizedPill = (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={() => setMinimized(false)}
-      onKeyDown={handleMinimizedKeyDown}
-      className="flex w-72 cursor-pointer items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110"
-      aria-label="Expand music player"
-    >
-      <Music aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
-      <span className="min-w-0 w-40 truncate text-left text-sm font-medium">
-        {minimizedTrackLabel}
-      </span>
-      <button
-        type="button"
-        onClick={handleMinimizedPlayback}
-        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--color-text-primary)] text-[var(--color-background-primary)]"
-        aria-label={isPlaying ? "Pause music" : "Play music"}
-        title={isPlaying ? "Pause" : "Play"}
-      >
-        {isPlaying ? (
-          <Pause aria-hidden="true" className="h-[15px] w-[15px]" />
-        ) : (
-          <Play aria-hidden="true" className="h-[15px] w-[15px]" />
-        )}
-      </button>
-      <Maximize2 aria-hidden="true" className="h-4 w-4 shrink-0" />
-    </div>
-  );
-
-  const footerSlotRight = isMounted && isDesktop ? document.getElementById("footer-slot-right") : null;
+  const containerClassName = isMinimized
+    ? "fixed bottom-4 right-4 z-50 hidden w-[min(calc(100vw-2rem),320px)] flex-col md:bottom-28 md:flex"
+    : "fixed inset-x-0 bottom-0 z-50 flex w-full flex-col md:bottom-4 md:left-auto md:right-4 md:w-[min(calc(100vw-2rem),320px)] md:translate-x-0";
 
   return (
-    <>
+    <div className={containerClassName}>
       <audio ref={audioRef} src={selectedSrc} preload="auto" autoPlay muted playsInline />
 
       {isMinimized ? (
-        <>
-          {/* 모바일 전용 fixed pill (md 이상 hidden) */}
-          <div
-            role="button"
-            tabIndex={0}
-            onClick={() => setMinimized(false)}
-            onKeyDown={handleMinimizedKeyDown}
-            className="fixed bottom-4 right-4 z-50 flex w-[min(calc(100vw-2rem),320px)] cursor-pointer items-center gap-1.5 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-3 py-1.5 text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110 md:hidden"
-            aria-label="Expand music player"
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setMinimized(false)}
+          onKeyDown={handleMinimizedKeyDown}
+          className="flex cursor-pointer items-center gap-1.5 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-3 py-1.5 text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110 md:gap-2 md:px-[14px] md:py-2"
+          aria-label="Expand music player"
+        >
+          <Music aria-hidden="true" className="h-4 w-4 shrink-0 md:h-[18px] md:w-[18px]" />
+          <span className="min-w-0 flex-1 truncate text-left text-xs font-medium md:text-sm">
+            {minimizedTrackLabel}
+          </span>
+          <button
+            type="button"
+            onClick={handleMinimizedPlayback}
+            className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-text-primary)] text-[var(--color-background-primary)] md:h-8 md:w-8"
+            aria-label={isPlaying ? "Pause music" : "Play music"}
+            title={isPlaying ? "Pause" : "Play"}
           >
-            <Music aria-hidden="true" className="h-4 w-4 shrink-0" />
-            <span className="min-w-0 flex-1 truncate text-left text-xs font-medium">
-              {minimizedTrackLabel}
-            </span>
-            <button
-              type="button"
-              onClick={handleMinimizedPlayback}
-              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[var(--color-text-primary)] text-[var(--color-background-primary)]"
-              aria-label={isPlaying ? "Pause music" : "Play music"}
-              title={isPlaying ? "Pause" : "Play"}
-            >
-              {isPlaying ? (
-                <Pause aria-hidden="true" className="h-[13px] w-[13px]" />
-              ) : (
-                <Play aria-hidden="true" className="h-[13px] w-[13px]" />
-              )}
-            </button>
-            <Maximize2 aria-hidden="true" className="h-[14px] w-[14px] shrink-0" />
-          </div>
-
-          {/* md+ 전용: footer-slot-right 에 portal */}
-          {isDesktop && footerSlotRight ? createPortal(desktopMinimizedPill, footerSlotRight) : null}
-        </>
+            {isPlaying ? (
+              <Pause aria-hidden="true" className="h-[13px] w-[13px] md:h-[15px] md:w-[15px]" />
+            ) : (
+              <Play aria-hidden="true" className="h-[13px] w-[13px] md:h-[15px] md:w-[15px]" />
+            )}
+          </button>
+          <Maximize2 aria-hidden="true" className="h-[14px] w-[14px] shrink-0 md:h-4 md:w-4" />
+        </div>
       ) : (
-        // 확장 상태: md+ 에서 footer 위로 bottom 조정 (bottom-28 = 7rem ≈ footer 높이 + 버퍼)
-        <div className="fixed inset-x-0 bottom-0 z-50 flex w-full flex-col md:bottom-28 md:left-auto md:right-4 md:w-[min(calc(100vw-2rem),320px)] md:translate-x-0">
-          <section className="overflow-hidden rounded-t-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)] md:rounded-[var(--border-radius-lg)]">
-            <header className="flex items-center justify-between gap-3 border-b-[0.5px] border-[var(--color-border-tertiary)] px-4 py-3">
-              <div className="flex min-w-0 items-center gap-3">
-                <Music aria-hidden="true" size={20} className="shrink-0" />
-                <div className="min-w-0">
-                  <h2 className="truncate text-sm font-semibold">Now Playing</h2>
-                  <p className="truncate text-xs text-text-muted dark:text-text-muted">
-                    {selectedTrackLabel}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setMinimized(true)}
-                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition hover:bg-[var(--color-background-secondary)]"
-                aria-label="Minimize player"
-                title="Minimize"
-              >
-                <Minimize2 aria-hidden="true" size={16} />
-              </button>
-            </header>
-
-            <div className="space-y-4 p-4">
-              <label htmlFor="bgm-track" className="sr-only">
-                Select BGM
-              </label>
-              <select
-                id="bgm-track"
-                value={selectedSrc}
-                onChange={onTrackChange}
-                className="h-10 w-full rounded-[calc(var(--border-radius-lg)*0.75)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-secondary)] px-3 text-sm font-medium text-[var(--color-text-primary)] outline-none transition focus:border-accent-border"
-              >
-                {tracks.map((track) => (
-                  <option key={track.src} value={track.src} className="bg-[var(--color-background-primary)] text-[var(--color-text-primary)]">
-                    {track.label}
-                  </option>
-                ))}
-              </select>
-
-              <div className="space-y-2">
-                <input
-                  type="range"
-                  min={0}
-                  max={Math.max(duration, 0)}
-                  step={1}
-                  value={Math.min(currentTime, duration || 0)}
-                  onChange={onSeek}
-                  className="h-2 w-full cursor-pointer rounded-full accent-[var(--color-text-primary)] outline-none"
-                />
-                <div className="flex items-center justify-between text-[10px] text-text-muted dark:text-text-muted">
-                  <span>{formatTime(currentTime)}</span>
-                  <span>{formatTime(duration)}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-center gap-4">
-                <button
-                  type="button"
-                  onClick={playPreviousTrack}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] transition hover:brightness-95 dark:hover:brightness-110"
-                  aria-label="Play previous track"
-                  title="Previous"
-                >
-                  <SkipBack aria-hidden="true" size={16} />
-                </button>
-                <button
-                  type="button"
-                  onClick={togglePlayback}
-                  className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-text-primary)] text-[var(--color-background-primary)] transition hover:opacity-90"
-                  aria-label={isPlaying ? "Pause music" : "Play music"}
-                  title={isPlaying ? "Pause" : "Play"}
-                >
-                  {isPlaying ? <Pause aria-hidden="true" size={20} /> : <Play aria-hidden="true" size={20} />}
-                </button>
-                <button
-                  type="button"
-                  onClick={playNextTrack}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] transition hover:brightness-95 dark:hover:brightness-110"
-                  aria-label="Play next track"
-                  title="Next"
-                >
-                  <SkipForward aria-hidden="true" size={16} />
-                </button>
+        <section className="overflow-hidden rounded-t-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)] md:rounded-[var(--border-radius-lg)]">
+          <header className="flex items-center justify-between gap-3 border-b-[0.5px] border-[var(--color-border-tertiary)] px-4 py-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <Music aria-hidden="true" size={20} className="shrink-0" />
+              <div className="min-w-0">
+                <h2 className="truncate text-sm font-semibold">Now Playing</h2>
+                <p className="truncate text-xs text-text-muted dark:text-text-muted">
+                  {selectedTrackLabel}
+                </p>
               </div>
             </div>
-          </section>
-        </div>
+            <button
+              type="button"
+              onClick={() => setMinimized(true)}
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--color-text-primary)] transition hover:bg-[var(--color-background-secondary)]"
+              aria-label="Minimize player"
+              title="Minimize"
+            >
+              <Minimize2 aria-hidden="true" size={16} />
+            </button>
+          </header>
+
+          <div className="space-y-4 p-4">
+            <label htmlFor="bgm-track" className="sr-only">
+              Select BGM
+            </label>
+            <select
+              id="bgm-track"
+              value={selectedSrc}
+              onChange={onTrackChange}
+              className="h-10 w-full rounded-[calc(var(--border-radius-lg)*0.75)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-secondary)] px-3 text-sm font-medium text-[var(--color-text-primary)] outline-none transition focus:border-accent-border"
+            >
+              {tracks.map((track) => (
+                <option key={track.src} value={track.src} className="bg-[var(--color-background-primary)] text-[var(--color-text-primary)]">
+                  {track.label}
+                </option>
+              ))}
+            </select>
+
+            <div className="space-y-2">
+              <input
+                type="range"
+                min={0}
+                max={Math.max(duration, 0)}
+                step={1}
+                value={Math.min(currentTime, duration || 0)}
+                onChange={onSeek}
+                className="h-2 w-full cursor-pointer rounded-full accent-[var(--color-text-primary)] outline-none"
+              />
+              <div className="flex items-center justify-between text-[10px] text-text-muted dark:text-text-muted">
+                <span>{formatTime(currentTime)}</span>
+                <span>{formatTime(duration)}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-4">
+              <button
+                type="button"
+                onClick={playPreviousTrack}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] transition hover:brightness-95 dark:hover:brightness-110"
+                aria-label="Play previous track"
+                title="Previous"
+              >
+                <SkipBack aria-hidden="true" size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={togglePlayback}
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[var(--color-text-primary)] text-[var(--color-background-primary)] transition hover:opacity-90"
+                aria-label={isPlaying ? "Pause music" : "Play music"}
+                title={isPlaying ? "Pause" : "Play"}
+              >
+                {isPlaying ? <Pause aria-hidden="true" size={20} /> : <Play aria-hidden="true" size={20} />}
+              </button>
+              <button
+                type="button"
+                onClick={playNextTrack}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-secondary)] text-[var(--color-text-primary)] transition hover:brightness-95 dark:hover:brightness-110"
+                aria-label="Play next track"
+                title="Next"
+              >
+                <SkipForward aria-hidden="true" size={16} />
+              </button>
+            </div>
+          </div>
+        </section>
       )}
-    </>
+    </div>
   );
 }
