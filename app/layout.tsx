@@ -72,7 +72,7 @@ export default async function RootLayout({
         <ClientLayout>
         <Header session={session} locale={locale} setLanguageAction={setLanguageAction} />
         <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">{children}</main>
-        <footer className="fixed bottom-0 left-0 right-0 z-40 border-t border-border-strong bg-surface-muted/95 py-4 pb-6 text-center text-sm text-text-base shadow-[0_-8px_16px_-8px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] backdrop-blur dark:border-border-base dark:bg-surface/95 dark:text-text-muted dark:shadow-[0_-6px_12px_-12px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] md:pb-4">
+        <footer className="relative fixed bottom-0 left-0 right-0 z-40 border-t border-border-strong bg-surface-muted/95 py-4 pb-6 text-center text-sm text-text-base shadow-[0_-8px_16px_-8px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] backdrop-blur dark:border-border-base dark:bg-surface/95 dark:text-text-muted dark:shadow-[0_-6px_12px_-12px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] md:pb-4">
           <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-3 px-6">
             <p>{t(locale, "© 2026 공인재 신진철의 생존일기", "© 2026 SJC Survival Log")}</p>
             <div className="flex items-center gap-3">
@@ -126,6 +126,11 @@ export default async function RootLayout({
                 sjc5001@hs.ac.kr
               </a>
             </div>
+          </div>
+          {/* md+ 전용: 최소화 BGM·채팅이 portal로 주입되는 슬롯 */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 top-0 hidden items-center justify-between px-8 md:flex">
+            <div id="footer-slot-left" className="pointer-events-auto flex items-center" />
+            <div id="footer-slot-right" className="pointer-events-auto flex items-center" />
           </div>
         </footer>
         <div className="h-24" />

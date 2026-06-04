@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { Expand, Loader2, Maximize2, MessageCircle, Minus, X } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import {
   getChatWindowDataAction,
@@ -38,10 +39,20 @@ function getMessageTime(value: string) {
 export function GlobalChatWindow() {
   const { state, setMode, closeChat } = useChat();
   const { isMinimized: isPlayerMinimized, setMinimized: setPlayerMinimized } = usePlayer();
+  // SSR: false, client after hydration: true — 포털 렌더를 hydration 이후로 제한
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const [data, setData] = useState<(ChatWindowData & { roomId: string }) | null>(null);
   const [error, setError] = useState<{ roomId: string; message: string } | null>(null);
-  const floatingChatOffsetClass = isPlayerMinimized ? "md:bottom-[10.5rem]" : "md:bottom-[18rem]";
-  const minimizedChatOffsetClass = isPlayerMinimized ? "md:bottom-[10.5rem]" : "md:bottom-[18rem]";
+
+  // md+ floating 채팅 offset:
+  //   player 최소화(footer 인라인) → footer만 피하면 됨 (bottom-28 = 7rem)
+  //   player 확장(fixed above footer) → 확장 플레이어(bottom-28 + ~234px) 위로 올림
+  const floatingChatOffsetClass = isPlayerMinimized ? "md:bottom-28" : "md:bottom-[24rem]";
+
   const floatingChatFrameClass = cn(
     "top-[4.75rem] h-auto min-h-0 p-1 md:top-auto md:h-[min(60vh,620px)] md:min-h-[480px]",
     isPlayerMinimized ? "bottom-[6rem]" : "bottom-[22rem]",
@@ -217,6 +228,26 @@ export function GlobalChatWindow() {
     </div>
   );
 
+  const footerSlotLeft = isMounted ? document.getElementById("footer-slot-left") : null;
+
+  // md+ 최소화 버튼: footer-slot-left 에 portal로 인라인 배치
+  const desktopMinimizedButton = state.mode === "minimized" && state.roomId && footerSlotLeft
+    ? createPortal(
+        <button
+          type="button"
+          onClick={() => setMode("floating")}
+          className="flex w-72 items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110"
+          aria-label={`${otherUser.name} 채팅 열기`}
+        >
+          <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={28} />
+          <span className="min-w-0 flex-1 truncate text-left">{otherUser.name}</span>
+          <MessageCircle aria-hidden="true" size={16} className="shrink-0" />
+          <Maximize2 aria-hidden="true" size={16} className="shrink-0" />
+        </button>,
+        footerSlotLeft,
+      )
+    : null;
+
   return (
     <>
       {state.mode === "floating" && state.roomId ? (
@@ -258,19 +289,8 @@ export function GlobalChatWindow() {
         </aside>
       ) : null}
 
-      {state.mode === "minimized" && state.roomId ? (
-        <button
-          type="button"
-          onClick={() => setMode("floating")}
-          className={`fixed ${minimizedChatOffsetClass} right-4 z-50 hidden w-80 items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110 md:flex`}
-          aria-label={`${otherUser.name} 채팅 열기`}
-        >
-          <UserAvatar name={otherUser.name} avatarUrl={otherUser.avatarUrl} size={28} />
-          <span className="min-w-0 flex-1 truncate text-left">{otherUser.name}</span>
-          <MessageCircle aria-hidden="true" size={16} className="shrink-0" />
-          <Maximize2 aria-hidden="true" size={16} className="shrink-0" />
-        </button>
-      ) : null}
+      {/* md+ 최소화: footer-slot-left portal */}
+      {desktopMinimizedButton}
 
       {showMobileDock && (hasChatTab || showMusicDockTab) ? (
         <div className={`fixed inset-x-0 ${mobileDockBottomClass} z-[55] flex justify-center px-3 md:hidden`}>
