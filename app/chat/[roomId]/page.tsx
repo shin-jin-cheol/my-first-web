@@ -35,7 +35,7 @@ export default async function ChatPage({ params }: ChatPageProps) {
   };
 
   return (
-    <section className="fixed inset-x-0 bottom-14 top-[4.25rem] flex overflow-hidden px-1 pb-1 md:bottom-48 md:top-[5rem] md:px-0 lg:bottom-48 xl:bottom-48 2xl:bottom-28">
+    <section className="fixed inset-x-0 bottom-14 top-[4.25rem] flex overflow-hidden px-1 pb-1 md:bottom-[185px] md:top-[5rem] md:px-0 lg:bottom-[185px] xl:bottom-[185px] 2xl:bottom-28">
       <div className="mx-auto flex min-h-0 w-full max-w-3xl flex-1 flex-col">
         <ChatWindow
           roomId={decodedRoomId}
