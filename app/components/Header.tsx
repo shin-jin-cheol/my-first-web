@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import type { Session } from "@/lib/auth";
 import { t, type Locale } from "@/lib/i18n";
 import { getNotifications, getUnreadCount } from "@/lib/notifications";
+import { BackButton } from "./BackButton";
 import { NavMenuMobile } from "./NavMenuMobile";
 import { NotificationBell } from "./NotificationBell";
 import { PostsMenu } from "./PostsMenu";
@@ -32,6 +33,7 @@ export async function Header({ session, locale, setLanguageAction }: HeaderProps
     <nav className="sticky top-0 z-40 border-b border-border-strong bg-surface-muted text-text-base shadow-[0_0_16px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] transition-transform duration-300 ease-out dark:border-border-base dark:bg-surface dark:text-text-base dark:shadow-[0_0_12px_rgb(from_var(--accent-primary)_r_g_b_/_0.05)] group-data-[nav-hidden=true]:-translate-y-full md:translate-y-0">
       <div className="mx-auto w-full max-w-4xl px-4 py-3 md:px-6 md:py-4">
         <div className="flex items-center justify-between gap-3 md:hidden">
+          <BackButton />
           <Link href="/" className="inline-flex h-9 min-w-0 flex-1 items-center justify-center truncate rounded-full border border-border-strong bg-surface-muted/92 px-3 text-center text-sm font-extrabold tracking-[0.01em] text-text-base drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md transition hover:brightness-105 dark:border-border-sub dark:bg-surface-sub/70 dark:text-text-base dark:drop-shadow-none dark:shadow-[0_0_8px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)]">
             {siteTitle}
           </Link>
@@ -72,6 +74,7 @@ export async function Header({ session, locale, setLanguageAction }: HeaderProps
         </div>
 
         <div className="hidden min-w-0 items-center gap-3 md:flex">
+          <BackButton />
           <Link href="/" className="inline-flex h-9 min-w-0 flex-1 items-center truncate rounded-full border border-border-strong bg-surface-muted/92 px-3 text-base font-extrabold tracking-[0.01em] text-text-base drop-shadow-[0_0_6px_rgb(from_var(--accent-primary)_r_g_b_/_0.12)] shadow-[inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-3px_6px_rgba(0,0,0,0.04),0_5px_12px_rgba(0,0,0,0.09)] backdrop-blur-md transition hover:brightness-105 dark:border-border-sub dark:bg-surface-sub/70 dark:text-text-base dark:drop-shadow-none dark:shadow-[0_0_8px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] md:text-lg lg:max-w-[15rem] lg:flex-none">
             {siteTitle}
           </Link>
