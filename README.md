@@ -415,3 +415,30 @@ npx vercel --prod
 - `docs/supabase-members.sql`
 - `docs/supabase-content.sql`
 - `docs/supabase-board-stability.sql`
+
+---
+
+## 10. 2026-06-04 최신 반영
+
+### 새 기능 및 UX
+
+- HTML 파일 첨부를 지원합니다. `lib/attachment-utils.ts`의 허용 MIME 타입에 `text/html`이 포함됩니다.
+- 홈(`/`)을 제외한 모든 페이지 헤더 왼쪽에 뒤로가기 버튼이 표시됩니다.
+- 뒤로가기 버튼은 `app/components/BackButton.tsx`에서 관리하며 `usePathname()`으로 홈 여부를 확인하고 `router.back()`으로 동작합니다.
+
+### 채팅 전체모드 하단 여백
+
+- `app/chat/[roomId]/page.tsx`의 전체모드 section 하단 여백은 기기별로 다음 기준을 사용합니다.
+- 기본(no prefix, 모바일 768px 미만): `bottom-14`
+- `md`/`lg`/`xl`: `bottom-[165px]`
+- `2xl` 이상: `bottom-28`
+- 아이패드 11인치 1180px는 Tailwind `lg` 구간이므로 footer와 뮤직 플레이어 겹침 방지를 위해 중간 화면 여백을 유지합니다.
+
+### Tailwind breakpoint 기준
+
+- 기본(no prefix): 모바일, 768px 미만
+- `md`: 768px 이상
+- `lg`: 1024px 이상
+- `xl`: 1280px 이상
+- `2xl`: 1536px 이상
+- 아이패드 11인치 1180px는 `lg` 구간입니다.

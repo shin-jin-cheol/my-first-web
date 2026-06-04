@@ -320,3 +320,24 @@ docs: Ch9 완료 기준 프로젝트 문서 갱신
 - `.github/workflows/e2e.yml`을 추가해 GitHub Actions push 시 Playwright E2E를 실행합니다.
 - GitHub Repository Variable `PLAYWRIGHT_BASE_URL`을 E2E 대상 URL로 사용합니다.
 - `lib/env.ts`에 `SUPABASE_CHAT_IMAGES_BUCKET`, `SUPABASE_POST_IMAGES_BUCKET`, `SUPABASE_NOTIFICATIONS_TABLE` 상수가 추가되었습니다.
+ 
+## 15. 2026-06-04 완료 반영 기록
+
+- `lib/attachment-utils.ts`의 `ALLOWED_ATTACHMENT_MIME_TYPES`에 `text/html`을 추가해 HTML 파일 첨부를 허용했습니다.
+- `app/components/BackButton.tsx`를 신규 추가했습니다.
+  - Client Component입니다.
+  - `usePathname()`으로 현재 경로를 확인하고 홈(`/`)에서는 렌더링하지 않습니다.
+  - 홈을 제외한 모든 페이지 헤더에서 `router.back()` 기반 뒤로가기를 제공합니다.
+  - 아이콘은 `lucide-react`의 `ArrowLeft`를 사용하며 기존 헤더 아이콘 버튼 스타일과 맞춥니다.
+- `app/components/Header.tsx`의 모바일/데스크탑 사이트 타이틀 왼쪽에 `BackButton`을 배치했습니다.
+- `app/chat/[roomId]/page.tsx` 채팅 전체모드 하단 여백을 기기별로 조정했습니다.
+  - 기본(no prefix, 모바일 768px 미만): `bottom-14`
+  - `md`/`lg`/`xl` 구간: `bottom-[165px]`
+  - `2xl` 이상: `bottom-28`
+  - 아이패드 11인치 1180px는 Tailwind `lg` 구간이므로 footer와 뮤직 플레이어 겹침을 피하기 위해 중간 화면 여백을 별도로 유지합니다.
+- Tailwind breakpoint 기준:
+  - 기본(no prefix): 768px 미만 모바일
+  - `md`: 768px 이상
+  - `lg`: 1024px 이상
+  - `xl`: 1280px 이상
+  - `2xl`: 1536px 이상

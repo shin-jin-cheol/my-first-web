@@ -281,3 +281,17 @@
 - [x] Supabase Realtime 알림 구현 완료
 - [x] E2E 테스트 CI 자동화 구현 완료
 - [x] 업로드형 프로필 이미지는 owner/member 아바타 업로드 1차 구현 완료
+## 2026-06-04 완료 반영
+
+- [x] HTML 파일 업로드 허용 (`lib/attachment-utils.ts` `ALLOWED_ATTACHMENT_MIME_TYPES`에 `text/html` 추가)
+- [x] 헤더 뒤로가기 버튼 추가 (`app/components/BackButton.tsx`)
+- [x] 홈(`/`) 제외 모든 페이지에서 뒤로가기 버튼 표시
+- [x] `BackButton`에서 `usePathname()`으로 홈 여부 감지
+- [x] `BackButton`에서 `useRouter().back()` 동작 적용
+- [x] `Header.tsx` 모바일 사이트 타이틀 왼쪽에 `BackButton` 배치
+- [x] `Header.tsx` 데스크탑 사이트 타이틀 왼쪽에 `BackButton` 배치
+- [x] 채팅 전체모드 하단 여백 기기별 조정 (`app/chat/[roomId]/page.tsx`)
+- [x] 모바일 기본 `bottom-14` 유지
+- [x] `md`/`lg`/`xl` 구간 `bottom-[165px]` 적용
+- [x] `2xl` 이상 `bottom-28` 유지
+- [x] 아이패드 11인치 1180px가 Tailwind `lg` 구간임을 문서화
