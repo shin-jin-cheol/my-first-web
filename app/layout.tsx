@@ -72,10 +72,10 @@ export default async function RootLayout({
         <ClientLayout>
         <Header session={session} locale={locale} setLanguageAction={setLanguageAction} />
         <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-8">{children}</main>
-        <footer className="relative fixed bottom-0 left-0 right-0 z-40 border-t border-border-strong bg-surface-muted/95 py-4 pb-6 text-center text-sm text-text-base shadow-[0_-8px_16px_-8px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] backdrop-blur dark:border-border-base dark:bg-surface/95 dark:text-text-muted dark:shadow-[0_-6px_12px_-12px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] md:pb-4">
-          <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-3 px-6 md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-4">
+        <footer className="relative fixed bottom-0 left-0 right-0 z-40 border-t border-border-strong bg-surface-muted/95 py-2 pb-2 text-center text-sm text-text-base shadow-[0_-8px_16px_-8px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] backdrop-blur dark:border-border-base dark:bg-surface/95 dark:text-text-muted dark:shadow-[0_-6px_12px_-12px_rgb(from_var(--accent-primary)_r_g_b_/_0.08)] md:py-2 md:pb-2">
+          <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-2 px-6 md:grid md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-3">
             <div className="hidden md:block" aria-hidden="true" />
-            <div className="flex flex-col items-center justify-center gap-3 md:col-start-2">
+            <div className="flex flex-col items-center justify-center gap-2 md:col-start-2">
               <p>{t(locale, "© 2026 공인재 신진철의 생존일기", "© 2026 SJC Survival Log")}</p>
               <div className="flex items-center gap-3">
                 <a

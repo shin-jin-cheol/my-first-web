@@ -32,6 +32,15 @@ function formatTime(seconds: number) {
   return `${minutes}:${remain}`;
 }
 
+function subscribeToDesktopViewport(onStoreChange: () => void) {
+  const mediaQuery = window.matchMedia("(min-width: 768px)");
+  mediaQuery.addEventListener("change", onStoreChange);
+
+  return () => {
+    mediaQuery.removeEventListener("change", onStoreChange);
+  };
+}
+
 export default function BgmPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const { isMinimized, setMinimized } = usePlayer();
@@ -39,6 +48,11 @@ export default function BgmPlayer() {
   const isMounted = useSyncExternalStore(
     () => () => {},
     () => true,
+    () => false,
+  );
+  const isDesktop = useSyncExternalStore(
+    subscribeToDesktopViewport,
+    () => window.innerWidth >= 768,
     () => false,
   );
 
@@ -108,7 +122,7 @@ export default function BgmPlayer() {
     </div>
   );
 
-  const footerSlotRight = isMounted ? document.getElementById("footer-slot-right") : null;
+  const footerSlotRight = isMounted && isDesktop ? document.getElementById("footer-slot-right") : null;
 
   return (
     <>
@@ -146,7 +160,7 @@ export default function BgmPlayer() {
           </div>
 
           {/* md+ 전용: footer-slot-right 에 portal */}
-          {footerSlotRight ? createPortal(desktopMinimizedPill, footerSlotRight) : null}
+          {isDesktop && footerSlotRight ? createPortal(desktopMinimizedPill, footerSlotRight) : null}
         </>
       ) : (
         // 확장 상태: md+ 에서 footer 위로 bottom 조정 (bottom-28 = 7rem ≈ footer 높이 + 버퍼)
