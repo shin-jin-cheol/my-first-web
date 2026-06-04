@@ -341,3 +341,15 @@ docs: Ch9 완료 기준 프로젝트 문서 갱신
   - `lg`: 1024px 이상
   - `xl`: 1280px 이상
   - `2xl`: 1536px 이상
+
+## 16. 2026-06-04 YouTube 영상 임베드 완료 기록
+
+- YouTube 영상 임베드 기능을 추가했습니다.
+- `posts`, `guest_posts` 테이블에 `youtube_url` 컬럼을 추가하는 마이그레이션을 작성했습니다.
+- 마이그레이션 파일: `supabase/migrations/20260604000000_add_youtube_url_to_posts.sql`
+- 블로그/게스트 게시글 작성, 수정, 상세 화면에서 YouTube URL 입력과 iframe 임베드를 지원합니다.
+- 오너 블로그 게시글과 게스트 게시글 모두 같은 흐름으로 지원합니다.
+- `watch?v=VIDEO_ID`, `youtu.be/VIDEO_ID` 형식의 영상 ID 추출을 지원합니다.
+- URL 정규화, YouTube 도메인 검증, 영상 ID 추출, 임베드 URL 생성은 `lib/attachment-utils.ts`에서 처리합니다.
+- `lib/posts.ts`, `lib/guest-posts.ts`는 `youtubeUrl` 필드를 `youtube_url` 컬럼과 매핑합니다.
+- `app/posts/actions.ts`, `app/guest/actions.ts`는 `FormData`의 `youtubeUrl` 값을 저장 흐름으로 전달합니다.

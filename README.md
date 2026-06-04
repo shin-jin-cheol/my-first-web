@@ -441,3 +441,12 @@ npx vercel --prod
 - `xl`: 1280px 이상
 - `2xl`: 1536px 이상
 - 아이패드 11인치 1180px는 `lg` 구간입니다.
+
+### YouTube 영상 임베드
+
+- 블로그/게스트 게시글 작성 및 수정 화면에서 YouTube URL을 입력할 수 있습니다.
+- 게시글 상세 화면은 유효한 YouTube URL을 16:9 iframe으로 임베드합니다.
+- `posts`, `guest_posts` 테이블의 `youtube_url` 컬럼을 사용합니다.
+- 컬럼 추가 마이그레이션은 `supabase/migrations/20260604000000_add_youtube_url_to_posts.sql`입니다.
+- 지원 URL 형식은 `watch?v=VIDEO_ID`, `youtu.be/VIDEO_ID`입니다.
+- URL 정규화와 영상 ID 추출은 `lib/attachment-utils.ts`에서 처리합니다.

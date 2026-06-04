@@ -295,3 +295,16 @@
 - [x] `md`/`lg`/`xl` 구간 `bottom-[165px]` 적용
 - [x] `2xl` 이상 `bottom-28` 유지
 - [x] 아이패드 11인치 1180px가 Tailwind `lg` 구간임을 문서화
+
+### YouTube 영상 임베드
+
+- [x] YouTube 영상 임베드 기능 추가
+- [x] `posts.youtube_url` 컬럼 마이그레이션 작성
+- [x] `guest_posts.youtube_url` 컬럼 마이그레이션 작성
+- [x] `supabase/migrations/20260604000000_add_youtube_url_to_posts.sql` 작성
+- [x] 블로그 게시글 작성/수정 화면 YouTube URL 입력 지원
+- [x] 게스트 게시글 작성/수정 화면 YouTube URL 입력 지원
+- [x] 블로그/게스트 게시글 상세 화면 YouTube iframe 임베드
+- [x] `watch?v=` 형식 YouTube 영상 ID 추출 지원
+- [x] `youtu.be/` 형식 YouTube 영상 ID 추출 지원
+- [x] `lib/posts.ts`, `lib/guest-posts.ts`, `lib/attachment-utils.ts` YouTube URL 흐름 반영
