@@ -228,10 +228,10 @@ export function GlobalChatWindow() {
     </div>
   );
 
-  const footerSlotLeft = isMounted ? document.getElementById("footer-slot-left") : null;
+  const footerSlotRight = isMounted ? document.getElementById("footer-slot-right") : null;
 
-  // md+ 최소화 버튼: footer-slot-left 에 portal로 인라인 배치
-  const desktopMinimizedButton = state.mode === "minimized" && state.roomId && footerSlotLeft
+  // md+ 최소화 버튼: footer-slot-right 에 portal로 인라인 배치
+  const desktopMinimizedButton = state.mode === "minimized" && state.roomId && footerSlotRight
     ? createPortal(
         <button
           type="button"
@@ -244,7 +244,7 @@ export function GlobalChatWindow() {
           <MessageCircle aria-hidden="true" size={16} className="shrink-0" />
           <Maximize2 aria-hidden="true" size={16} className="shrink-0" />
         </button>,
-        footerSlotLeft,
+        footerSlotRight,
       )
     : null;
 
@@ -289,7 +289,7 @@ export function GlobalChatWindow() {
         </aside>
       ) : null}
 
-      {/* md+ 최소화: footer-slot-left portal */}
+      {/* md+ 최소화: footer-slot-right portal */}
       {desktopMinimizedButton}
 
       {showMobileDock && (hasChatTab || showMusicDockTab) ? (

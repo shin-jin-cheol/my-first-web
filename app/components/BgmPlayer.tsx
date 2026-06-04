@@ -84,7 +84,7 @@ export default function BgmPlayer() {
       tabIndex={0}
       onClick={() => setMinimized(false)}
       onKeyDown={handleMinimizedKeyDown}
-      className="flex cursor-pointer items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110"
+      className="flex w-72 cursor-pointer items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110"
       aria-label="Expand music player"
     >
       <Music aria-hidden="true" className="h-[18px] w-[18px] shrink-0" />
