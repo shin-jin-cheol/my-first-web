@@ -9,6 +9,7 @@ import {
   getMessages,
   getRoom,
   isChatRoomParticipant,
+  markMessagesAsRead,
   sendMessage,
   type Message,
 } from "@/lib/chat";
@@ -70,4 +71,27 @@ export async function getChatWindowDataAction(roomId: string): Promise<ChatWindo
     currentUserId: session.userId,
     chatImagesBucket: SUPABASE_CHAT_IMAGES_BUCKET,
   };
+}
+
+export async function markMessagesAsReadAction(roomId: string): Promise<boolean> {
+  const session = await requireSession();
+  const normalizedRoomId = roomId.trim();
+
+  if (!normalizedRoomId) {
+    return false;
+  }
+
+  const room = await getRoom(normalizedRoomId);
+  if (!room || !isChatRoomParticipant(room, session.userId)) {
+    return false;
+  }
+
+  const otherUserId = room.user_a_id === session.userId ? room.user_b_id : room.user_a_id;
+  const didUpdate = await markMessagesAsRead(normalizedRoomId, otherUserId);
+
+  if (didUpdate) {
+    revalidatePath(`/chat/${encodeURIComponent(normalizedRoomId)}`, "page");
+  }
+
+  return didUpdate;
 }

@@ -19,6 +19,7 @@ export type Message = {
   sender_id: string;
   content: string;
   image_url?: string | null;
+  is_read: boolean;
   created_at: string;
 };
 
@@ -46,7 +47,7 @@ async function requestChatRooms<T>(
 }
 
 async function requestMessages<T>(
-  method: "GET" | "POST",
+  method: "GET" | "POST" | "PATCH",
   query: string,
   body?: unknown,
   prefer?: string,
@@ -162,7 +163,7 @@ export async function getMessages(roomId: string): Promise<Message[]> {
   const encodedRoomId = encodeURIComponent(normalizedRoomId);
   const result = await requestMessages<Message[]>(
     "GET",
-    `?select=id,room_id,sender_id,content,image_url,created_at&room_id=eq.${encodedRoomId}&order=created_at.desc&limit=100`,
+    `?select=id,room_id,sender_id,content,image_url,is_read,created_at&room_id=eq.${encodedRoomId}&order=created_at.desc&limit=100`,
   );
 
   if (!result.ok || !Array.isArray(result.data)) {
@@ -170,6 +171,27 @@ export async function getMessages(roomId: string): Promise<Message[]> {
   }
 
   return result.data.reverse();
+}
+
+export async function markMessagesAsRead(roomId: string, senderId: string): Promise<boolean> {
+  assertSupabaseChatStorage();
+
+  const normalizedRoomId = roomId.trim();
+  const normalizedSenderId = senderId.trim();
+
+  if (!normalizedRoomId || !normalizedSenderId) {
+    return false;
+  }
+
+  const encodedRoomId = encodeURIComponent(normalizedRoomId);
+  const encodedSenderId = encodeURIComponent(normalizedSenderId);
+  const result = await requestMessages<null>(
+    "PATCH",
+    `?room_id=eq.${encodedRoomId}&sender_id=eq.${encodedSenderId}&is_read=eq.false`,
+    { is_read: true },
+  );
+
+  return result.ok;
 }
 
 export async function sendMessage(

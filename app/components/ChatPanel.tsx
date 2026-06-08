@@ -13,7 +13,10 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
 } from "react";
-import { sendChatMessageAction } from "@/app/chat/[roomId]/actions";
+import {
+  markMessagesAsReadAction,
+  sendChatMessageAction,
+} from "@/app/chat/[roomId]/actions";
 import { UserAvatar } from "@/app/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import type { Message } from "@/lib/chat";
@@ -66,6 +69,7 @@ function isMessage(value: unknown): value is Message {
       maybeMessage.room_id &&
       maybeMessage.sender_id &&
       typeof maybeMessage.content === "string" &&
+      typeof maybeMessage.is_read === "boolean" &&
       maybeMessage.created_at,
   );
 }
@@ -150,6 +154,12 @@ export function ChatPanel({
   }, [initialMessages]);
 
   useEffect(() => {
+    markMessagesAsReadAction(roomId).catch(() => {
+      // Read state is a progressive UI detail; keep the chat usable if it fails.
+    });
+  }, [roomId]);
+
+  useEffect(() => {
     const supabase = getSupabaseBrowserClient();
 
     const addMessage = (message: Message) => {
@@ -178,7 +188,35 @@ export function ChatPanel({
         (payload) => {
           if (isMessage(payload.new)) {
             addMessage(payload.new);
+            if (payload.new.sender_id !== currentUserId) {
+              markMessagesAsReadAction(roomId).catch(() => {
+                // Read state is a progressive UI detail; keep the chat usable if it fails.
+              });
+            }
           }
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `room_id=eq.${roomId}`,
+        },
+        (payload) => {
+          if (!isMessage(payload.new)) {
+            return;
+          }
+
+          const updatedMessage = payload.new;
+          setMessages((currentMessages) =>
+            currentMessages.map((currentMessage) =>
+              currentMessage.id === updatedMessage.id
+                ? { ...currentMessage, is_read: updatedMessage.is_read }
+                : currentMessage,
+            ),
+          );
         },
       )
       .subscribe();
@@ -186,7 +224,7 @@ export function ChatPanel({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [roomId]);
+  }, [currentUserId, roomId]);
 
   useEffect(() => {
     listEndRef.current?.scrollIntoView({ block: "end", behavior: "smooth" });
@@ -394,43 +432,50 @@ export function ChatPanel({
                           <span aria-hidden="true" className="h-8 w-8 shrink-0" />
                         )
                       ) : null}
-                      <div
-                        className={`max-w-[min(78%,36rem)] overflow-hidden rounded-2xl border ${
-                          isOwnMessage
-                            ? "border-accent-border bg-accent-soft text-text-base"
-                            : "border-border-base bg-surface text-text-base dark:border-border-sub dark:bg-surface-muted"
-                        }`}
-                      >
-                        {hasImage ? (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setActiveImage({
-                                src: message.image_url || "",
-                                alt: message.content?.trim() || "채팅 이미지",
-                              })
-                            }
-                            className="block w-full overflow-hidden rounded-none"
-                            aria-label="이미지 크게 보기"
-                          >
-                            <Image
-                              src={message.image_url || ""}
-                              alt="채팅 이미지"
-                              width={320}
-                              height={240}
-                              className="max-h-72 w-full object-cover transition hover:brightness-95"
-                              unoptimized
-                            />
-                          </button>
-                        ) : null}
-                        {hasText ? (
-                          <p className="whitespace-pre-wrap break-words px-4 pt-2 text-sm leading-6">
-                            {message.content}
+                      <div className="flex max-w-[min(78%,36rem)] flex-col items-start">
+                        <div
+                          className={`w-full overflow-hidden rounded-2xl border ${
+                            isOwnMessage
+                              ? "border-accent-border bg-accent-soft text-text-base"
+                              : "border-border-base bg-surface text-text-base dark:border-border-sub dark:bg-surface-muted"
+                          }`}
+                        >
+                          {hasImage ? (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setActiveImage({
+                                  src: message.image_url || "",
+                                  alt: message.content?.trim() || "채팅 이미지",
+                                })
+                              }
+                              className="block w-full overflow-hidden rounded-none"
+                              aria-label="이미지 크게 보기"
+                            >
+                              <Image
+                                src={message.image_url || ""}
+                                alt="채팅 이미지"
+                                width={320}
+                                height={240}
+                                className="max-h-72 w-full object-cover transition hover:brightness-95"
+                                unoptimized
+                              />
+                            </button>
+                          ) : null}
+                          {hasText ? (
+                            <p className="whitespace-pre-wrap break-words px-4 pt-2 text-sm leading-6">
+                              {message.content}
+                            </p>
+                          ) : null}
+                          <p className="px-4 pb-2 pt-1 text-right text-[0.7rem] text-text-muted dark:text-text-subtle">
+                            {formatMessageTime(message.created_at)}
                           </p>
+                        </div>
+                        {isOwnMessage && !message.is_read ? (
+                          <span className="mt-0.5 px-1 text-[0.68rem] font-semibold leading-none text-[var(--accent)]">
+                            1
+                          </span>
                         ) : null}
-                        <p className="px-4 pb-2 pt-1 text-right text-[0.7rem] text-text-muted dark:text-text-subtle">
-                          {formatMessageTime(message.created_at)}
-                        </p>
                       </div>
                     </div>
                   </li>

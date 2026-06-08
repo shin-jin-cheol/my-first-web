@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   getChatWindowDataAction,
+  markMessagesAsReadAction,
   type ChatWindowData,
 } from "@/app/chat/[roomId]/actions";
 import { ChatPanel } from "@/app/components/ChatPanel";
@@ -26,6 +27,7 @@ function isMessage(value: unknown): value is Message {
       maybeMessage.room_id &&
       maybeMessage.sender_id &&
       typeof maybeMessage.content === "string" &&
+      typeof maybeMessage.is_read === "boolean" &&
       maybeMessage.created_at,
   );
 }
@@ -140,6 +142,16 @@ export function GlobalChatWindow() {
       supabase.removeChannel(channel);
     };
   }, [shouldRenderChat, state.roomId]);
+
+  useEffect(() => {
+    if (state.mode !== "floating" || !state.roomId) {
+      return;
+    }
+
+    markMessagesAsReadAction(state.roomId).catch(() => {
+      // Read state is a progressive UI detail; keep the chat usable if it fails.
+    });
+  }, [state.mode, state.roomId]);
 
   const otherUser = useMemo(
     () => ({
