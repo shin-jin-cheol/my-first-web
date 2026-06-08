@@ -353,3 +353,15 @@ docs: Ch9 완료 기준 프로젝트 문서 갱신
 - URL 정규화, YouTube 도메인 검증, 영상 ID 추출, 임베드 URL 생성은 `lib/attachment-utils.ts`에서 처리합니다.
 - `lib/posts.ts`, `lib/guest-posts.ts`는 `youtubeUrl` 필드를 `youtube_url` 컬럼과 매핑합니다.
 - `app/posts/actions.ts`, `app/guest/actions.ts`는 `FormData`의 `youtubeUrl` 값을 저장 흐름으로 전달합니다.
+
+## 17. 2026-06-04 채팅 메시지 읽음 표시 완료 기록
+
+- 채팅 메시지 읽음 표시 기능을 추가했습니다.
+- `messages` 테이블에 `is_read boolean not null default false` 컬럼을 추가하는 마이그레이션을 작성했습니다.
+- 마이그레이션 파일: `supabase/migrations/20260604000001_add_is_read_to_messages.sql`
+- 내가 보낸 메시지를 상대방이 아직 읽지 않았으면 말풍선 옆에 카카오톡 스타일 `1`을 표시합니다.
+- 상대방이 읽으면 Supabase Realtime UPDATE 이벤트로 `1` 표시가 사라집니다.
+- 전체모드와 플로팅 채팅창 모두 읽음 표시를 지원합니다.
+- Realtime INSERT와 UPDATE 구독은 `ChatPanel`에서 별도 채널로 분리하고 실패 시 재구독합니다.
+- Realtime UPDATE 누락을 보정하기 위해 채팅창 열림, 브라우저 탭 포커스 복귀, 플로팅 전환 시 `getMessageReadStatusesAction()`으로 서버의 최신 `id/is_read` 상태만 다시 동기화합니다.
+- 관련 파일: `lib/chat.ts`, `app/chat/[roomId]/actions.ts`, `app/components/ChatPanel.tsx`, `app/components/GlobalChatWindow.tsx`

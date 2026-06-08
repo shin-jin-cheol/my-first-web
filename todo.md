@@ -1,5 +1,16 @@
 # TODO
 
+## 2026-06-04 채팅 메시지 읽음 표시 완료
+
+- [x] `messages.is_read` boolean 컬럼 추가 마이그레이션 작성
+- [x] 내가 보낸 메시지 중 상대방이 아직 읽지 않은 메시지에 카카오톡 스타일 `1` 표시
+- [x] 상대방이 읽으면 Supabase Realtime UPDATE 이벤트로 `1` 표시 제거
+- [x] 전체모드와 플로팅 채팅창 모두 읽음 표시 적용
+- [x] INSERT/UPDATE Realtime 채널 분리 및 실패 시 재구독 처리
+- [x] 채팅창 열림, 브라우저 탭 포커스 복귀, 플로팅 전환 시 서버에서 최신 `is_read` 상태 동기화
+- [x] `lib/chat.ts`, `app/chat/[roomId]/actions.ts`, `app/components/ChatPanel.tsx`, `app/components/GlobalChatWindow.tsx` 반영
+- [x] `supabase/migrations/20260604000001_add_is_read_to_messages.sql` 작성
+
 ## 2026-05-31 최신 완료 반영
 
 ### 묶음 A: 모바일 첫인상 개선

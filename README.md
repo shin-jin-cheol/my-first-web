@@ -105,6 +105,8 @@ Next.js 16 App Router 기반의 개인 블로그 + 게스트 커뮤니티 프로
 - `ChatContext` 기반 채팅 전역 상태 관리
 - `GlobalChatWindow` 기반 전역 플로팅 채팅
 - `PlayerContext` 기반 뮤직 플레이어 최소화 상태 연동
+- 내가 보낸 메시지의 미확인 상태를 카카오톡 스타일 `1`로 표시
+- Realtime UPDATE와 서버 동기화 기반 메시지 읽음 상태 반영
 - 채팅 Realtime 연결은 `NEXT_PUBLIC_SUPABASE_URL`과 `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 사용
 - 채팅 테이블명은 `lib/env.ts` 상수로 중앙 관리
 - `proxy.ts` 기반 `/chat` 보호 라우트
@@ -449,3 +451,11 @@ npx vercel --prod
 - 컬럼 추가 마이그레이션은 `supabase/migrations/20260604000000_add_youtube_url_to_posts.sql`입니다.
 - 지원 URL 형식은 `watch?v=VIDEO_ID`, `youtu.be/VIDEO_ID`입니다.
 - URL 정규화와 영상 ID 추출은 `lib/attachment-utils.ts`에서 처리합니다.
+
+### 채팅 메시지 읽음 표시
+
+- 채팅 메시지는 `messages.is_read` 컬럼으로 읽음 상태를 관리합니다.
+- 내가 보낸 메시지를 상대방이 아직 읽지 않았으면 말풍선 옆에 카카오톡 스타일 `1`을 표시합니다.
+- 상대방이 읽으면 Supabase Realtime UPDATE 이벤트로 `1` 표시가 사라집니다.
+- Realtime 누락 보정을 위해 채팅창 열림, 브라우저 탭 포커스 복귀, 플로팅 전환 시 서버에서 최신 `id/is_read` 상태를 다시 동기화합니다.
+- 관련 마이그레이션은 `supabase/migrations/20260604000001_add_is_read_to_messages.sql`입니다.
