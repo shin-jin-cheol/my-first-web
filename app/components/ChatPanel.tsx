@@ -150,7 +150,23 @@ export function ChatPanel({
   const canSend = Boolean((trimmedContent || pendingImageUrl) && !isPending && !isUploadingImage);
 
   useEffect(() => {
-    setMessages(initialMessages);
+    setMessages((currentMessages) => {
+      const currentMessageById = new Map(
+        currentMessages.map((message) => [message.id, message]),
+      );
+      const mergedMessages = initialMessages.map(
+        (message) => currentMessageById.get(message.id) ?? message,
+      );
+      const initialMessageIds = new Set(initialMessages.map((message) => message.id));
+      const localOnlyMessages = currentMessages.filter(
+        (message) => !initialMessageIds.has(message.id),
+      );
+
+      return [...mergedMessages, ...localOnlyMessages].sort(
+        (first, second) =>
+          getMessageTime(first.created_at) - getMessageTime(second.created_at),
+      );
+    });
   }, [initialMessages]);
 
   useEffect(() => {
