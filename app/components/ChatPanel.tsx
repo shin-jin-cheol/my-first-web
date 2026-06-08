@@ -24,6 +24,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024;
 const GROUP_GAP_MS = 60 * 1000;
+const EMPTY_MESSAGES: Message[] = [];
 
 export type ChatUser = {
   id: string;
@@ -34,6 +35,7 @@ export type ChatUser = {
 type ChatPanelProps = {
   roomId: string;
   initialMessages: Message[];
+  additionalMessages?: Message[];
   currentUserId: string;
   otherUser: ChatUser;
   chatImagesBucket: string;
@@ -123,9 +125,39 @@ function shouldShowPartnerAvatar(messages: Message[], index: number, currentUser
   return getMessageTime(next.created_at) - getMessageTime(current.created_at) >= GROUP_GAP_MS;
 }
 
+function mergeMessagesPreservingCurrent(
+  currentMessages: Message[],
+  incomingMessages: Message[],
+) {
+  const currentMessageById = new Map(
+    currentMessages.map((message) => [message.id, message]),
+  );
+  const incomingMessageById = new Map<string, Message>();
+
+  for (const message of incomingMessages) {
+    if (!incomingMessageById.has(message.id)) {
+      incomingMessageById.set(message.id, message);
+    }
+  }
+
+  const mergedMessages = Array.from(incomingMessageById.values()).map(
+    (message) => currentMessageById.get(message.id) ?? message,
+  );
+  const incomingMessageIds = new Set(incomingMessageById.keys());
+  const localOnlyMessages = currentMessages.filter(
+    (message) => !incomingMessageIds.has(message.id),
+  );
+
+  return [...mergedMessages, ...localOnlyMessages].sort(
+    (first, second) =>
+      getMessageTime(first.created_at) - getMessageTime(second.created_at),
+  );
+}
+
 export function ChatPanel({
   roomId,
   initialMessages,
+  additionalMessages = EMPTY_MESSAGES,
   currentUserId,
   otherUser,
   chatImagesBucket,
@@ -151,23 +183,12 @@ export function ChatPanel({
 
   useEffect(() => {
     setMessages((currentMessages) => {
-      const currentMessageById = new Map(
-        currentMessages.map((message) => [message.id, message]),
-      );
-      const mergedMessages = initialMessages.map(
-        (message) => currentMessageById.get(message.id) ?? message,
-      );
-      const initialMessageIds = new Set(initialMessages.map((message) => message.id));
-      const localOnlyMessages = currentMessages.filter(
-        (message) => !initialMessageIds.has(message.id),
-      );
-
-      return [...mergedMessages, ...localOnlyMessages].sort(
-        (first, second) =>
-          getMessageTime(first.created_at) - getMessageTime(second.created_at),
-      );
+      return mergeMessagesPreservingCurrent(currentMessages, [
+        ...initialMessages,
+        ...additionalMessages,
+      ]);
     });
-  }, [initialMessages]);
+  }, [additionalMessages, initialMessages]);
 
   useEffect(() => {
     markMessagesAsReadAction(roomId).catch(() => {

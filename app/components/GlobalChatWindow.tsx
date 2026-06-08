@@ -11,13 +11,39 @@ import {
 } from "@/app/chat/[roomId]/actions";
 import { ChatPanel } from "@/app/components/ChatPanel";
 import { UserAvatar } from "@/app/components/UserAvatar";
+import type { Message } from "@/lib/chat";
 import { useChat } from "@/lib/context/ChatContext";
 import { usePlayer } from "@/lib/context/PlayerContext";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+
+const EMPTY_MESSAGES: Message[] = [];
+
+function isMessage(value: unknown): value is Message {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const maybeMessage = value as Partial<Message>;
+  return Boolean(
+    maybeMessage.id &&
+      maybeMessage.room_id &&
+      maybeMessage.sender_id &&
+      typeof maybeMessage.content === "string" &&
+      typeof maybeMessage.is_read === "boolean" &&
+      maybeMessage.created_at,
+  );
+}
+
+function getMessageTime(value: string) {
+  const time = new Date(value).getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
 
 export function GlobalChatWindow() {
   const { state, setMode, closeChat } = useChat();
   const { isMinimized: isPlayerMinimized, setMinimized: setPlayerMinimized } = usePlayer();
   const [data, setData] = useState<(ChatWindowData & { roomId: string }) | null>(null);
+  const [newMessages, setNewMessages] = useState<{ roomId: string; messages: Message[] } | null>(null);
   const [error, setError] = useState<{ roomId: string; message: string } | null>(null);
   const floatingChatOffsetClass = isPlayerMinimized ? "md:bottom-[10.5rem]" : "md:bottom-[18rem]";
   const minimizedChatOffsetClass = isPlayerMinimized ? "md:bottom-[10.5rem]" : "md:bottom-[18rem]";
@@ -57,6 +83,9 @@ export function GlobalChatWindow() {
         }
 
         setData({ ...nextData, roomId });
+        setNewMessages((currentMessages) =>
+          currentMessages?.roomId === roomId ? currentMessages : { roomId, messages: [] },
+        );
         setError(null);
       })
       .catch(() => {
@@ -69,6 +98,56 @@ export function GlobalChatWindow() {
       isCurrent = false;
     };
   }, [data?.roomId, shouldRenderChat, state.roomId]);
+
+  useEffect(() => {
+    if (!shouldRenderChat || !state.roomId) {
+      return;
+    }
+
+    const roomId = state.roomId;
+    const supabase = getSupabaseBrowserClient();
+
+    const channel = supabase
+      .channel(`floating-room:${roomId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `room_id=eq.${roomId}`,
+        },
+        (payload) => {
+          if (!isMessage(payload.new)) {
+            return;
+          }
+
+          const message = payload.new;
+          setNewMessages((currentMessages) => {
+            if (!currentMessages || currentMessages.roomId !== roomId) {
+              return { roomId, messages: [message] };
+            }
+
+            if (currentMessages.messages.some((currentMessage) => currentMessage.id === message.id)) {
+              return currentMessages;
+            }
+
+            return {
+              roomId,
+              messages: [...currentMessages.messages, message].sort(
+                (first, second) =>
+                  getMessageTime(first.created_at) - getMessageTime(second.created_at),
+              ),
+            };
+          });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [shouldRenderChat, state.roomId]);
 
   useEffect(() => {
     if (state.mode !== "floating" || !state.roomId) {
@@ -90,6 +169,8 @@ export function GlobalChatWindow() {
   );
 
   const activeData = state.roomId && data?.roomId === state.roomId ? data : null;
+  const activeNewMessages =
+    state.roomId && newMessages?.roomId === state.roomId ? newMessages.messages : EMPTY_MESSAGES;
   const activeError = state.roomId && error?.roomId === state.roomId ? error.message : "";
   const roomIdForLink = state.roomId ?? "";
 
@@ -164,6 +245,7 @@ export function GlobalChatWindow() {
             <ChatPanel
               roomId={state.roomId}
               initialMessages={activeData.initialMessages}
+              additionalMessages={activeNewMessages}
               currentUserId={activeData.currentUserId}
               otherUser={otherUser}
               chatImagesBucket={activeData.chatImagesBucket}
