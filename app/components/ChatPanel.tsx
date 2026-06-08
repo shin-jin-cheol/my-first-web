@@ -198,6 +198,11 @@ export function ChatPanel({
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
+    let isActive = true;
+    let insertRetryTimer: ReturnType<typeof setTimeout> | undefined;
+    let updateRetryTimer: ReturnType<typeof setTimeout> | undefined;
+    let insertChannel: ReturnType<typeof supabase.channel> | null = null;
+    let updateChannel: ReturnType<typeof supabase.channel> | null = null;
 
     const addMessage = (message: Message) => {
       setMessages((currentMessages) => {
@@ -212,54 +217,141 @@ export function ChatPanel({
       });
     };
 
-    const channel = supabase
-      .channel(`room:${roomId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `room_id=eq.${roomId}`,
-        },
-        (payload) => {
-          if (isMessage(payload.new)) {
-            addMessage(payload.new);
-            if (payload.new.sender_id !== currentUserId) {
-              markMessagesAsReadAction(roomId).catch(() => {
-                // Read state is a progressive UI detail; keep the chat usable if it fails.
-              });
-            }
-          }
-        },
-      )
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "messages",
-          filter: `room_id=eq.${roomId}`,
-        },
-        (payload) => {
-          if (!isMessage(payload.new)) {
-            return;
-          }
+    const shouldRetryRealtime = (status: string) =>
+      status === "CHANNEL_ERROR" || status === "TIMED_OUT";
 
-          const updatedMessage = payload.new;
-          setMessages((currentMessages) =>
-            currentMessages.map((currentMessage) =>
-              currentMessage.id === updatedMessage.id
-                ? { ...currentMessage, is_read: updatedMessage.is_read }
-                : currentMessage,
-            ),
-          );
-        },
-      )
-      .subscribe();
+    const removeInsertChannel = () => {
+      if (insertChannel) {
+        supabase.removeChannel(insertChannel);
+        insertChannel = null;
+      }
+    };
+
+    const removeUpdateChannel = () => {
+      if (updateChannel) {
+        supabase.removeChannel(updateChannel);
+        updateChannel = null;
+      }
+    };
+
+    const scheduleInsertRetry = () => {
+      if (!isActive) {
+        return;
+      }
+
+      removeInsertChannel();
+
+      if (insertRetryTimer) {
+        clearTimeout(insertRetryTimer);
+      }
+
+      insertRetryTimer = setTimeout(() => {
+        if (isActive) {
+          subscribeInsertChannel();
+        }
+      }, 1200);
+    };
+
+    const scheduleUpdateRetry = () => {
+      if (!isActive) {
+        return;
+      }
+
+      removeUpdateChannel();
+
+      if (updateRetryTimer) {
+        clearTimeout(updateRetryTimer);
+      }
+
+      updateRetryTimer = setTimeout(() => {
+        if (isActive) {
+          subscribeUpdateChannel();
+        }
+      }, 1500);
+    };
+
+    function subscribeInsertChannel() {
+      removeInsertChannel();
+
+      insertChannel = supabase
+        .channel(`room-msg:${roomId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "messages",
+            filter: `room_id=eq.${roomId}`,
+          },
+          (payload) => {
+            if (isMessage(payload.new)) {
+              addMessage(payload.new);
+              if (payload.new.sender_id !== currentUserId) {
+                markMessagesAsReadAction(roomId).catch(() => {
+                  // Read state is a progressive UI detail; keep the chat usable if it fails.
+                });
+              }
+            }
+          },
+        )
+        .subscribe((status) => {
+          if (shouldRetryRealtime(status)) {
+            scheduleInsertRetry();
+          }
+        });
+    }
+
+    function subscribeUpdateChannel() {
+      removeUpdateChannel();
+
+      updateChannel = supabase
+        .channel(`room-read:${roomId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "messages",
+            filter: `room_id=eq.${roomId}`,
+          },
+          (payload) => {
+            if (!isMessage(payload.new)) {
+              return;
+            }
+
+            const updatedMessage = payload.new;
+            setMessages((currentMessages) =>
+              currentMessages.map((currentMessage) =>
+                currentMessage.id === updatedMessage.id
+                  ? { ...currentMessage, is_read: updatedMessage.is_read }
+                  : currentMessage,
+              ),
+            );
+          },
+        )
+        .subscribe((status) => {
+          if (shouldRetryRealtime(status)) {
+            scheduleUpdateRetry();
+          }
+        });
+    }
+
+    subscribeInsertChannel();
+    subscribeUpdateChannel();
 
     return () => {
-      supabase.removeChannel(channel);
+      isActive = false;
+
+      if (insertRetryTimer) {
+        clearTimeout(insertRetryTimer);
+      }
+
+      if (updateRetryTimer) {
+        clearTimeout(updateRetryTimer);
+      }
+
+      removeInsertChannel();
+      removeUpdateChannel();
     };
   }, [currentUserId, roomId]);
 
