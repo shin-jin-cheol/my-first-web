@@ -221,7 +221,7 @@ export async function sendMessage(
 
   const result = await requestMessages<Message[]>(
     "POST",
-    "",
+    "?select=id,room_id,sender_id,content,image_url,is_read,created_at",
     [
       {
         room_id: normalizedRoomId,
