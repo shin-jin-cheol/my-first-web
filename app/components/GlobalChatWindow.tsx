@@ -11,31 +11,8 @@ import {
 } from "@/app/chat/[roomId]/actions";
 import { ChatPanel } from "@/app/components/ChatPanel";
 import { UserAvatar } from "@/app/components/UserAvatar";
-import type { Message } from "@/lib/chat";
 import { useChat } from "@/lib/context/ChatContext";
 import { usePlayer } from "@/lib/context/PlayerContext";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-
-function isMessage(value: unknown): value is Message {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const maybeMessage = value as Partial<Message>;
-  return Boolean(
-    maybeMessage.id &&
-      maybeMessage.room_id &&
-      maybeMessage.sender_id &&
-      typeof maybeMessage.content === "string" &&
-      typeof maybeMessage.is_read === "boolean" &&
-      maybeMessage.created_at,
-  );
-}
-
-function getMessageTime(value: string) {
-  const time = new Date(value).getTime();
-  return Number.isNaN(time) ? 0 : time;
-}
 
 export function GlobalChatWindow() {
   const { state, setMode, closeChat } = useChat();
@@ -92,56 +69,6 @@ export function GlobalChatWindow() {
       isCurrent = false;
     };
   }, [data?.roomId, shouldRenderChat, state.roomId]);
-
-  useEffect(() => {
-    if (!shouldRenderChat || !state.roomId) {
-      return;
-    }
-
-    const roomId = state.roomId;
-    const supabase = getSupabaseBrowserClient();
-
-    const channel = supabase
-      .channel(`floating-room:${roomId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-          filter: `room_id=eq.${roomId}`,
-        },
-        (payload) => {
-          if (!isMessage(payload.new)) {
-            return;
-          }
-
-          const message = payload.new;
-          setData((currentData) => {
-            if (!currentData || currentData.roomId !== roomId) {
-              return currentData;
-            }
-
-            if (currentData.initialMessages.some((currentMessage) => currentMessage.id === message.id)) {
-              return currentData;
-            }
-
-            return {
-              ...currentData,
-              initialMessages: [...currentData.initialMessages, message].sort(
-                (first, second) =>
-                  getMessageTime(first.created_at) - getMessageTime(second.created_at),
-              ),
-            };
-          });
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [shouldRenderChat, state.roomId]);
 
   useEffect(() => {
     if (state.mode !== "floating" || !state.roomId) {
