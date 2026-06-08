@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ImagePlus, Send } from "lucide-react";
 import {
   useEffect,
+  useCallback,
   useRef,
   useState,
   useTransition,
@@ -14,6 +15,7 @@ import {
   type ReactNode,
 } from "react";
 import {
+  getMessageReadStatusesAction,
   markMessagesAsReadAction,
   sendChatMessageAction,
 } from "@/app/chat/[roomId]/actions";
@@ -41,6 +43,7 @@ type ChatPanelProps = {
   chatImagesBucket: string;
   headerActions?: ReactNode;
   showBackLink?: boolean;
+  readStatusRefreshKey?: number;
 };
 
 function formatMessageTime(value: string) {
@@ -163,6 +166,7 @@ export function ChatPanel({
   chatImagesBucket,
   headerActions,
   showBackLink = true,
+  readStatusRefreshKey,
 }: ChatPanelProps) {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -181,6 +185,30 @@ export function ChatPanel({
   const trimmedContent = content.trim();
   const canSend = Boolean((trimmedContent || pendingImageUrl) && !isPending && !isUploadingImage);
 
+  const syncMessageReadStatuses = useCallback(async () => {
+    const readStatuses = await getMessageReadStatusesAction(roomId);
+
+    if (readStatuses.length === 0) {
+      return;
+    }
+
+    const readStatusById = new Map(
+      readStatuses.map((readStatus) => [readStatus.id, readStatus.is_read]),
+    );
+
+    setMessages((currentMessages) =>
+      currentMessages.map((message) => {
+        const nextIsRead = readStatusById.get(message.id);
+
+        if (typeof nextIsRead !== "boolean" || message.is_read === nextIsRead) {
+          return message;
+        }
+
+        return { ...message, is_read: nextIsRead };
+      }),
+    );
+  }, [roomId]);
+
   useEffect(() => {
     setMessages((currentMessages) => {
       return mergeMessagesPreservingCurrent(currentMessages, [
@@ -194,7 +222,39 @@ export function ChatPanel({
     markMessagesAsReadAction(roomId).catch(() => {
       // Read state is a progressive UI detail; keep the chat usable if it fails.
     });
-  }, [roomId]);
+
+    syncMessageReadStatuses().catch(() => {
+      // Read state is a progressive UI detail; keep the chat usable if it fails.
+    });
+  }, [roomId, syncMessageReadStatuses]);
+
+  useEffect(() => {
+    if (typeof readStatusRefreshKey !== "number") {
+      return;
+    }
+
+    syncMessageReadStatuses().catch(() => {
+      // Read state is a progressive UI detail; keep the chat usable if it fails.
+    });
+  }, [readStatusRefreshKey, syncMessageReadStatuses]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+
+      syncMessageReadStatuses().catch(() => {
+        // Read state is a progressive UI detail; keep the chat usable if it fails.
+      });
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [syncMessageReadStatuses]);
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();

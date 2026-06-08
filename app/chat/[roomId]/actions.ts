@@ -6,12 +6,14 @@ import { requireSession } from "@/lib/auth";
 import { SUPABASE_CHAT_IMAGES_BUCKET } from "@/lib/env";
 import { createNotification } from "@/lib/notifications";
 import {
+  getMessageReadStatuses,
   getMessages,
   getRoom,
   isChatRoomParticipant,
   markMessagesAsRead,
   sendMessage,
   type Message,
+  type MessageReadStatus,
 } from "@/lib/chat";
 
 export type ChatWindowData = {
@@ -88,4 +90,22 @@ export async function markMessagesAsReadAction(roomId: string): Promise<boolean>
 
   const otherUserId = room.user_a_id === session.userId ? room.user_b_id : room.user_a_id;
   return markMessagesAsRead(normalizedRoomId, otherUserId);
+}
+
+export async function getMessageReadStatusesAction(
+  roomId: string,
+): Promise<MessageReadStatus[]> {
+  const session = await requireSession();
+  const normalizedRoomId = roomId.trim();
+
+  if (!normalizedRoomId) {
+    return [];
+  }
+
+  const room = await getRoom(normalizedRoomId);
+  if (!room || !isChatRoomParticipant(room, session.userId)) {
+    return [];
+  }
+
+  return getMessageReadStatuses(normalizedRoomId);
 }

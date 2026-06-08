@@ -45,6 +45,7 @@ export function GlobalChatWindow() {
   const [data, setData] = useState<(ChatWindowData & { roomId: string }) | null>(null);
   const [newMessages, setNewMessages] = useState<{ roomId: string; messages: Message[] } | null>(null);
   const [error, setError] = useState<{ roomId: string; message: string } | null>(null);
+  const [readStatusRefreshKey, setReadStatusRefreshKey] = useState(0);
   const floatingChatOffsetClass = isPlayerMinimized ? "md:bottom-[10.5rem]" : "md:bottom-[18rem]";
   const minimizedChatOffsetClass = isPlayerMinimized ? "md:bottom-[10.5rem]" : "md:bottom-[18rem]";
   const floatingChatFrameClass = cn(
@@ -179,7 +180,18 @@ export function GlobalChatWindow() {
       return;
     }
 
-    setMode(state.mode === "floating" ? "minimized" : "floating");
+    if (state.mode === "floating") {
+      setMode("minimized");
+      return;
+    }
+
+    setReadStatusRefreshKey((currentKey) => currentKey + 1);
+    setMode("floating");
+  }
+
+  function handleOpenFloatingChat() {
+    setReadStatusRefreshKey((currentKey) => currentKey + 1);
+    setMode("floating");
   }
 
   function handleMusicTabClick() {
@@ -251,6 +263,7 @@ export function GlobalChatWindow() {
               chatImagesBucket={activeData.chatImagesBucket}
               headerActions={headerActions}
               showBackLink={false}
+              readStatusRefreshKey={readStatusRefreshKey}
             />
           ) : (
             <div className="flex h-full flex-col overflow-hidden rounded-2xl border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] text-[var(--color-text-primary)] shadow-[0_4px_16px_rgb(0_0_0_/_0.1)]">
@@ -282,7 +295,7 @@ export function GlobalChatWindow() {
       {state.mode === "minimized" && state.roomId ? (
         <button
           type="button"
-          onClick={() => setMode("floating")}
+          onClick={handleOpenFloatingChat}
           className={`fixed ${minimizedChatOffsetClass} right-4 z-50 hidden w-80 items-center gap-2 rounded-[var(--border-radius-lg)] border-[0.5px] border-[var(--color-border-tertiary)] bg-[var(--color-background-primary)] px-[14px] py-2 text-sm font-medium text-[var(--color-text-primary)] shadow-[0_2px_8px_rgb(0_0_0_/_0.08)] transition hover:brightness-95 dark:hover:brightness-110 md:flex`}
           aria-label={`${otherUser.name} 채팅 열기`}
         >

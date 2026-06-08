@@ -23,6 +23,11 @@ export type Message = {
   created_at: string;
 };
 
+export type MessageReadStatus = {
+  id: string;
+  is_read: boolean;
+};
+
 function getSupabaseRestEndpoint(table: string, query = "") {
   if (!SUPABASE_URL) {
     return "";
@@ -171,6 +176,27 @@ export async function getMessages(roomId: string): Promise<Message[]> {
   }
 
   return result.data.reverse();
+}
+
+export async function getMessageReadStatuses(roomId: string): Promise<MessageReadStatus[]> {
+  assertSupabaseChatStorage();
+
+  const normalizedRoomId = roomId.trim();
+  if (!normalizedRoomId) {
+    return [];
+  }
+
+  const encodedRoomId = encodeURIComponent(normalizedRoomId);
+  const result = await requestMessages<MessageReadStatus[]>(
+    "GET",
+    `?select=id,is_read&room_id=eq.${encodedRoomId}`,
+  );
+
+  if (!result.ok || !Array.isArray(result.data)) {
+    return [];
+  }
+
+  return result.data;
 }
 
 export async function markMessagesAsRead(roomId: string, senderId: string): Promise<boolean> {
