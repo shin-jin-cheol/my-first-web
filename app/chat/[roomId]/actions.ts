@@ -87,11 +87,5 @@ export async function markMessagesAsReadAction(roomId: string): Promise<boolean>
   }
 
   const otherUserId = room.user_a_id === session.userId ? room.user_b_id : room.user_a_id;
-  const didUpdate = await markMessagesAsRead(normalizedRoomId, otherUserId);
-
-  if (didUpdate) {
-    revalidatePath(`/chat/${encodeURIComponent(normalizedRoomId)}`, "page");
-  }
-
-  return didUpdate;
+  return markMessagesAsRead(normalizedRoomId, otherUserId);
 }
