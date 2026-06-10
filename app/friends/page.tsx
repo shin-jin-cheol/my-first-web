@@ -272,17 +272,19 @@ async function FriendsPageContent({ searchParams }: FriendsPageProps) {
                     </p>
                   </div>
                 </div>
-                <FriendChatButton
-                  friendId={item.userId}
-                  partnerName={item.name}
-                  partnerAvatarUrl={item.avatarUrl}
-                />
-                <form action={submitDeleteFriendAction} className="shrink-0">
-                  <input type="hidden" name="friendId" value={item.friend.id} />
-                  <Button type="submit" variant="outline" size="sm">
-                    친구 삭제
-                  </Button>
-                </form>
+                <div className="flex shrink-0 items-center gap-2">
+                  <FriendChatButton
+                    friendId={item.userId}
+                    partnerName={item.name}
+                    partnerAvatarUrl={item.avatarUrl}
+                  />
+                  <form action={submitDeleteFriendAction}>
+                    <input type="hidden" name="friendId" value={item.friend.id} />
+                    <Button type="submit" variant="outline" size="sm">
+                      친구 삭제
+                    </Button>
+                  </form>
+                </div>
               </article>
             ))}
           </div>
