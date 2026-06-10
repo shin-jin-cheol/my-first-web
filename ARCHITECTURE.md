@@ -1,5 +1,14 @@
 # Architecture
 
+## 0-1. 2026-06-10 최신 아키텍처 반영
+
+- 브라우저 Supabase 클라이언트는 `lib/supabase/client.ts`에서 생성하며, 공개 Supabase URL/anon key는 `process.env` 직접 접근 대신 `lib/env.ts`의 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 import해서 사용합니다.
+- 환경변수 접근은 계속 `lib/env.ts`를 기준으로 중앙 관리합니다.
+- 친구 목록의 각 카드에서는 채팅 버튼과 친구 삭제 form을 하나의 오른쪽 액션 그룹으로 묶습니다. 액션 그룹은 `flex shrink-0 items-center gap-2`를 사용해 이름 길이에 따른 버튼 위치 흔들림을 막습니다.
+- 인증은 자체 `sjc-session` 쿠키와 이메일 OTP 흐름을 기준으로 합니다. 현재 아키텍처 문서에서 인증을 설명할 때는 Supabase Auth 연동처럼 보이는 표현을 사용하지 않고, 자체 세션 쿠키 기반 권한 검증으로 표기합니다.
+- 보호 라우트는 Next.js 16 기준 `proxy.ts`가 담당하며, `middleware.ts`를 사용하지 않습니다.
+- Playwright GitHub Actions workflow는 `.github/workflows/e2e.yml`과 `.github/workflows/playwright.yml`이 모두 존재합니다.
+
 ## 0. 2026-05-31 최신 아키텍처 반영
 
 ### 모바일 첫인상 및 전역 UI

@@ -1,5 +1,13 @@
 # Context
 
+## 0-1. 2026-06-10 최신 컨텍스트
+
+- `lib/supabase/client.ts`는 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 `lib/env.ts`에서 import해 사용합니다. 브라우저 Supabase 클라이언트 생성 시 환경변수를 각 파일에서 직접 읽지 않습니다.
+- 친구 목록 카드의 채팅 버튼과 친구 삭제 form은 같은 오른쪽 액션 영역에 배치합니다. 이 영역은 `flex shrink-0 items-center gap-2`를 사용해 이름 길이와 관계없이 버튼 위치를 고정합니다.
+- 인증/권한 설명은 현재 구조 기준으로 자체 `sjc-session` 쿠키, 이메일 OTP, `proxy.ts`, Server Action, `lib/permissions.ts` 흐름을 사용합니다. Supabase Auth 연동으로 오해될 수 있는 표현은 사용하지 않습니다.
+- Next.js 16 보호 라우트는 `proxy.ts`를 사용하며 `middleware.ts`는 사용하지 않습니다.
+- GitHub Actions Playwright workflow는 `.github/workflows/e2e.yml`과 `.github/workflows/playwright.yml` 두 파일이 존재합니다.
+
 ## 0. 2026-05-31 최신 컨텍스트
 
 이번 최신화는 묶음 A~E와 최근 UI/UX 수정사항을 현재 구현 상태로 기록합니다.

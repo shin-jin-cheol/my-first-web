@@ -1,5 +1,15 @@
 # TODO
 
+## 2026-06-10 문서 최신화 완료
+
+- [x] README.md 전면 재작성
+- [x] README.md에서 Supabase Auth 표현 제거 및 자체 세션 쿠키 + 이메일 OTP 방식으로 정리
+- [x] README.md에서 개발 과정 기록을 제거하고 현재 상태 중심으로 정리
+- [x] `lib/supabase/client.ts` 환경변수를 `lib/env.ts` import 기준으로 사용하는 변경 기록
+- [x] 친구 목록 카드 채팅/삭제 버튼 우측 고정 정렬 변경 기록
+- [x] `.github/workflows/e2e.yml`, `.github/workflows/playwright.yml` 존재 반영
+- [x] AGENTS.md, ARCHITECTURE.md, context.md 최신 반영 섹션 추가
+
 ## 2026-06-04 채팅 메시지 읽음 표시 완료
 
 - [x] `messages.is_read` boolean 컬럼 추가 마이그레이션 작성

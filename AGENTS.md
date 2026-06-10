@@ -6,6 +6,13 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 
 # AGENTS.md
 
+## 0-1. 2026-06-10 최신 반영 기록
+
+- `lib/supabase/client.ts`는 브라우저 Supabase 클라이언트 생성에 필요한 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 `process.env`에서 직접 읽지 않고 `lib/env.ts`에서 import해서 사용합니다.
+- `/friends` 친구 목록 카드에서 `FriendChatButton`과 친구 삭제 form을 하나의 `flex shrink-0 items-center gap-2` 액션 영역으로 묶어 이름 길이와 관계없이 오른쪽에 고정 배치합니다.
+- 인증 문서 표현은 현재 구조 기준으로 정리합니다. 이 프로젝트는 Supabase Auth가 아니라 자체 `sjc-session` 쿠키와 이메일 OTP를 사용하며, 권한 검증은 `proxy.ts`, Server Action, `lib/permissions.ts`에서 수행합니다.
+- 현재 GitHub Actions workflow는 `.github/workflows/e2e.yml`과 `.github/workflows/playwright.yml`이 함께 존재합니다. Playwright E2E 관련 문서에는 두 파일의 존재를 함께 반영합니다.
+
 ## 0. 2026-05-31 최신 반영 기록
 
 이번 문서 업데이트는 모바일 첫인상 개선, 채팅 모바일 최적화, UI 레이아웃 개편, 성능 최적화, 게시글 필터/정렬, 최근 채팅/BGM UI 수정사항을 반영합니다.
