@@ -1,5 +1,12 @@
 @AGENTS.md
 
+## 2026-06-14 문서/라우트 현황
+
+- `README.md`는 실제 `app/` 라우트 기준의 페이지별 기능 안내로 정리합니다.
+- 현재 페이지 라우트는 `/`, `/posts`, `/posts/[id]`, `/posts/new`, `/posts/[id]/edit`, `/guest`, `/guest/[id]`, `/guest/new`, `/guest/[id]/edit`, `/guest/account`, `/friends`, `/chat/[roomId]`, `/profile/[id]`, `/auth/login`, `/auth/signup`, `/admin/members`입니다.
+- 게스트 게시글 상세는 `parent_id` 기반 대댓글 들여쓰기와 owner 댓글 아바타 표시를 지원합니다.
+- 채팅은 Realtime, 이미지 메시지, 읽음 표시 `1`, 플로팅/전체모드를 지원합니다.
+
 ## 2026-06-04 최신 반영 요약
 
 - HTML 파일 업로드가 허용되었습니다. `lib/attachment-utils.ts`의 허용 MIME 타입에 `text/html`이 포함됩니다.

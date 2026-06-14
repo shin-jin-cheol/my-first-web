@@ -6,6 +6,14 @@ This project uses Next.js 16.2.1. APIs, conventions, and file structure may diff
 
 # AGENTS.md
 
+## 0-2. 2026-06-14 최신 반영 기록
+
+- `README.md`는 카테고리별 기능 목록이 아니라 실제 `app/` 라우트 기준의 페이지별 기능 안내로 관리합니다.
+- 현재 페이지 라우트는 `/`, `/posts`, `/posts/[id]`, `/posts/new`, `/posts/[id]/edit`, `/guest`, `/guest/[id]`, `/guest/new`, `/guest/[id]/edit`, `/guest/account`, `/friends`, `/chat/[roomId]`, `/profile/[id]`, `/auth/login`, `/auth/signup`, `/admin/members`입니다.
+- 게스트 게시글 댓글 조회는 `guest_post_comments.parent_id`를 포함하며, `mapSupabaseRowToGuestComment`는 `parentId`를 매핑해 대댓글 들여쓰기를 유지합니다.
+- 게스트 게시글 상세는 게시글 작성자가 owner인지와 무관하게 owner 아바타를 `OWNER_ID`에 매핑해 owner 댓글 프로필 사진을 표시합니다.
+- 채팅은 Supabase Realtime INSERT/UPDATE, 이미지 메시지, 읽음 표시 `1`, 플로팅/전체모드 흐름을 함께 지원합니다.
+
 ## 0-1. 2026-06-10 최신 반영 기록
 
 - `lib/supabase/client.ts`는 브라우저 Supabase 클라이언트 생성에 필요한 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 `process.env`에서 직접 읽지 않고 `lib/env.ts`에서 import해서 사용합니다.

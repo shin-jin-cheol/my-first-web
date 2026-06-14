@@ -1,5 +1,14 @@
 # Architecture
 
+## 0-2. 2026-06-14 라우트/기능 맵 반영
+
+- `README.md`는 실제 App Router 페이지를 기준으로 페이지별 기능 안내를 제공합니다.
+- 현재 페이지 라우트는 `/`, `/posts`, `/posts/[id]`, `/posts/new`, `/posts/[id]/edit`, `/guest`, `/guest/[id]`, `/guest/new`, `/guest/[id]/edit`, `/guest/account`, `/friends`, `/chat/[roomId]`, `/profile/[id]`, `/auth/login`, `/auth/signup`, `/admin/members`입니다.
+- 게시글 상세와 게스트 게시글 상세는 이미지, 링크, 파일/HTML 첨부, YouTube iframe 임베드, 댓글/대댓글, 이모지 반응을 지원합니다.
+- 게스트 댓글은 Supabase 조회와 매핑 단계에서 `parent_id`/`parentId`를 유지해 `CommentThread`의 대댓글 들여쓰기와 일관되게 동작합니다.
+- 게스트 게시글 상세는 owner 아바타를 게시글 작성자 조건 없이 `OWNER_ID`에 매핑해 owner 댓글 프로필 사진을 표시합니다.
+- 채팅 구조는 전체모드 `/chat/[roomId]`와 전역 플로팅 채팅창을 함께 사용하며, Realtime INSERT/UPDATE와 `messages.is_read` 기반 읽음 표시를 지원합니다.
+
 ## 0-1. 2026-06-10 최신 아키텍처 반영
 
 - 브라우저 Supabase 클라이언트는 `lib/supabase/client.ts`에서 생성하며, 공개 Supabase URL/anon key는 `process.env` 직접 접근 대신 `lib/env.ts`의 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 import해서 사용합니다.

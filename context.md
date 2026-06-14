@@ -1,5 +1,14 @@
 # Context
 
+## 0-2. 2026-06-14 최신 컨텍스트
+
+- `README.md`를 실제 `app/` 페이지 라우트 기준의 기능 맵으로 재구성했습니다.
+- 현재 페이지 라우트는 `/`, `/posts`, `/posts/[id]`, `/posts/new`, `/posts/[id]/edit`, `/guest`, `/guest/[id]`, `/guest/new`, `/guest/[id]/edit`, `/guest/account`, `/friends`, `/chat/[roomId]`, `/profile/[id]`, `/auth/login`, `/auth/signup`, `/admin/members`입니다.
+- 게스트 게시글 상세는 대댓글 들여쓰기, owner 댓글 프로필 사진, 댓글순/조회수순 정렬 상태를 최신 구현 기준으로 설명합니다.
+- 게시글/게스트 게시글 상세는 YouTube 임베드, 이미지, 파일, HTML 첨부를 지원하는 상태로 정리합니다.
+- 채팅은 읽음 표시 `1`, Supabase Realtime, 플로팅/전체모드 전환을 지원하는 상태로 문서화합니다.
+- 친구 목록은 채팅 버튼과 친구 삭제 버튼을 오른쪽 액션 영역에 고정 정렬하는 구현을 기준으로 설명합니다.
+
 ## 0-1. 2026-06-10 최신 컨텍스트
 
 - `lib/supabase/client.ts`는 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`를 `lib/env.ts`에서 import해 사용합니다. 브라우저 Supabase 클라이언트 생성 시 환경변수를 각 파일에서 직접 읽지 않습니다.
