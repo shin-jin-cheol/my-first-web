@@ -103,7 +103,7 @@ export default async function GuestPostDetailPage({ params }: GuestPostDetailPag
   
   const memberAvatarMap = new Map(members.map((member) => [member.id, member.avatarUrl ?? null]));
 
-  if (ownerAvatarUrl && post.authorId === OWNER_ID) {
+  if (ownerAvatarUrl) {
     memberAvatarMap.set(OWNER_ID, ownerAvatarUrl);
   }
   const authorName = post.authorName || post.authorId;

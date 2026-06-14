@@ -424,7 +424,7 @@ async function readGuestCommentsFromSupabase(postId?: number): Promise<Map<numbe
   const postFilter = typeof postId === "number" ? `&guest_post_id=eq.${postId}` : "";
   const result = await requestSupabaseGuestComments<SupabaseGuestCommentRow[]>(
     "GET",
-    `?select=id,guest_post_id,author_id,author_name,content,created_at${postFilter}&order=id.asc`,
+    `?select=id,guest_post_id,author_id,author_name,content,created_at,parent_id${postFilter}&order=id.asc`,
   );
 
   const commentsByPostId = new Map<number, GuestComment[]>();
