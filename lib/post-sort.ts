@@ -23,5 +23,5 @@ export function getPostSortColumn(sort: PostSortKey) {
 }
 
 export function getPostSortOrder(sort: PostSortKey) {
-  return `${getPostSortColumn(sort)}.desc`;
+  return `${getPostSortColumn(sort)}.desc,id.desc`;
 }
