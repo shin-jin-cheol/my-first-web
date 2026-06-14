@@ -172,7 +172,7 @@ async function requestSupabase<T>(
   query: string,
   body?: unknown,
   prefer?: string,
-): Promise<{ ok: boolean; status: number; data: T | null }> {
+): Promise<{ ok: boolean; status: number; data: T | null; error?: string }> {
   // Use common HTTP wrapper with parseMode=text for safeJsonParse
   return requestSupabaseHttp<T>(getSupabaseGuestPostsEndpoint(query), {
     method,
@@ -187,7 +187,7 @@ async function requestSupabaseGuestComments<T>(
   query: string,
   body?: unknown,
   prefer?: string,
-): Promise<{ ok: boolean; status: number; data: T | null }> {
+): Promise<{ ok: boolean; status: number; data: T | null; error?: string }> {
   return requestSupabaseHttp<T>(getSupabaseGuestPostCommentsEndpoint(query), {
     method,
     body,
@@ -373,17 +373,29 @@ async function updateGuestPostLikeCount(postId: number, delta: number) {
 }
 
 async function updateGuestPostCommentCount(postId: number, delta: number) {
-  const currentPost = await getGuestPostById(postId);
-  if (!currentPost) {
-    return;
-  }
+  console.log("updateGuestPostCommentCount:start", { postId, delta });
 
-  await requestSupabase(
+  const currentPost = await getGuestPostById(postId);
+  console.log("updateGuestPostCommentCount:currentPost", {
+    exists: Boolean(currentPost),
+    commentCount: currentPost?.commentCount,
+  });
+
+  const currentCommentCount = currentPost?.commentCount ?? 0;
+  const body = { comment_count: Math.max(currentCommentCount + delta, 0) };
+  console.log("updateGuestPostCommentCount:patchBody", body);
+
+  const result = await requestSupabase(
     "PATCH",
     `?id=eq.${postId}`,
-    { comment_count: Math.max((currentPost.commentCount ?? 0) + delta, 0) },
+    body,
     "return=minimal",
   );
+  console.log("updateGuestPostCommentCount:patchResult", {
+    ok: result.ok,
+    status: result.status,
+    error: result.error,
+  });
 }
 
 function normalizeGuestPostRecord(
