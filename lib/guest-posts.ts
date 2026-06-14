@@ -373,29 +373,16 @@ async function updateGuestPostLikeCount(postId: number, delta: number) {
 }
 
 async function updateGuestPostCommentCount(postId: number, delta: number) {
-  console.log("updateGuestPostCommentCount:start", { postId, delta });
-
   const currentPost = await getGuestPostById(postId);
-  console.log("updateGuestPostCommentCount:currentPost", {
-    exists: Boolean(currentPost),
-    commentCount: currentPost?.commentCount,
-  });
-
   const currentCommentCount = currentPost?.commentCount ?? 0;
   const body = { comment_count: Math.max(currentCommentCount + delta, 0) };
-  console.log("updateGuestPostCommentCount:patchBody", body);
 
-  const result = await requestSupabase(
+  await requestSupabase(
     "PATCH",
     `?id=eq.${postId}`,
     body,
     "return=minimal",
   );
-  console.log("updateGuestPostCommentCount:patchResult", {
-    ok: result.ok,
-    status: result.status,
-    error: result.error,
-  });
 }
 
 function normalizeGuestPostRecord(
